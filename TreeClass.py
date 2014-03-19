@@ -228,18 +228,18 @@ class TreeClass(TreeNode):
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):
 		"""import Tree structure and useful Tree features from a _Phyloxml.PhyloxmlTree to a TreeClass
-		This is really dirty but it does the job!!
+		This is really dirty but it does the job!!. 
+		****For each attribut, only the first xml value in the clade is transferred to the TreeClass instance***
 		accessible feature: Most of the features are list() or dict(). Because phyloxml format support multi Tree and we can have muliple infos per node! 
-		-code : A list for all the taxon code at the node 
-		-sc_name: A list of scientific_name for the current node, if it was retrieved from emsembl
-		-c_name: A list of common_name for the current node
-		-taxon_id: A list of taxon_id from the node
-		-sequence: A dict of list:
-			-'type' : types of the sequence (cdna/protein...
-			-'symbol': symbol of the gene
-			-'name': name of the gene
-			-'accession': accession number of the gene
-			-'mol_seq': aa sequence or nuc sequence
+		-code : the taxon code at the node 
+		-sc_name: scientific_name for the current node, if it was retrieved from emsembl
+		-c_name:common_name for the current node
+		-taxon_id: taxon_id from the node
+		-'type' : types of the sequence (cdna/protein...
+		-'symbol': symbol of the gene
+		-'name': name of the gene
+		-'accession': accession number of the gene
+		-'mol_seq': aa sequence or nuc sequence
 		"""
 		if(phyloxml.__class__.__name__!="PhyloxmlTree"):
 			raise ValueError("Please provide a phyloxml class")
@@ -264,5 +264,39 @@ class TreeClass(TreeNode):
 				if(taxon.id is not None):
 					taxa['taxon_id'].append(taxon.id.get_valueOf_())
 
-			node.add_features(code=taxa['code'], sc_name=taxa['sc_name'], sequence=sequence, c_name=taxa['common_name'], tax_id=taxa['taxon_id'])
+			if(len(taxa['code'])>=1):
+				node.add_features(code=taxa['code'][0])
+			if(len(taxa['sc_name'])>=1):
+				node.add_features(sc_name=taxa['sc_name'][0])
+			if(len(taxa['common_name'])>=1):
+				node.add_features(c_name=taxa['common_name'][0])
+			if(len(taxa['taxon_id'])>=1):
+				node.add_features(tax_id=taxa['taxon_id'][0])
+			
+			if(len(sequence['accession'])>=1):
+				node.add_features(accession=sequence['accession'][0])
+			if(len(sequence['mol_seq']) >=1):
+				node.add_features(sequence=sequence['mol_seq'][0])
+
+			if(len(sequence['name'])>=1):
+				node.add_features(seqname=sequence['name'][0])
+			if(len(sequence['symbol'])>=1):
+				node.add_features(symbol=sequence['symbol'][0])
+
 		return TreeClass(phyloxml.write(features=[],format_root_node=True))
+	
+
+	def writeSeqToFasta(self, out='seq.fasta', comment=1):
+		if("sequence" in self.get_all_features()):
+			with open(out, 'w') as outfile:
+				for leaf in self:
+					if("sequence" in leaf.features):
+						id=">%s" % leaf.name
+						if(comment and "accession" in leaf.features and "seqname" in leaf.features):
+							id= id+ " %s;%s" %(leaf.accession, leaf.seqname)
+							if("sc_name" in leaf.features):
+								id= id+ (";%s"%leaf.sc_name)
+						seq=leaf.sequence+"\n"
+						id=id+"\n"
+						outfile.write(id)
+						outfile.write(seq)
