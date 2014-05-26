@@ -129,7 +129,7 @@ class TreeClass(TreeNode):
 
 		"""Set gene feature for each leaf in the tree.
 
-                :argument genesMap: Default=None. genesMap is a Map of genes for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding genes name
+		:argument genesMap: Default=None. genesMap is a Map of genes for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding genes name
 		:argument sep: Default ="_" , the separator for the default genes extraction using the leaf name
 		:argument gpos: Default="postfix", the gene position in the leaf name for the default extraction. Should be used with sep. Can take for value, "postfix", which means "specie-sep-gene" or "prefix" for "gene-sep-specie"
 		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the genes name.
@@ -154,14 +154,14 @@ class TreeClass(TreeNode):
 		return self.genes.split(sep)
 
 	def _extractFeatureName(self, separator=None, order=None):
-            """Private function, extract feature name (e.g. genes, species) based on the node name"""
+		"""Private function, extract feature name (e.g. genes, species) based on the node name"""
 		l=self.name.split(separator)
 		if len(l)>1 and order=="postfix":
 			feature=l[0]
 		elif len(l)>1 and order=="prefix":
 			feature=l[-1]
-                else:
-                    feature=self.name
+		else:
+			feature=self.name
 		return feature
 
 
