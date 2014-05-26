@@ -105,13 +105,14 @@ class TreeClass(TreeNode):
 		return child_number +1 if self.is_leaf() else child_number
 
 
-	def set_species(self, speciesMap=None, sep="_", gpos="postfix", use_fn=None):
+	def set_species(self, speciesMap=None, sep="_", pos="postfix", use_fn=None):
 
 		"""Set species feature for each leaf in the tree.
 
 		:argument speciesMap: Default=None. speciesMap is a Map of species for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding specie name
 		:argument sep: Default ="_" , the separator for the default species extraction using the leaf name
-		:argument gpos: Default="postfix", the gene position in the leaf name for the default extraction. Should be used with sep. Can take for value, "postfix", which means "specie-sep-gene" or "prefix" for "gene-sep-specie"
+		:argument pos: Default="postfix", the species position in the leaf name for the default extraction. Should be used with sep. Can take for value, "prefix", which
+                means "specie-sep-gene" or "postfix" for "gene-sep-specie"
 		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the species name.
 
 		"""
@@ -122,16 +123,17 @@ class TreeClass(TreeNode):
 			elif use_fn is not None :
 				leaf.add_features(species=use_fn(leaf))
 			else:
-				leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=gpos))
+				leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=pos))
 
 
-	def set_genes(self, genesMap=None, sep="_", gpos="postfix", use_fn=None):
+	def set_genes(self, genesMap=None, sep="_", pos="postfix", use_fn=None):
 
 		"""Set gene feature for each leaf in the tree.
 
 		:argument genesMap: Default=None. genesMap is a Map of genes for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding genes name
 		:argument sep: Default ="_" , the separator for the default genes extraction using the leaf name
-		:argument gpos: Default="postfix", the gene position in the leaf name for the default extraction. Should be used with sep. Can take for value, "postfix", which means "specie-sep-gene" or "prefix" for "gene-sep-specie"
+		:argument pos: Default="postfix", the gene position in the leaf name for the default extraction. Should be used with sep. Can take for value, "postfix", which
+                means "specie-sep-gene" or "prefix" for "gene-sep-specie"
 		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the genes name.
 
 		"""
@@ -142,7 +144,7 @@ class TreeClass(TreeNode):
 			elif use_fn is not None :
 				leaf.add_features(genes=use_fn(leaf))
 			else:
-				leaf.add_features(genes=leaf._extractFeatureName(separator=sep, order=gpos))
+				leaf.add_features(genes=leaf._extractFeatureName(separator=sep, order=pos))
 
 
 	def get_species(self, sep=","):
@@ -157,9 +159,9 @@ class TreeClass(TreeNode):
 		"""Private function, extract feature name (e.g. genes, species) based on the node name"""
 		l=self.name.split(separator)
 		if len(l)>1 and order=="postfix":
-			feature=l[0]
-		elif len(l)>1 and order=="prefix":
 			feature=l[-1]
+		elif len(l)>1 and order=="prefix":
+			feature=l[0]
 		else:
 			feature=self.name
 		return feature
