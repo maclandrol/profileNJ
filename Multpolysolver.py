@@ -559,8 +559,7 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 	#genetree input
 	genename, gene_sep=TreeUtils.newick_preprocessing(genetree_nw)
 	genetree =TreeClass(genename)
-	genetree.set_species(sep=gene_sep, capitalize=True, gpos="prefix")
-	print genetree.get_ascii(attributes=['name'])
+	genetree.set_species(sep=gene_sep, capitalize=True, pos="prefix")
 
 	TreeUtils.reset_node_name(genetree, gene_sep)
 
@@ -619,5 +618,5 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 if __name__ == '__main__':
 	polysolution = solvePolytomy('nostar_genetree.tree', 'speciestree.newick', 'nostar_famille_1.dist', poly_limit=1)
 	for tree in polysolution:
-		print tree.get_ascii(attributes=['species', 'name'], show_internal=True)
+		print tree.get_ascii(attributes=['species', 'name'], show_internal=False)
 

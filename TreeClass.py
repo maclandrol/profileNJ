@@ -13,6 +13,7 @@ class TreeClass(TreeNode):
 
 	DEFAULT_SPECIE="Unknown"
 	DEFAULT_NAME= "NoName"
+	DEFAULT_GENE="Unknown"
 	AD=1
 	LOST=-1
 	SPEC=0
@@ -50,7 +51,7 @@ class TreeClass(TreeNode):
 
 		if len(target_nodes) == 1 and type(target_nodes[0]) in set([set, tuple, list, frozenset]):
 			target_nodes = target_nodes[0]
-		
+
 		try:
 			target_nodes = [n if isinstance(n, TreeNode) else self.search_nodes(name=n)[0] for n in target_nodes]
 			return target_nodes
@@ -78,7 +79,7 @@ class TreeClass(TreeNode):
 
 	def remove_childAt(self, i):
 		"""Remove a child at a specific position"""
-		
+
 		try:
 			child=self.children[i]
 			self.children.remove(child)
@@ -93,10 +94,10 @@ class TreeClass(TreeNode):
 		"""Delete a list of leaf"""
 		if len(leafList) == 1 and type(leafList[0]) in set([set, tuple, list, frozenset]):
 			leafList = leafList[0]
-		
+
 		for leaf in  leafList:
 			if(leaf.is_leaf()):
-				leaf.delete() 
+				leaf.delete()
 
 
 	def get_degree(self):
@@ -105,13 +106,14 @@ class TreeClass(TreeNode):
 		return child_number +1 if self.is_leaf() else child_number
 
 
-	def set_species(self, speciesMap=None, sep="_", capitalize=False, gpos="postfix", use_fn=None):
+	def set_species(self, speciesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
 		
 		"""Set species feature for each leaf in the tree.
 
 		:argument speciesMap: Default=None. speciesMap is a Map of species for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding specie name
 		:argument sep: Default ="_" , the separator for the default species extraction using the leaf name
-		:argument gpos: Default="postfix", the gene position in the leaf name for the default extraction. Should be used with sep. Can take for value, "postfix", which means "specie-sep-gene" or "prefix" for "gene-sep-specie"
+		:argument pos: Default="postfix", the species position in the leaf name for the default extraction. Should be used with sep. Can take for value, "prefix", which
+                means "specie-sep-gene" or "postfix" for "gene-sep-specie"
 		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the species name.
 
 		"""
@@ -123,26 +125,50 @@ class TreeClass(TreeNode):
 				if use_fn is not None :
 					leaf.add_features(species=use_fn(leaf))
 				else:
-					leaf.add_features(species=leaf._extractSpecieName(separator=sep, order=gpos, cap=capitalize))
+					leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=pos, cap=capitalize))
 
 	
+	def set_genes(self, genesMap=None, sep="_", pos="postfix", use_fn=None):
+
+		"""Set gene feature for each leaf in the tree.
+
+		:argument genesMap: Default=None. genesMap is a Map of genes for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding genes name
+		:argument sep: Default ="_" , the separator for the default genes extraction using the leaf name
+		:argument pos: Default="postfix", the gene position in the leaf name for the default extraction. Should be used with sep. Can take for value, "postfix", which
+                means "specie-sep-gene" or "prefix" for "gene-sep-specie"
+		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the genes name.
+
+		"""
+		for leaf in self:
+			if genesMap is not None:
+				leaf.add_features(genes=genesMap.get(leaf.name, TreeClass.DEFAULT_GENE))
+			elif use_fn is not None :
+				leaf.add_features(genes=use_fn(leaf))
+			else:
+				leaf.add_features(genes=leaf._extractFeatureName(separator=sep, order=pos,cap=capitalize))
+
+
 	def get_species(self, sep=","):
 		"""Return the a list of species for the current node"""
 		return self.species.split(sep)
 
+	def get_genes(self, sep=","):
+		"""Return the a list of genes for the current node"""
+		return self.genes.split(sep)
 
-	def _extractSpecieName(self, separator=None, order=None, cap=False):
-		"""Private function, extract species name based on the node name"""
+	def _extractFeatureName(self, separator=None, order=None, cap=False):
+		"""Private function, extract feature name (e.g. genes, species) based on the node name"""
 		l=self.name.split(separator)
-		species=TreeClass.DEFAULT_SPECIE
 		if len(l)>1 and order=="postfix":
-			species=l[0]
+			feature=l[0]
 		elif len(l)>1 and order=="prefix":
-			species=l[-1]
+			feature=l[-1]
+		else:
+			feature=self.name
 		if cap:
 			from Utils import capitalize
-			species=capitalize(species)
-		return species
+			feature=capitalize(feature)
+		return feature
 
 
 	def treeContraction(self, seuil=0):
@@ -163,7 +189,7 @@ class TreeClass(TreeNode):
 			print e
 			print "Check if this tree have species as feature"
 
-				
+
 	def toPolytomy(self):
 		"""Move every leaves to the node by deleting all the internals nodes"""
 		for node in self.traverse():
@@ -236,8 +262,9 @@ class TreeClass(TreeNode):
 		return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
 			
 	def is_monophyletic(self, specieSet):
-		""" Returns True if species names under this node are all
+		""" Returns True id species names under this node are all
 		included in a given list or set of species names."""
+
 		if type(specieSet) != set:
 			specieSet = set(specieSet)
 		return set(self.get_species()).issubset(species)
@@ -310,10 +337,10 @@ class TreeClass(TreeNode):
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):
 		"""import Tree structure and useful Tree features from a _Phyloxml.PhyloxmlTree to a TreeClass
-		This is really dirty but it does the job!!. 
+		This is really dirty but it does the job!!.
 		****For each attribut, only the first xml value in the clade is transferred to the TreeClass instance***
-		accessible feature: Most of the features are list() or dict(). Because phyloxml format support multi Tree and we can have muliple infos per node! 
-		-code : the taxon code at the node 
+		accessible feature: Most of the features are list() or dict(). Because phyloxml format support multi Tree and we can have muliple infos per node!
+		-code : the taxon code at the node
 		-sc_name: scientific_name for the current node, if it was retrieved from emsembl
 		-c_name:common_name for the current node
 		-taxon_id: taxon_id from the node
@@ -326,7 +353,7 @@ class TreeClass(TreeNode):
 		if(phyloxml.__class__.__name__!="PhyloxmlTree"):
 			raise ValueError("Please provide a phyloxml class")
 
-		for node in phyloxml: 
+		for node in phyloxml:
 			clade = node.phyloxml_clade
 			sequence=collections.defaultdict(list)
 			taxa=collections.defaultdict(list)
@@ -354,7 +381,7 @@ class TreeClass(TreeNode):
 				node.add_features(c_name=taxa['common_name'][0])
 			if(len(taxa['taxon_id'])>=1):
 				node.add_features(tax_id=taxa['taxon_id'][0])
-			
+
 			if(len(sequence['accession'])>=1):
 				node.add_features(accession=sequence['accession'][0])
 			if(len(sequence['mol_seq']) >=1):
@@ -366,7 +393,8 @@ class TreeClass(TreeNode):
 				node.add_features(symbol=sequence['symbol'][0])
 
 		return TreeClass(phyloxml.write(features=[],format_root_node=True))
-	
+
+
 	def replace_node(self, child_to_replace, new_child):
 		if (self is None) or (child_to_replace not in self.get_children()):
 			raise ValueError("Node is None or child_to_replace not valid")
