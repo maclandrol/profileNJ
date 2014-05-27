@@ -12,6 +12,7 @@ import collections
 class TreeClass(TreeNode):
 
 	DEFAULT_SPECIE="Unknown"
+	DEFAULT_NAME= "NoName"
 	AD=1
 	LOST=-1
 	SPEC=0
@@ -104,7 +105,7 @@ class TreeClass(TreeNode):
 		return child_number +1 if self.is_leaf() else child_number
 
 
-	def set_species(self, speciesMap=None, sep="_", gpos="postfix", use_fn=None):
+	def set_species(self, speciesMap=None, sep="_", capitalize=False, gpos="postfix", use_fn=None):
 		
 		"""Set species feature for each leaf in the tree.
 
@@ -114,14 +115,15 @@ class TreeClass(TreeNode):
 		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the species name.
 
 		"""
-
-		for leaf in self:
-			if speciesMap is not None:
-				leaf.add_features(species=speciesMap.get(leaf.name, TreeClass.DEFAULT_SPECIE))
-			elif use_fn is not None :
-				leaf.add_features(species=use_fn(leaf))
-			else:
-				leaf.add_features(species=leaf._extractSpecieName(separator=sep, order=gpos))
+		if speciesMap is not None:
+			for node in self.traverse():
+				node.add_features(species=speciesMap.get(node.name, TreeClass.DEFAULT_SPECIE))
+		else:
+			for leaf in self:
+				if use_fn is not None :
+					leaf.add_features(species=use_fn(leaf))
+				else:
+					leaf.add_features(species=leaf._extractSpecieName(separator=sep, order=gpos, cap=capitalize))
 
 	
 	def get_species(self, sep=","):
@@ -129,7 +131,7 @@ class TreeClass(TreeNode):
 		return self.species.split(sep)
 
 
-	def _extractSpecieName(self, separator=None, order=None):
+	def _extractSpecieName(self, separator=None, order=None, cap=False):
 		"""Private function, extract species name based on the node name"""
 		l=self.name.split(separator)
 		species=TreeClass.DEFAULT_SPECIE
@@ -137,6 +139,9 @@ class TreeClass(TreeNode):
 			species=l[0]
 		elif len(l)>1 and order=="prefix":
 			species=l[-1]
+		if cap:
+			from Utils import capitalize
+			species=capitalize(species)
 		return species
 
 
@@ -171,17 +176,37 @@ class TreeClass(TreeNode):
 		condition['children']=[]
 		return self.search_nodes(**condition)
 
+	def is_polytomy(self):
+		""" 
+        Return True if current node is a polytomy.
+    	"""
+		return len(self.children)>2
+
+	def is_binary(self):
+		""" 
+        Return True if current node is a binary node.
+    	"""
+		return len(self.children)==2
+
+	def is_internal(self):
+		""" 
+        Return True if current node is an internal node.
+    	"""
+		return (not self.is_root() and not self.is_leaf())
 
 	def get_all_features(self):
-		"""Return all the features of a node in a list object"""
+		"""Return all the features of all nodes under self in a set"""
 		features_list=[]
 		for node in self.traverse():
 			features_list.extend(list(node.features))
 		return set(features_list)
 
+	def has_feature(self, feature):
+		"""Return weither or not this node has feature in its list of features"""
+		return (feature in self.features)
+
 	def __repr__(self):
 		return "Tree Class '%s' (%s)" %(self.name, hex(self.__hash__()))
-
 
 	def get_my_evol_events(self, sos_thr=0.0):
 		""" Returns a list of duplication and speciation events in
@@ -210,20 +235,77 @@ class TreeClass(TreeNode):
 		"""
 		return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
 			
-	def is_monophyletic(specieSet):
-		""" Returns True id species names under this node are all
+	def is_monophyletic(self, specieSet):
+		""" Returns True if species names under this node are all
 		included in a given list or set of species names."""
 		if type(specieSet) != set:
 			specieSet = set(specieSet)
 		return set(self.get_species()).issubset(species)
 
 
+	def get_children_species(self):
+		""" Return the species list of the children under this particular node
+		"""
+		c_species= set([])
+		for node in self.get_children():
+			c_species.add(node.species)
+		return c_species
+
+	def get_children_name(self):
+		""" Return the names of the children under this particular node
+		"""
+		c_names= set([])
+		for node in self.get_children():
+			c_names.add(node.name)
+		return c_names
+
+	def get_descendant_species(self):
+		""" Return the species list of the descendants under this particular node
+		"""
+		c_species= set([])
+		for node in self.get_descendants():
+			c_species.add(node.species)
+		return c_species
+
+	def get_leaf_species(self):
+		""" Return the species list of the leave under this node
+		"""
+		c_species= set([])
+		for leaf in self:
+			c_species.add(leaf.species)
+		return c_species
+
+	def get_descendant_name(self):
+		""" Return the names of the descendants under this particular node
+		"""
+		c_names= set([])
+		for node in self.get_descendants():
+			c_names.add(node.name)
+		return c_names
+
 	#"""Should I implement this???"""
 	def delete_single_child_descendant(self,*args, **kargs): pass
 
+	def iter_polytomies(self, is_polytomy_fn=None, strategy="postorder"):
+		""" 
+		Returns an iterator over the polytomies starting from the curent node
+		:argument None is_polytomy_fn: See :func:`TreeNode.traverse` for
+		documentation.
+		"""
+		for n in self.traverse(strategy=strategy):
+			if not is_polytomy_fn:
+				if n.is_polytomy():
+					yield n
+			else:
+				if is_polytomy_fn(n):
+					yield n
 
-	#"""Too Lazy to do that, let just ignore it for the moment"""
-	def insertNodeBetween(): pass
+	def get_polytomies(self, is_polytomy_fn=None):
+		"""
+		Return a list of polytomies under this node
+		"""
+		polytomies= [pol for pol in self.iter_polytomies(is_polytomy_fn=is_polytomy_fn)]
+		return polytomies
 
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):
@@ -285,6 +367,14 @@ class TreeClass(TreeNode):
 
 		return TreeClass(phyloxml.write(features=[],format_root_node=True))
 	
+	def replace_node(self, child_to_replace, new_child):
+		if (self is None) or (child_to_replace not in self.get_children()):
+			raise ValueError("Node is None or child_to_replace not valid")
+		else :
+			child_to_replace.detach()
+			self.add_child(new_child)
+			return self
+
 
 	def writeSeqToFasta(self, out='seq.fasta', comment=1):
 		if("sequence" in self.get_all_features()):

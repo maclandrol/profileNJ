@@ -174,3 +174,48 @@ def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
 	if len(treeList)==1:
 		return treeList[0]
 	return treeList
+
+
+def reset_node_name(tree,sep):
+	for x in tree.traverse():
+		x.name=x.name.split(sep)[0]
+	return tree
+
+def label_internal_node(tree):
+	"""Label the internal node of a specietree for the polysolver algorithm"""
+	i=1
+	for x in tree.traverse(strategy='levelorder'):
+		if not x.is_leaf():
+			x.name="%i"%(i)
+			i+=1
+	return tree
+
+def newick_preprocessing(newick):
+	"""Newick format pre-processing in order to assure its correctness"""
+	DEF_SEP_LIST= ['-', '|', '%', '+','/' ]
+
+	isFile=False
+	if isinstance(newick, basestring):
+		if os.path.exists(newick):
+			nw = open(newick, 'rU').read()
+			isFile=True
+		else:
+			nw = newick
+		nw = nw.strip()
+		if nw.endswith(';'):
+			nw = nw[:-1]
+		i=0
+		while DEF_SEP_LIST[i] in nw:
+			i+=1
+		if i<len(DEF_SEP_LIST):
+			nw=nw.replace(';;', DEF_SEP_LIST[i])
+			nw=nw.replace(';', '_')
+
+		else:
+			raise NewickError, \
+			'Unable to reformat your uncorrect nexus file, Bad separator or too much special chars'
+		nw+=';'
+		return nw, DEF_SEP_LIST[i]
+	else:
+		raise NewickError, \
+		"'newick' argument must be either a filename or a newick string."
