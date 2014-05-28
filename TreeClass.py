@@ -149,20 +149,20 @@ class TreeClass(TreeNode):
 
 
 	def get_species(self, sep=","):
-		"""Return the a list of species for the current node"""
+		"""Return the list of species for the current node"""
 		return self.species.split(sep)
 
 	def get_genes(self, sep=","):
-		"""Return the a list of genes for the current node"""
+		"""Return the list of genes for the current node"""
 		return self.genes.split(sep)
 
 	def _extractFeatureName(self, separator=None, order=None, cap=False):
 		"""Private function, extract feature name (e.g. genes, species) based on the node name"""
 		l=self.name.split(separator)
 		if len(l)>1 and order=="postfix":
-			feature=l[0]
-		elif len(l)>1 and order=="prefix":
 			feature=l[-1]
+		elif len(l)>1 and order=="prefix":
+			feature=l[0]
 		else:
 			feature=self.name
 		if cap:
