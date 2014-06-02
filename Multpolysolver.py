@@ -26,7 +26,6 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 	the specie tree root is the latest common ancestor of all the specie in genetree"""
 	count=getSpecieCount(genetree) # number of specie in the genetree
 	max_y=max(count.values())+1
-
 	# assigning a correspondance between each row and a node
 	# the assignment is done in level order
 
@@ -60,25 +59,16 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 			# We should take into account the special case here
 		# Here we have an internal node (not a leaf in the genetree)
 		else:
+			l_child_id=[key for key, value in row_node_corr.iteritems()  if(value==node.get_child_at(0))][0]
+			r_child_id=[key for key, value in row_node_corr.iteritems()  if(value==node.get_child_at(1))][0]
 			# Fill the table using only the speciation cost(sum of the children's cost of this node)
 			for k in range(0, max_y):
-				l_child_id=[key for key, value in row_node_corr.iteritems()  if(value==node.get_child_at(0))][0]
-				r_child_id=[key for key, value in row_node_corr.iteritems()  if(value==node.get_child_at(1))][0]
-				cost_table[n,k]= cost_table[l_child_id,k]+cost_table[r_child_id, k]
-				path_table[n,k]=SPEC
+				if(k>zeropos):
+					cost_table[n,k]= cost_table[l_child_id,k-zeropos-1]+cost_table[r_child_id, k-zeropos-1]
+					path_table[n,k]=SPEC
+				else:
+					cost_table[n,k]=numpy.inf
 
-			#Use the zeros pos to rewrite the score node in polytomy that are not leaf
-			if(zeropos>=0):
-				i=max_y-1
-				while i>zeropos:
-					cost_table[n,i]=cost_table[n,i-1]
-					path_table[n,i]=path_table[n,i-1]
-					i-=1
-				while(i>=0):
-					cost_table[n,i]=numpy.inf
-					i-=1
-
-			
 			# Find all the min score position and try to minimize the score of its
 			# neighborhood by lost/dup cost
 			minpos= numpy.where(cost_table[n,:]== cost_table[n,:].min())
@@ -143,8 +133,10 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 		#pprint(path)
 		#print "**Tree ", i
 		solution.append(constructFromPath(path, genetree, specietree, mapGene, numpy.copy(gene_matrix), node_order[:], 1e305))
-		#print 
 		i+=1
+
+	for t in solution:
+		t.add_features(cost=cost_table[xsize-1,0])
 	return solution
 
 def findPathFromTable(path_table, row_node_corr, count, xpos, ypos):
@@ -534,19 +526,11 @@ def findMaxX(polytomy, specietree):
 	return polytomy_name_set, row_node_corr
 
 
-def detachAndReplace(trees, polytomy, replacement):
-
-	for tree in trees:	
-		for pol in replacement:
-			pass
-
-
 def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, poly_limit=-1):
 
 	maxVal=1e305
-	"""
-	specietree=TreeClass("(((a,b)e,g)h,(c,d)f)i;", format=1)
-	genetree= TreeClass("((a_1, b_1, a_2)a_b_1, c_2, b_2, c_1, (d_1,d_2)d_1, (c_3, d_3)f_1);", format=1)
+	"""specietree=TreeClass("(((a,b)e,g)h,(c,d)f)i;", format=1)
+	genetree= TreeClass("((a_1, b_1, a_2)a_b_1, c_2, b_2, c_1, (d_1,d_2)d_1-d_2, (c_3, d_3)f_1);", format=1)
 	s_map={'c_1':'c','c_2':'c', 'd_1':'d', 'a_1':'a', 'b_1':'b', 'a_2':'a', 'b_2':'b','d_2':'d', 'd_3':'d', 'c_3':'c'}
 	genetree.set_species(speciesMap=s_map)
 	gene_matrix = Utils.makeFakeDstMatrice(10,1,4,1e305)
@@ -559,7 +543,7 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 	#genetree input
 	genename, gene_sep=TreeUtils.newick_preprocessing(genetree_nw)
 	genetree =TreeClass(genename)
-	genetree.set_species(sep=gene_sep, capitalize=True, pos="prefix")
+	genetree.set_species(sep=gene_sep, capitalize=True, pos="postfix")
 
 	TreeUtils.reset_node_name(genetree, gene_sep)
 
@@ -581,7 +565,7 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 	while True:
 		next_tree_solution=[] #next list of partially resolved polytomies
 		for tree in polysolution:
-			for polytomy in tree.iter_polytomies():
+			for polytomy in tree.iter_polytomies(strategy="postorder"):
 				nb_polytomy+=1
 				#copying the input for each step, necessary in order to not modify by reference
 				matrice = numpy.copy(gene_matrix)
@@ -598,13 +582,12 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 					#print "root"
 					next_tree_solution.extend(solution)
 
-
 				else:
 					#print "internal polytomy"
 					for sol in solution:
 						poly_parent.replace_node(node_to_replace, sol)
 						node_to_replace=sol
-						next_tree_solution.append(poly_parent.get_tree_root().copy())
+						next_tree_solution.append(tree.copy())
 				# only solve one polytomy per iteration		
 				break
 		if not next_tree_solution:
@@ -614,9 +597,54 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 	if(nb_polytomy<1):
 		raise ValueError("Polytomy not found in your gene tree")
 
-	return polysolution
+	return [t.copy("newick-extended") for t in polysolution]
+
 if __name__ == '__main__':
-	polysolution = solvePolytomy('nostar_genetree.tree', 'speciestree.newick', 'nostar_famille_1.dist', poly_limit=1)
+	
+	
+	corrected_tree= TreeClass("famille_1.corrected")
+	c_tree= TreeClass("famille_1.corrected")
+	corrected_tree.set_species(sep='__', capitalize=True, pos="postfix")
+	TreeUtils.reset_node_name(corrected_tree, '__')
+	TreeUtils.reset_node_name(c_tree, '__')
+
+	taille=len(corrected_tree.get_descendants())
+	arbre_species= TreeClass('speciestree.newick')
+	mapping=TreeUtils.lcaMapping(corrected_tree, arbre_species)
+	#print corrected_tree.get_ascii(attributes=['name', 'species'], show_internal=False)
+
+	TreeUtils.reconcile(corrected_tree, mapping, "yes")
+	c_score=TreeUtils.ComputeDupLostScore(corrected_tree)
+	#"""
+	polysolution = solvePolytomy('nostar_genetree.tree', 'speciestree.newick', 'nostar_famille_1.dist', poly_limit=-1)
+	print "Nombre de solution: ", len(polysolution)
+
+	#we are doing reconcilliation here, "yes", is to infere gene lost, default="no", see method doc
+	#specietree=TreeClass("(((a,b)e,g)h,(c,d)f)i;", format=1)
+	#print specietree.get_ascii(show_internal=True)
 	for tree in polysolution:
-		print tree.get_ascii(attributes=['species', 'name'], show_internal=False)
+		#tree=a.copy("newick-extended")
+		#tree=TreeClass(a.write(features=["species","name", "cost","dist" ], format=1))
+		m_score_sum=0
+		#print tree.get_ascii(attributes=['name', 'species'], show_internal=False)
+		for node in tree.traverse():
+			if node.has_feature('type'):
+				node.del_feature('type')
+			if node.has_feature('species') and node.is_internal():
+				node.del_feature('species')
+			if node.has_feature('cost'):
+				m_score_sum+=float(node.cost)
+		print "***************************************************"
+		rf, max_rf,common_leaves, parts_t1, parts_t2= tree.robinson_foulds(c_tree)
+		Utils.customTreeCompare(TreeClass('nostar_genetree.tree'), c_tree, tree)
+		print '**tree has', len(tree.get_descendants())+1, "nodes and corrected tree has", taille+1 , 'nodes'
+		#tree.set_species(sep='_', capitalize=False, pos="prefix")
+		mapping=TreeUtils.lcaMapping(tree, arbre_species)
+		TreeUtils.reconcile(tree, mapping, "yes")
+		score=TreeUtils.ComputeDupLostScore(tree)
+		#TreeUtils.CleanFeatures(tree, ['type'])
+		print "**m_score= ", m_score_sum, 'r_score= ', score, "c_score= ",c_score, 'reconcile tree node= ', len(tree.get_descendants())+1, " leaves: ", len(tree), " reconcile corrected tree node= ", len(corrected_tree.get_descendants())+1, " ", len(corrected_tree)
+		print "**rf=", rf, "max_rf=", max_rf
+		print "**tree still has polytomies= ", tree.has_polytomies()
+
 

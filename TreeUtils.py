@@ -107,8 +107,10 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 	else :
 		for node in geneTree.traverse("levelorder"):
 			node.add_features(type=TreeClass.SPEC)
+			#print node.name , node.species, " and children name ", node.get_children_name()," and children species ", node.get_children_species()
 			if(not node.is_leaf() and (lcaMap[node]==lcaMap[node.get_child_at(0)] or lcaMap[node]==lcaMap[node.get_child_at(1)])):
 				node.type=TreeClass.AD
+				#print "\n\nnode = ", node, "\n\nand children : ", node.children
 				if not (set(node.get_child_at(0).get_species()).intersection(set(node.get_child_at(1).get_species()))):
 					node.type=TreeClass.NAD
 
@@ -117,9 +119,9 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 				children_list=node.get_children()
 				for child_c in children_list:
 					if((lcaMap[child_c].up != lcaMap[node] and lcaMap[child_c] != lcaMap[node]) or (node.type==TreeClass.AD and lcaMap[node]!=lcaMap[child_c])):
-
+	
 						while((lcaMap[child_c].up!=lcaMap[node] and node.type==TreeClass.SPEC) or (lcaMap[child_c]!=lcaMap[node] and node.type!=TreeClass.SPEC)):
-							lost=TreeClass()
+							lostnode=TreeClass()
 							intern_lost=TreeClass()
 							intern_lost.type=TreeClass.SPEC
 							if lcaMap[child_c].is_root():
@@ -132,11 +134,13 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 
 
 							#change here to display a subtree and not a leaf with a lot of specie
-							lost.species=",".join(set(lcaMap[intern_lost].get_leaf_names())-set(child_c.species.split(",")))
-							lost.type=TreeClass.LOST
-							temp_node=child_c.detach()
-							intern_lost.add_child(child=lost)
-							intern_lost.add_child(child=temp_node)
+							lostnode.species=",".join(set(lcaMap[intern_lost].get_leaf_names())-set(child_c.species.split(",")))
+							lostnode.type=TreeClass.LOST
+							child_c.detach()
+							#print "***********************\n\n** node : ", node, "\n\n** child_c: ", child_c, "\n\n** child parent", child_c.up
+							#node.remove_child(child_c)
+							intern_lost.add_child(child=lostnode)
+							intern_lost.add_child(child=child_c)
 							child_c=intern_lost
 						node.add_child(child_c)
 						children_list.append(child_c)
@@ -150,10 +154,34 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 					#print unadded_specie, child_specie_set, real_specie_list
 					#print node.species
 					if(unadded_specie):
-						lost=TreeClass()
-						lost.type=TreeClass.LOST
-						lost.species=",".join(unadded_specie)
-						node.add_child(lost)
+						lostnode=TreeClass()
+						lostnode.type=TreeClass.LOST
+						lostnode.species=",".join(unadded_specie)
+						node.add_child(lostnode)
+
+
+def ComputeDupLostScore(genetree=None):
+	"""
+	Compute the duplication and lost cost
+	"""
+	if(genetree is None or 'type' not in genetree.get_all_features()):
+		raise Exception("Your Genetree didn't undergoes reconciliation yet")
+	count=0
+	for node in genetree.traverse("levelorder"):
+		if(node.has_feature('type') and node.type==TreeClass.NAD or node.type==TreeClass.LOST or node.type==TreeClass.AD):
+			count+=1
+	return count
+
+def CleanFeatures(tree=None, features=[]):
+	cleaned=False
+	if(tree):
+		for node in tree.traverse():
+			for f in features:
+				if(node.has_feature(f)):
+					node.del_feature(f)
+					cleaned=True
+	return cleaned
+
 
 def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
 	"""

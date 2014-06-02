@@ -8,7 +8,10 @@ from ete2 import TreeNode
 from ete2.phylo import spoverlap
 import types
 import collections
-
+try:
+	import cPickle as pickle
+except:
+	import pickle
 class TreeClass(TreeNode):
 
 	DEFAULT_SPECIE="Unknown"
@@ -30,6 +33,55 @@ class TreeClass(TreeNode):
 		if(i<len(children_list)):
 			return children_list[i]
 		return None
+
+	def copy(self, method="cpickle", nw_features=[], nw_format_root_node=True):
+		""" .. override of ete TreeNode original copy
+
+		Returns a copy of the current node.
+
+		:var cpickle method: Protocol used to copy the node
+		structure. The following values are accepted:
+
+			- "newick": Tree topology, node names, branch lengths and
+			branch support values will be copied by as represented in
+			the newick string (copy by newick string serialisation).
+		
+			- "newick-extended": Tree topology and all node features
+			will be copied based on the extended newick format
+			representation. Only node features will be copied, thus
+			excluding other node attributes. As this method is also
+			based on newick serialisation, features will be converted
+			into text strings when making the copy. 
+
+			- "cpickle": The whole node structure and its content is
+			cloned based on cPickle object serialisation (slower, but
+			recommended for full tree copying)
+			
+			- "deepcopy": The whole node structure and its content is
+			copied based on the standard "copy" Python functionality
+			(this is the slowest method but it allows to copy complex
+			objects even if attributes point to lambda functions,
+			etc.)
+		
+		"""
+		if method=="newick":
+			new_node = self.__class__(self.write(features=["name"], format_root_node=True))
+		elif method=="newick-extended":
+			new_node = self.__class__(self.write(features=nw_features, format_root_node=nw_format_root_node))
+		elif method == "deepcopy":
+			parent = self.up
+			self.up = None
+			new_node = copy.deepcopy(self)
+			self.up = parent
+		elif method == "cpickle":
+			parent = self.up
+			self.up = None
+			new_node = pickle.loads(pickle.dumps(self, 2))
+			self.up = parent
+		else:
+			raise ValuerError("Invalid copy method")
+		
+		return new_node
 
 
 	def has_ancestor(self, ancestor):
@@ -269,6 +321,10 @@ class TreeClass(TreeNode):
 			specieSet = set(specieSet)
 		return set(self.get_species()).issubset(species)
 
+	def has_polytomies(self):
+		"""Return whether or not this tree has polytomies
+		"""
+		return len(self.get_polytomies())>0
 
 	def get_children_species(self):
 		""" Return the species list of the children under this particular node
@@ -310,8 +366,11 @@ class TreeClass(TreeNode):
 			c_names.add(node.name)
 		return c_names
 
-	#"""Should I implement this???"""
-	def delete_single_child_descendant(self,*args, **kargs): pass
+	def delete_single_child_internal(self):
+		for node in self.traverse("postorder"):
+			if(node.is_internal() and len(node.children)<2):
+				node.delete()
+
 
 	def iter_polytomies(self, is_polytomy_fn=None, strategy="postorder"):
 		""" 
@@ -327,12 +386,15 @@ class TreeClass(TreeNode):
 				if is_polytomy_fn(n):
 					yield n
 
-	def get_polytomies(self, is_polytomy_fn=None):
+	def get_polytomies(self, ind=-1 ,is_polytomy_fn=None):
 		"""
 		Return a list of polytomies under this node
 		"""
 		polytomies= [pol for pol in self.iter_polytomies(is_polytomy_fn=is_polytomy_fn)]
-		return polytomies
+		if(ind>-1 and ind<len(polytomies)):
+			return polytomies[ind]
+		else:
+			return polytomies
 
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):
@@ -399,8 +461,12 @@ class TreeClass(TreeNode):
 		if (self is None) or (child_to_replace not in self.get_children()):
 			raise ValueError("Node is None or child_to_replace not valid")
 		else :
-			child_to_replace.detach()
+			self.remove_child(child_to_replace)
 			self.add_child(new_child)
+			#print "***node swap"
+			#print "to replace parent ", child_to_replace.up
+			#print "new child parent ", new_child.up
+			#print "real parent ", self
 			return self
 
 
