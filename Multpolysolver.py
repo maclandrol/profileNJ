@@ -7,8 +7,7 @@ import collections
 import random
 from pprint import pprint
 import copy
-import Upgma
-import Utils
+import Upgma, Utils, nj, ClusteringUtils
 
 """
 Gene matrix are represented by a numpy array
@@ -533,7 +532,7 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 	genetree= TreeClass("((a_1, b_1, a_2)a_b_1, c_2, b_2, c_1, (d_1,d_2)d_1-d_2, (c_3, d_3)f_1);", format=1)
 	s_map={'c_1':'c','c_2':'c', 'd_1':'d', 'a_1':'a', 'b_1':'b', 'a_2':'a', 'b_2':'b','d_2':'d', 'd_3':'d', 'c_3':'c'}
 	genetree.set_species(speciesMap=s_map)
-	gene_matrix = Utils.makeFakeDstMatrice(10,1,4,1e305)
+	gene_matrix = ClusteringUtils.makeFakeDstMatrice(10,1,4,1e305)
 	node_order =[ 'c_1', 'd_1', 'd_2','c_2', 'c_3', 'd_3' ,'a_1', 'b_1','a_2', 'b_2']
 	"""
 	#specietree input
@@ -549,10 +548,10 @@ def solvePolytomy(genetree_nw, specietree_nw, distance_file=None, verbose=0, pol
 
 	#distance matrice input
 	if(distance_file):
-		gene_matrix, node_order= Utils.distMatProcessor(distance_file, maxVal)
+		gene_matrix, node_order= ClusteringUtils.distMatProcessor(distance_file, maxVal)
 	else:
 		node_order= genetree.get_leaf_names()
-		gene_matrix= Utils.makeFakeDstMatrice(len(node_order), 0, 1, maxVal)
+		gene_matrix= ClusteringUtils.makeFakeDstMatrice(len(node_order), 0, 1, maxVal)
 
 	#Find list of species not in genetree
 	specieGeneList= set(genetree.get_leaf_species())
@@ -643,7 +642,7 @@ if __name__ == '__main__':
 		TreeUtils.reconcile(tree, mapping, "yes")
 		score=TreeUtils.ComputeDupLostScore(tree)
 		#TreeUtils.CleanFeatures(tree, ['type'])
-		print "**m_score= ", m_score_sum, 'r_score= ', score, "c_score= ",c_score, 'reconcile tree node= ', len(tree.get_descendants())+1, " leaves: ", len(tree), " reconcile corrected tree node= ", len(corrected_tree.get_descendants())+1, " ", len(corrected_tree)
+		print "**m_score= ", m_score_sum, 'r_score= ', score, "c_score= ",c_score, 'reconcile tree node= ', len(tree.get_descendants())+1, " leaves: ", len(tree), " reconcile corrected tree node= ", len(corrected_tree.get_descendants())+1, "leaves: ", len(corrected_tree)
 		print "**rf=", rf, "max_rf=", max_rf
 		print "**tree still has polytomies= ", tree.has_polytomies()
 

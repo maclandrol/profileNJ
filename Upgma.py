@@ -3,55 +3,11 @@
 from numpy import *
 from TreeClass import TreeClass
 import numpy
+from ClusteringUtils import *
 
 numerictypes = numpy.core.numerictypes.sctype2char
 Float = numerictypes(float)
-Discard = 1e305
-
-
-def find_smallest_index(matrice):
    
-    """Return smallest number i,j index in a matrice
-    A Tuple (i,j) is returned. 
-    Warning, the diagonal should have the largest number so it will never be choose
-    """
-    return numpy.unravel_index(matrice.argmin(), matrice.shape)
-   
-def condense_matrix(matrice, smallest_index, large_value):
-    """Matrice condensation in the next iteration
-    
-    Smallest index is returned from find_smallest_index.
-    For both leaf at i and j a new distance is calculated from the average of the corresponding
-    row or the corresponding columns
-    We then replace the first index (row and column) by the average vector obtained
-    and the second index by an array with large numbers so that
-    it is never chosen again with find_smallest_index.
-    Now the new regroupement distance value is at the first position! (on row and column)
-    """
-    first_index, second_index = smallest_index
-    #get the rows and make a new vector that has their average
-    rows = take(matrice, smallest_index, 0)
-    new_vector = average(rows, 0)
-    #replace info in the row and column for first index with new_vector
-    matrice[first_index] = new_vector
-    matrice[:, first_index] = new_vector
-    #replace the info in the row and column for the second index with 
-    #high numbers so that it is ignored
-    matrice[second_index] = large_value
-    matrice[:, second_index] = large_value
-    return matrice
-
-
-def del_row_column(matrice, last_fus_index, large_value):
-    """This function condense a matrix, actualise the distance between node and remove
-    node already merged row/column from the matrix"""
-    first_index, second_index = last_fus_index
-    matrice = condense_matrix(matrice, last_fus_index, large_value)
-    matrice= numpy.delete(matrice, second_index, 0)
-    matrice=numpy.delete(matrice,second_index , 1)
-    return matrice
-
-
 
 def condense_node_order(matrice, smallest_index, node_order):
     """condenses two nodes in node_order based on smallest_index info
@@ -112,7 +68,7 @@ def UPGMA_cluster(matrice, node_order, large_number, upgma_depth=None):
             matrice[diag([True]*len(matrice))] = large_number
             smallest_index = find_smallest_index(matrice)
         row_order = condense_node_order(matrice, smallest_index, node_order)
-        matrice = condense_matrix(matrice, smallest_index, large_number)
+        matrice = condense_matrix(matrice, smallest_index, large_number, method='upgma')
         tree = node_order[smallest_index[0]]
 
     return tree, matrice, smallest_index
@@ -122,6 +78,8 @@ def test():
 	node_order=[TreeClass("1:1;"),TreeClass("2:1;"),TreeClass("3:1;"),TreeClass("4:1;"),TreeClass("5:1;") ]
 	t= UPGMA_cluster(matrice, node_order,1e305)
 	print t
-	#print t.get_ascii(show_internal=True, compact=False, attributes=['Length', 'TipLength', 'name'])
+    #print t.get_ascii(show_internal=True, compact=False, attributes=['Length', 'TipLength', 'name'])
+
+
 if __name__ == '__main__':
 	test()

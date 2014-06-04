@@ -149,48 +149,10 @@ def nexrepair(nxsfile):
 	subprocess.call(['mv', "tmp", nxsfile])
 	return nxsfile
 
-def distMatProcessor(dist_file, maxValue):
-	"""Formating distance matrix from a file input and node order for 
-		UPGMA join
-	"""
-
-	read_fl=False
-	dist_matrix= []
-	node_order=[]
-	with open(dist_file, 'r') as infile:
-		x_ind=0
-		for line in infile:
-			line= line.strip()
-			if(line):
-				if not read_fl:
-					read_fl=True
-				else:
-					x_ind+=1
-					line_list= [getIntValue(x.strip(), x_ind, y_ind, maxValue) for y_ind, x in enumerate(line.split())]
-					dist_matrix.append(line_list[1:])
-					node_order.append(line_list[0])
-	
-	return np.array(dist_matrix), node_order
-
-def getIntValue(number, x_ind, y_ind, maxValue):
-	"""Get a distance matrice validate input from a string"""
-	try:
-		n=float(number)
-		return n if (n!=0 or x_ind!=y_ind) else maxValue
-	except ValueError:
-		return number
 
 def capitalize(line):
 	return "".join([line[0].upper(), line[1:]])
 	
-def makeFakeDstMatrice(n, dmin, dmax, maxVal):
-	"""Create a fake distance matrice"""
-	import numpy as np
-	b = (dmax-dmin)*np.random.random_sample(size=(n,n))+dmin
-	b_sym=(b + b.T)/2
-	np.fill_diagonal(b_sym, maxVal)
-	return b_sym
-
 
 def customTreeCompare(original_t, corrected_t, t):
 
