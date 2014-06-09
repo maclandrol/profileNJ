@@ -65,9 +65,9 @@ class TreeClass(TreeNode):
 		
 		"""
 		if method=="newick":
-			new_node = self.__class__(self.write(features=["name"], format_root_node=True))
+			new_node = self._correct_copy(self.__class__(self.write(features=["name"], format_root_node=True)))
 		elif method=="newick-extended":
-			new_node = self.__class__(self.write(features=nw_features, format_root_node=nw_format_root_node))
+			new_node = self._correct_copy(self.__class__(self.write(features=nw_features, format_root_node=nw_format_root_node)))
 		elif method == "deepcopy":
 			parent = self.up
 			self.up = None
@@ -83,6 +83,12 @@ class TreeClass(TreeNode):
 		
 		return new_node
 
+
+	def _correct_copy(self, copy):
+		for node in copy.traverse("postorder"):
+			if not node.is_root() and (node.name not in list(self.get_descendant_name())):
+				node.detach()
+		return copy
 
 	def has_ancestor(self, ancestor):
 		"""Check if "ancestor" is an ancestor of the current TreeNode"""
