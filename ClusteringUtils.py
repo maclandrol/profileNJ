@@ -4,6 +4,7 @@ from numpy import *
 from TreeClass import TreeClass
 import numpy
 
+numpy.set_printoptions(precision=3)
 numerictypes = numpy.core.numerictypes.sctype2char
 Float = numerictypes(float)
 
@@ -13,14 +14,14 @@ def find_smallest_index(matrice):
 	A Tuple (i,j) is returned. 
 	Warning, the diagonal should have the largest number so it will never be choose
 	"""
-	#winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
-	#for m in winner:
-	#	m_reverse=m[:]
-	#	m_reverse.reverse()
-	#	if(m_reverse in winner):
-	#		winner.remove(m)
-	#
-	#return winner[0]
+	winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
+	for m in winner:
+		m_reverse=m[:]
+		m_reverse.reverse()
+		if(m_reverse in winner):
+			winner.remove(m)
+	
+	print "number of possible solution here :" , len(winner) , "solution :", winner
 	return numpy.unravel_index(matrice.argmin(), matrice.shape)
 
 
@@ -128,7 +129,7 @@ def condense_node_order(matrice, smallest_index, node_order, method='upgma'):
 	#get the distance between the nodes and assign 1/2 the distance to the
 	#Length property of each node
 	
-	if(method=='upgma'):
+	if(method.lower()=='nj'):
 		dist = paired_node_distance(matrice,smallest_index,1e305)
 	
 	else:
@@ -184,7 +185,7 @@ def NJ_cluster(matrice, node_order, large_number, nj_depth=None):
 		if index1 == index2:
 			matrice[diag([True]*len(matrice))] = large_number
 			smallest_index = find_smallest_index(matrice)
-		row_order = condense_node_order(matrice, smallest_index, node_order)
+		row_order = condense_node_order(matrice, smallest_index, node_order, method='nj')
 		matrice= condense_matrix(matrice, smallest_index, large_number, method='nj')
 		tree = node_order[smallest_index[0]]
 	return tree, matrice, smallest_index
@@ -214,7 +215,7 @@ def UPGMA_cluster(matrice, node_order, large_number, upgma_depth=None):
 		if index1 == index2:
 			matrice[diag([True]*len(matrice))] = large_number
 			smallest_index = find_smallest_index(matrice)
-		row_order = condense_node_order(matrice, smallest_index, node_order)
+		row_order = condense_node_order(matrice, smallest_index, node_order, method='upgma')
 		matrice = condense_matrix(matrice, smallest_index, large_number, method='upgma')
 		tree = node_order[smallest_index[0]]
 
@@ -222,19 +223,10 @@ def UPGMA_cluster(matrice, node_order, large_number, upgma_depth=None):
 
 
 def TreeCluster(matrice, node_order, large_number, depth=None, method='upgma'):
-	if(method=='nj'):
+	if(method.lower()=='nj'):
 		return NJ_cluster(matrice, node_order, large_number, nj_depth=depth)
 	else :
 		return UPGMA_cluster(matrice, node_order, large_number, upgma_depth=depth)
-
-
-def makeFakeDstMatrice(n, dmin, dmax, maxVal):
-	"""Create a fake distance matrice"""
-	import numpy as np
-	b = (dmax-dmin)*np.random.random_sample(size=(n,n))+dmin
-	b_sym=(b + b.T)/2
-	np.fill_diagonal(b_sym, maxVal)
-	return b_sym
 
 
 def distMatProcessor(dist_file, maxValue):
@@ -260,6 +252,26 @@ def distMatProcessor(dist_file, maxValue):
 	
 	return numpy.array(dist_matrix), node_order
 
+
+def makeFakeDstMatrice(n, dmin, dmax, maxVal):
+	"""Create a fake distance matrice"""
+	import numpy as np
+	b = (dmax-dmin)*np.random.random_sample(size=(n,n))+dmin
+	b_sym=(b + b.T)/2
+	np.fill_diagonal(b_sym, maxVal)
+	return b_sym
+
+
+def saveMatrix(filename, matrix, node_order):
+	#matrix[numpy.where(matrix==1e305)]=0
+	with open(filename, 'w+') as out:
+		out.write("\t%i\n"%len(node_order))
+		lines=[]
+		for entry in matrix.tolist():
+			line=node_order.pop(0)+"\t"+ " ".join(map(str,entry))+"\n"
+			lines.append(line)
+		out.writelines(lines)
+	return True
 
 
 def getIntValue(number, x_ind, y_ind, maxValue):

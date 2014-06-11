@@ -218,15 +218,22 @@ def label_internal_node(tree):
 			i+=1
 	return tree
 
+
+def make_random_tree(names, contract_seuil=0, feature_to_contract='support'):
+	"""Make a random Gene Tree"""
+	tree= TreeClass()
+	tree.populate(len(names), names_library=names, random_branches=True)
+	tree.contract_tree(seuil=contract_seuil, feature=feature_to_contract)
+	return tree
+
+
 def newick_preprocessing(newick):
 	"""Newick format pre-processing in order to assure its correctness"""
 	DEF_SEP_LIST= ['-', '|', '%', '+','/' ]
 
-	isFile=False
 	if isinstance(newick, basestring):
 		if os.path.exists(newick):
 			nw = open(newick, 'rU').read()
-			isFile=True
 		else:
 			nw = newick
 		nw = nw.strip()
@@ -238,6 +245,7 @@ def newick_preprocessing(newick):
 		if i<len(DEF_SEP_LIST):
 			nw=nw.replace(';;', DEF_SEP_LIST[i])
 			nw=nw.replace(';', '_')
+
 
 		else:
 			raise NewickError, \
