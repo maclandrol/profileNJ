@@ -1,0 +1,17 @@
+status: 200
+content-length: 1238
+content-location: http://beta.rest.ensembl.org/genetree/id/ENSGT00390000003602?sequence=none;
+ aligned=0; nh_format=species
+content-disposition: attachment; filename=ENSGT00390000003602.nh
+vary: Content-Type
+x-ratelimit-remaining: 11099
+connection: keep-alive
+x-ratelimit-limit: 11100
+x-ratelimit-period: 3600
+date: Wed, 05 Mar 2014 05:45:55 GMT
+x-ratelimit-reset: 845
+content-type: text/x-nh
+x-runtime: 0.201165
+-varied-content-type: text/x-nh
+
+(((((((xiphophorus_maculatus,oryzias_latipes),gasterosteus_aculeatus),((takifugu_rubripes,tetraodon_nigroviridis),oreochromis_niloticus)),gadus_morhua),(astyanax_mexicanus,danio_rerio)),lepisosteus_oculatus),(((((((((((((((tursiops_truncatus,sus_scrofa),((bos_taurus,ovis_aries),sus_scrofa)),vicugna_pacos),equus_caballus),(((ailuropoda_melanoleuca,mustela_putorius_furo),canis_familiaris),felis_catus)),(myotis_lucifugus,pteropus_vampyrus)),(erinaceus_europaeus,sorex_araneus)),((((((((((homo_sapiens,pan_troglodytes),gorilla_gorilla),pongo_abelii),nomascus_leucogenys),macaca_mulatta),callithrix_jacchus),tarsius_syrichta),(microcebus_murinus,otolemur_garnettii)),tupaia_belangeri),(((((mus_musculus,rattus_norvegicus),dipodomys_ordii),ictidomys_tridecemlineatus),cavia_porcellus),(oryctolagus_cuniculus,ochotona_princeps)))),(choloepus_hoffmanni,dasypus_novemcinctus)),((loxodonta_africana,procavia_capensis),echinops_telfairi)),((sarcophilus_harrisii,monodelphis_domestica),macropus_eugenii)),(ornithorhynchus_anatinus,ornithorhynchus_anatinus)),(((((gallus_gallus,meleagris_gallopavo),anas_platyrhynchos),(ficedula_albicollis,taeniopygia_guttata)),pelodiscus_sinensis),anolis_carolinensis)),xenopus_tropicalis),latimeria_chalumnae));

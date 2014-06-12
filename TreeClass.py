@@ -266,8 +266,7 @@ class TreeClass(TreeNode):
 		else:
 			feature=self.name
 		if cap:
-			from Utils import capitalize
-			feature=capitalize(feature)
+			feature=self.__class__._capitalize(feature)
 		return feature
 
 
@@ -475,7 +474,7 @@ class TreeClass(TreeNode):
 		else:
 			return polytomies
 
-
+	
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):
 		"""import Tree structure and useful Tree features from a _Phyloxml.PhyloxmlTree to a TreeClass
@@ -564,3 +563,8 @@ class TreeClass(TreeNode):
 						id=id+"\n"
 						outfile.write(id)
 						outfile.write(seq)
+
+
+	@staticmethod
+	def _capitalize(line):
+		return "".join([line[0].upper(), line[1:]])

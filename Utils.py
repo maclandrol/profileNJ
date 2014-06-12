@@ -149,59 +149,6 @@ def nexrepair(nxsfile):
 	subprocess.call(['mv', "tmp", nxsfile])
 	return nxsfile
 
-
-def capitalize(line):
-	return "".join([line[0].upper(), line[1:]])
-	
-
-def customTreeCompare(original_t, corrected_t, t):
-
-	#Leaves remaining test and original binary node test
-	ct_leaves=[]
-	t_leaves=[]
-	t_binary=[]
-	success=[]
-	ct_binary=[]
-	for node in original_t.traverse("levelorder"):
-		desc_name=set(node.get_leaf_names())
-		ct_parent= corrected_t.get_common_ancestor(desc_name)
-		t_parent= t.get_common_ancestor(desc_name)
-		ctl=set(ct_parent.get_leaf_names())
-		tl=set(t_parent.get_leaf_names())
-		ct_leaves.append(ctl.difference(desc_name))
-		t_leaves.append(tl.difference(desc_name))
-		if(node.is_binary() and not node.has_polytomies()):
-			ct_binary.append(ct_parent.robinson_foulds(node)[0:3])
-			t_binary.append(t_parent.robinson_foulds(node)[0:3])
-		success.append(len(tl.difference(ctl))<1)
-
-
-
-	ct_success=filter(None, map(lambda x:len(x)<1,ct_leaves))
-	t_success=filter(None, map(lambda x:len(x)<1,t_leaves))
-
-	print "\nCorrected Tree binary list rf_fould\n"
-	print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_binary))
-	print "\nTree binary list rf_fould\n"
-	print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), t_binary))
-
-	if(len(ct_success)==len(ct_leaves)):
-		print "**Leave remaining success for corrected tree"
-		#print "\n".join([str(h) for h in t_success])
-	else:
-		print "**Corrected tree doesn't follow patern"
-		#print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))
-
-
-	if(len(t_success)==len(t_leaves)):
-		print "**Leave remaining success for tree"
-		#print "\n".join([str(h) for h in t_success])
-	else:
-		print "**Tree doesn't follow patern"
-		#print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), t_leaves))
-
-	print "**Compatibility test between tree: ", all(success)
-	
 if __name__ == '__main__':
 	ensemblTree=TreeUtils.fetch_ensembl_genetree_by_id(treeID="ENSGT00390000003602", output="phyloxml", aligned=0, sequence="cdna")
 	executePipe(ensemblTree, al=0, type="cdna")

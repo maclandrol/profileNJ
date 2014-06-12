@@ -4,9 +4,12 @@ Date: 02/2014
 TreeUtils is a python class that offer function related to phylogeny tree, using TreeClass
 """
 from TreeClass import TreeClass
+from ClusteringUtils import makeFakeDstMatrice, distMatProcessor
 from ete2 import Phyloxml
 import httplib2
 import os
+import collections
+
 
 #TreeUtils:
 
@@ -98,6 +101,7 @@ def lcaMapping(geneTree, specieTree):
 	else :
 		return mapping
 
+
 def reconcile(geneTree=None, lcaMap=None, lost="no"):
 	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
 	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
@@ -172,6 +176,7 @@ def ComputeDupLostScore(genetree=None):
 			count+=1
 	return count
 
+
 def CleanFeatures(tree=None, features=[]):
 	cleaned=False
 	if(tree):
@@ -209,6 +214,7 @@ def reset_node_name(tree,sep):
 		x.name=x.name.split(sep)[0]
 	return tree
 
+
 def label_internal_node(tree):
 	"""Label the internal node of a specietree for the polysolver algorithm"""
 	i=1
@@ -227,9 +233,26 @@ def make_random_tree(names, contract_seuil=0, feature_to_contract='support'):
 	return tree
 
 
-def newick_preprocessing(newick):
+def getSpecieCount(tree):
+	"""Species distribution in the genetree"""
+	count= collections.defaultdict(int)
+	for node in tree.get_children():
+		count[node.species]+=1
+	return count
+
+
+def getSpecieGeneMap(genetree, specietree):
+	"""Find the reversed map (map between specietree node and genetree node)"""
+	mapGene={}
+	for node in specietree.traverse():
+		mapGene[node]=genetree.search_nodes(species=node.name)
+
+	return mapGene
+
+
+def newick_preprocessing(newick, gene_sep=None):
 	"""Newick format pre-processing in order to assure its correctness"""
-	DEF_SEP_LIST= ['-', '|', '%', '+','/' ]
+	DEF_SEP_LIST= [';;', ';', '-', '|', '%', '+','/']
 
 	if isinstance(newick, basestring):
 		if os.path.exists(newick):
@@ -239,19 +262,109 @@ def newick_preprocessing(newick):
 		nw = nw.strip()
 		if nw.endswith(';'):
 			nw = nw[:-1]
-		i=0
-		while DEF_SEP_LIST[i] in nw:
-			i+=1
-		if i<len(DEF_SEP_LIST):
-			nw=nw.replace(';;', DEF_SEP_LIST[i])
-			nw=nw.replace(';', '_')
+		
+		if gene_sep is None:
+			i=0
+			while i< len(DEF_SEP_LIST) and DEF_SEP_LIST[i] not in nw:
+				i+=1
+			if i<len(DEF_SEP_LIST):
+				gene_sep= '%%'
+				nw=nw.replace(DEF_SEP_LIST[i], gene_sep)
 
-
-		else:
-			raise NewickError, \
-			'Unable to reformat your uncorrect nexus file, Bad separator or too much special chars'
+			elif i>=len(DEF_SEP_LIST) or ';' in nw:
+				raise NewickError, \
+				'Unable to format your newick file, Bad gene-specie separator or too much special chars'
 		nw+=';'
-		return nw, DEF_SEP_LIST[i]
+		return nw, gene_sep
 	else:
 		raise NewickError, \
 		"'newick' argument must be either a filename or a newick string."
+
+
+def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305):
+	#################################################################
+	#TODO : 
+	#	1) Correct newick
+	#	2) Sequence retrieve
+	#	3) PhyML to align sequence and make a distance matrice
+	#
+	#################################################################
+	
+	#genetree input
+	if isinstance(genetree, basestring):
+		genetree, gene_sep=newick_preprocessing(genetree, gene_sep)
+		genetree= TreeClass(genetree)
+	genetree.set_species(sep=gene_sep, capitalize=capitalize, pos=specie_pos)
+
+	#specietree input
+	if isinstance(specietree, basestring):
+		specietree, sep=newick_preprocessing(specietree, '')
+		specietree= TreeClass(specietree)
+		label_internal_node(specietree)
+
+	#distance matrice input
+	if(distance_file):
+		gene_matrix, node_order= distMatProcessor(distance_file, dist_diagonal)
+		#Difference check 1
+		if set(node_order).difference(set(genetree.get_leaf_names())):
+			reset_node_name(genetree, gene_sep)
+	else:
+		node_order= genetree.get_leaf_names()
+		gene_matrix= makeFakeDstMatrice(len(node_order), 0, 1, dist_diagonal) #Alternative, retrieve aligned sequence and run phyML
+
+	#Find list of species not in genetree
+	specieGeneList= set(genetree.get_leaf_species())
+	specieList= set([x.name for x in specietree.get_leaves()])
+	if(specieGeneList-specieList):
+		raise Exception("Species in genetree but not in specietree : %s" %(", ".join(specieGeneList-specieList)))
+
+	return genetree, specietree, gene_matrix, node_order
+
+
+def customTreeCompare(original_t, corrected_t, t):
+
+	#Leaves remaining test and original binary node test
+	ct_leaves=[]
+	t_leaves=[]
+	t_binary=[]
+	success=[]
+	ct_binary=[]
+	for node in original_t.traverse("levelorder"):
+		desc_name=set(node.get_leaf_names())
+		ct_parent= corrected_t.get_common_ancestor(desc_name)
+		t_parent= t.get_common_ancestor(desc_name)
+		ctl=set(ct_parent.get_leaf_names())
+		tl=set(t_parent.get_leaf_names())
+		ct_leaves.append(ctl.difference(desc_name))
+		t_leaves.append(tl.difference(desc_name))
+		if(node.is_binary() and not node.has_polytomies()):
+			ct_binary.append(ct_parent.robinson_foulds(node)[0:3])
+			t_binary.append(t_parent.robinson_foulds(node)[0:3])
+		success.append(len(tl.difference(ctl))<1)
+
+
+
+	ct_success=filter(None, map(lambda x:len(x)<1,ct_leaves))
+	t_success=filter(None, map(lambda x:len(x)<1,t_leaves))
+
+	print "\nCorrected Tree binary list rf_fould\n"
+	print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_binary))
+	print "\nTree binary list rf_fould\n"
+	print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), t_binary))
+
+	if(len(ct_success)==len(ct_leaves)):
+		print "**Leave remaining success for corrected tree"
+		#print "\n".join([str(h) for h in t_success])
+	else:
+		print "**Corrected tree doesn't follow patern"
+		#print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))
+
+
+	if(len(t_success)==len(t_leaves)):
+		print "**Leave remaining success for tree"
+		#print "\n".join([str(h) for h in t_success])
+	else:
+		print "**Tree doesn't follow patern"
+		#print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), t_leaves))
+
+	print "**Compatibility test between tree: ", all(success)

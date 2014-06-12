@@ -14,14 +14,14 @@ def find_smallest_index(matrice):
 	A Tuple (i,j) is returned. 
 	Warning, the diagonal should have the largest number so it will never be choose
 	"""
-	winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
-	for m in winner:
-		m_reverse=m[:]
-		m_reverse.reverse()
-		if(m_reverse in winner):
-			winner.remove(m)
+	#winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
+	#for m in winner:
+	#	m_reverse=m[:]
+	#	m_reverse.reverse()
+	#	if(m_reverse in winner):
+	#		winner.remove(m)
 	
-	print "number of possible solution here :" , len(winner) , "solution :", winner
+	#print "number of possible solution here :" , len(winner) , "solution :", winner
 	return numpy.unravel_index(matrice.argmin(), matrice.shape)
 
 
