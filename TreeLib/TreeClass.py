@@ -248,8 +248,7 @@ class TreeClass(TreeNode):
 					leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=pos, cap=capitalize))
 
 	
-	def set_genes(self, genesMap=None, sep="_", pos="postfix", use_fn=None):
-
+	def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
 		"""Set gene feature for each leaf in the tree.
 
 		:argument genesMap: Default=None. genesMap is a Map of genes for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding genes name
