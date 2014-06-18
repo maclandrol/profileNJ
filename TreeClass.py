@@ -49,24 +49,24 @@ class TreeClass(TreeNode):
 			- "newick": Tree topology, node names, branch lengths and
 			branch support values will be copied by as represented in
 			the newick string (copy by newick string serialisation).
-		
+
 			- "newick-extended": Tree topology and all node features
 			will be copied based on the extended newick format
 			representation. Only node features will be copied, thus
 			excluding other node attributes. As this method is also
 			based on newick serialisation, features will be converted
-			into text strings when making the copy. 
+			into text strings when making the copy.
 
 			- "cpickle": The whole node structure and its content is
 			cloned based on cPickle object serialisation (slower, but
 			recommended for full tree copying)
-			
+	
 			- "deepcopy": The whole node structure and its content is
 			copied based on the standard "copy" Python functionality
 			(this is the slowest method but it allows to copy complex
 			objects even if attributes point to lambda functions,
 			etc.)
-		
+
 		"""
 		if method=="newick":
 			new_node = self.__class__(self.write(features=["name"], format_root_node=True))
@@ -91,7 +91,7 @@ class TreeClass(TreeNode):
 
 		else:
 			raise ValuerError("Invalid copy method")
-		
+
 		return self._correct_copy(new_node) if binary_correct else new_node
 
 
@@ -205,7 +205,7 @@ class TreeClass(TreeNode):
 
 
 	def set_species(self, speciesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
-		
+
 		"""Set species feature for each leaf in the tree.
 
 		:argument speciesMap: Default=None. speciesMap is a Map of species for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding specie name
@@ -225,8 +225,8 @@ class TreeClass(TreeNode):
 				else:
 					leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=pos, cap=capitalize))
 
-	
-	def set_genes(self, genesMap=None, sep="_", pos="postfix", use_fn=None):
+
+	def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
 
 		"""Set gene feature for each leaf in the tree.
 
@@ -305,21 +305,21 @@ class TreeClass(TreeNode):
 
 
 	def is_polytomy(self):
-		""" 
+		"""
         Return True if current node is a polytomy.
     	"""
 		return len(self.children)>2
 
 
 	def is_binary(self):
-		""" 
+		"""
         Return True if current node is a binary node.
     	"""
 		return len(self.children)==2
 
 
 	def is_internal(self):
-		""" 
+		"""
         Return True if current node is an internal node.
     	"""
 		return (not self.is_root() and not self.is_leaf())
@@ -369,7 +369,7 @@ class TreeClass(TreeNode):
 		T. Genome Biol. 2007;8(6):R109.
 		"""
 		return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
-			
+	
 
 	def is_monophyletic(self, specieSet):
 		""" Returns True id species names under this node are all
@@ -437,7 +437,7 @@ class TreeClass(TreeNode):
 			c_names.add(parent.name)
 			parent=parent.up
 		return c_names
-		
+
 
 	def get_leaf_name(self, is_leaf_fn=None):
 		return self.get_leaf_names(is_leaf_fn)
@@ -450,7 +450,7 @@ class TreeClass(TreeNode):
 
 
 	def iter_polytomies(self, is_polytomy_fn=None, strategy="postorder"):
-		""" 
+		"""
 		Returns an iterator over the polytomies starting from the curent node
 		:argument None is_polytomy_fn: See :func:`TreeNode.traverse` for
 		documentation.
@@ -474,7 +474,7 @@ class TreeClass(TreeNode):
 		else:
 			return polytomies
 
-	
+
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):
 		"""import Tree structure and useful Tree features from a _Phyloxml.PhyloxmlTree to a TreeClass
