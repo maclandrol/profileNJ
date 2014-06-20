@@ -1,9 +1,8 @@
 # Loads a gene tree and its corresponding species tree. Note that
 # species names in sptree are the 3 firs letters of leaf nodes in
 # genetree.
-from TreeClass import TreeClass
 from pprint import pprint
-from TreeUtils import *
+from TreeLib import *
 from ete2 import PhyloTree
 from time import time
 import timeit
@@ -13,10 +12,10 @@ def standard():
 	species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
 	genetree = PhyloTree(gene_tree_nw)
 	sptree = PhyloTree(species_tree_nw)
-	print genetree
+	print "\n--->Original Tree\n", genetree
 	# Let's reconcile our genetree with the species tree
 	recon_tree, events = genetree.reconcile(sptree)
-	print recon_tree.get_ascii(attributes=[], show_internal=False)
+	print "Tree after reconciliation\n", recon_tree.get_ascii(attributes=[], show_internal=False)
 	recon_tree.describe()
 
 def MyReconcile(perte="no"):
@@ -24,11 +23,11 @@ def MyReconcile(perte="no"):
 	species_tree_nw = "((((Hsa, Ptr), Mmu), (Mms, Cfa)), Dme);"
 	genetree = TreeClass(gene_tree_nw)
 	specietree = TreeClass(species_tree_nw)
-	genetree.set_species()
-	print genetree
-	mapping=lcaMapping(genetree, specietree)
-	reconcile(genetree, mapping, perte)
-	print genetree.get_ascii(attributes=["species", "type"], show_internal=False)
+	genetree.set_species(sep='_', pos="prefix")
+	print "\n--->Original Tree\n", genetree
+	mapping=TreeUtils.lcaMapping(genetree, specietree)
+	TreeUtils.reconcile(genetree, mapping, perte)
+	print "Tree after reconciliation\n", genetree.get_ascii(attributes=["species", "type"], show_internal=False)
 	n_leaf=0
 	for leaf in genetree:
 		n_leaf=n_leaf+len(set(leaf.get_species()))
@@ -38,22 +37,21 @@ def get_species_name(node_name_string):
 	return node_name_string.split('_')[-1]
 
 if __name__ == '__main__':
-    
-    #print "My method"
-    #MyReconcile()
-    #print "\n\nPhyloTree"
-    #standard()
-    #python -mtimeit -s 'import testPhylo' 'testPhylo.MyReconcile("yes")'
-    #python -mtimeit -s 'import testPhylo' 'testPhylo.MyReconcile("no")'
-    #python -mtimeit -s 'import testPhylo' 'testPhylo.standard()'
-	
-	#nh_format: full / display_label_composite / simple / species / species_short_name / ncbi_taxon / ncbi_name / njtree / phylip, The format of the nh output, only useful when the output is set to nh
 
-	ensemblTree=fetch_ensembl_genetree_by_id(treeID="ENSGT00390000003602", nh_format="display_label_composite")
+	#python -mtimeit -s 'import testPhylo' 'testPhylo.MyReconcile("yes")'
+	#python -mtimeit -s 'import testPhylo' 'testPhylo.MyReconcile("no")'
+	#python -mtimeit -s 'import testPhylo' 'testPhylo.standard()'
+
+	print "****TreeUtils Reconciliation\n"
+	MyReconcile("yes")
+	print "n\n****PhyloTree Reconciliation"
+	standard()
+	print "\n\n****Ensembl test\n"
+	ensemblTree=TreeUtils.fetch_ensembl_genetree_by_id(treeID="ENSGT00390000003602", nh_format="display_label_composite")
 	phylo_genetree=PhyloTree(ensemblTree.write(features=[],format_root_node=True))
 	phylo_genetree.set_species_naming_function(get_species_name)
 
-	ensemblTree.set_species(gpos="prefix")
+	ensemblTree.set_species(pos="postfix")
 	#print ensemblTree.get_ascii(show_internal=False, attributes=list(ensemblTree.get_all_features()))
 	specie_list=[]
 	for leaf in ensemblTree:
@@ -63,16 +61,16 @@ if __name__ == '__main__':
 	specieTree= TreeClass()
 	specieTree.populate(len(specie_list),names_library=specie_list)
 	phylo_specietree= PhyloTree(specieTree.write(features=[],format_root_node=True))
-
+	print "\n---> Ensembl Tree", ensemblTree
 	#Reconciliation
 	start=time()
-	mapping=lcaMapping(ensemblTree, specieTree)
-	reconcile(ensemblTree, mapping, "yes")
-	print time()-start
+	mapping=TreeUtils.lcaMapping(ensemblTree, specieTree)
+	TreeUtils.reconcile(ensemblTree, mapping, "yes")
+	print "-->TreeUtils reconciliation Time :", time()-start
 	#print ensemblTree.get_ascii(attributes=["type"], show_internal=True)
 	start=time()
 	recon_tree, events = phylo_genetree.reconcile(phylo_specietree)
-	print time()-start
+	print "-->PhyloTree reconciliation Time :", time()-start
 	phylo_recontree=TreeClass(recon_tree.write(features=[],format_root_node=True))
 
 

@@ -7,6 +7,7 @@ from TreeClass import TreeClass
 import ClusterUtils as clu
 from ete2 import Phyloxml
 import httplib2
+import hashlib, re
 import os
 import collections, string
 
@@ -238,6 +239,13 @@ def getSpecieGeneMap(genetree, specietree):
 		mapGene[node]=genetree.search_nodes(species=node.name)
 
 	return mapGene
+
+
+def treeHash(tree):
+	"""Hashing the tree based on the sorted node name"""
+	newick_str= re.sub("(?<=\()([^()]+?)(?=\))",lambda m: ",".join(sorted(m.group(1).split(","))), tree.write(format=9))
+	#print "newick: ", tree.write(format=9), "parsing: ", newick_str
+	return hashlib.sha384(newick_str).hexdigest()
 
 
 def newick_preprocessing(newick, gene_sep=None):

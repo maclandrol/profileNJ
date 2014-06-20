@@ -367,14 +367,30 @@ class TreeClass(TreeNode):
 		return "Tree Class '%s' (%s)" %(self.name, hex(self.__hash__()))
 
 
-	def reroot(self):
+	def reroot(self, root_node=True):
 		"""reroot tree at each node"""
-		tutils.label_internal_node(self)
+		#self.label_internal_node()
 		for node in self.iter_descendants():
-			c_tree= self.copy("newick-extended")
-			c_node =c_tree&node.name
+			c_tree= self.copy("newick-extended", nw_format_root_node=True)
+			#c_node =c_tree&node.name
+			c_node = c_tree.get_common_ancestor(node.get_leaf_name()) if node.is_internal() else c_tree&node.name
 			c_tree.set_outgroup(c_node)
-			yield c_tree
+			#case where we root at the node and not at the branch
+			if(root_node and not node.is_leaf()):
+				root= c_tree.get_tree_root()
+				#new_child= [child for child in root.get_children() if child !=node.name][0]
+				#rooting_node = [child for child in root.get_children() if child.name ==node.name][0]
+				new_child= [child for child in root.get_children() if set(child.get_leaf_name()).symmetric_difference(set(node.get_leaf_name()))][0]
+				rooting_node = [child for child in root.get_children() if child!=new_child][0]
+				c_tree= rooting_node.detach()
+				new_child.detach()
+				#new_child.label_internal_node()
+				c_tree.add_child(new_child)
+				yield c_tree
+
+			elif not root_node:
+				yield c_tree
+
 
 
 	def get_my_evol_events(self, sos_thr=0.0):
