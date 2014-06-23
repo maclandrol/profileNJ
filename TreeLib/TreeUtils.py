@@ -6,6 +6,7 @@ TreeUtils is a python class that offer function related to phylogeny tree, using
 from TreeClass import TreeClass
 import ClusterUtils as clu
 from ete2 import Phyloxml
+from ete2.parser.newick import NewickError
 import httplib2
 import hashlib, re
 import os
@@ -37,7 +38,7 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 		if not resp.status == 200:
 			print "Invalid response: ", resp.status
 			raise ValueError('Failled to process request!')
-		
+
 		if(output.lower()!="text/x-phyloxml"):
 			return TreeClass(content)
 		else:
@@ -47,7 +48,7 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 
 
 def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, output="nh", nh_format="full"):
-	
+
 	"""Fetch genetree from a member ID
 
 	:argument memberID: the ensembl gene ID member of the tree to fetch, this is mandatory! EX: ENSG00000157764
@@ -124,7 +125,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 				children_list=node.get_children()
 				for child_c in children_list:
 					if((lcaMap[child_c].up != lcaMap[node] and lcaMap[child_c] != lcaMap[node]) or (node.type==TreeClass.AD and lcaMap[node]!=lcaMap[child_c])):
-	
+
 						while((lcaMap[child_c].up!=lcaMap[node] and node.type==TreeClass.SPEC) or (lcaMap[child_c]!=lcaMap[node] and node.type!=TreeClass.SPEC)):
 							lostnode=TreeClass()
 							intern_lost=TreeClass()
@@ -191,7 +192,7 @@ def CleanFeatures(tree=None, features=[]):
 
 def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
 	"""
-	Read a phylogeny tree from a phyloxml string and return a TreeClass object 
+	Read a phylogeny tree from a phyloxml string and return a TreeClass object
 	or a list of TreeClass object
 	"""
 	project = Phyloxml()
@@ -260,7 +261,7 @@ def newick_preprocessing(newick, gene_sep=None):
 		nw = nw.strip()
 		if nw.endswith(';'):
 			nw = nw[:-1]
-		
+
 		if gene_sep is None:
 			i=0
 			while i< len(DEF_SEP_LIST) and DEF_SEP_LIST[i] not in nw:
@@ -281,13 +282,13 @@ def newick_preprocessing(newick, gene_sep=None):
 
 def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305):
 	#################################################################
-	#TODO : 
+	#TODO :
 	#	1) Correct newick
 	#	2) Sequence retrieve
 	#	3) PhyML to align sequence and make a distance matrice
 	#
 	#################################################################
-	
+
 	#genetree input
 	if isinstance(genetree, basestring):
 		genetree, gene_sep=newick_preprocessing(genetree, gene_sep)
