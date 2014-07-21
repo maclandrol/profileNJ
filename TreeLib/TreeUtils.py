@@ -6,6 +6,7 @@ TreeUtils is a python class that offer function related to phylogeny tree, using
 from TreeClass import TreeClass
 import ClusterUtils as clu
 from ete2 import Phyloxml
+from ete2.parser.newick import NewickError
 import httplib2
 import hashlib, re
 import os
