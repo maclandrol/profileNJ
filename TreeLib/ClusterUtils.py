@@ -62,13 +62,22 @@ def del_row_column(matrice, last_fus_index, large_value, method='upgma'):
 	node already merged row/column from the matrix"""
 	first_index, second_index = last_fus_index
 	matrice = condense_matrix(matrice, last_fus_index, large_value, method)
-	matrice= numpy.delete(matrice, second_index, 0)
-	matrice=numpy.delete(matrice,second_index , 1)
-	return matrice
+	x = matrice[:-1,:-1]
+	x[:second_index,second_index:] = matrice[:second_index,second_index+1:]
+	x[second_index:,:second_index] = matrice[second_index+1:,:second_index]
+	x[second_index:,second_index:] = matrice[second_index+1:,second_index+1:]
+	return x
 
+def remove_ij(x, i, j):
+	# Row i and column j divide the array into 4 quadrants
+	y = x[:-1,:-1]
+	y[:i,j:] = x[:i,j+1:]
+	y[i:,:j] = x[i+1:,:j]
+	y[i:,j:] = x[i+1:,j+1:]
+	return y
 
 def calculate_Q_matrix(matrice, maxVal):
-	#To reformat again with numpy special function. This is ugly
+	
 	n= matrice.shape[0]
 	Q_matrix=numpy.zeros(shape=matrice.shape)
 	numpy.fill_diagonal(Q_matrix, maxVal)

@@ -12,13 +12,13 @@ class memorize(object):
 
 	def __call__(self, hash, *args, **kwargs):
 		"""Call to memorize, (as decorator)"""
-		if not isinstance(hash, collections.Hashable) or hash is None:
-			#hash is None or uncachable
-			return self.function(*args, **kwargs)
 
 		if hash in self.cache:
-			print "Cached"
 			return self.cache[hash]
+
+		elif not isinstance(hash, collections.Hashable) or hash is None:
+			#hash is None or uncachable
+			return self.function(*args, **kwargs)
 
 		else:
 			output = self.function(*args, **kwargs)
