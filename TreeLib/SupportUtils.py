@@ -6,7 +6,7 @@ Missing doc!!!!!!!!!!
 import subprocess
 import TreeUtils
 from TreeClass import TreeClass
-import re
+import re, sys
 import numpy as np
 
 phymllk='phyml_lk.txt'
@@ -118,7 +118,7 @@ def nexrepair(nxsfile):
 		first_block_passed = False
 		newFileContent = ""
 		for line in infile:
-			line = line.replace("\n", "")
+			line = line.replace("\n", "").strip()
 		  	lineup = line.upper()
 			ignoreLine = False
 			correctedLine = line 
@@ -137,7 +137,7 @@ def nexrepair(nxsfile):
 				parts = line.split()
 				correctedLine = parts[-1]
 		  
-			if line == ";":
+			if line==";":
 				newFileContent += ";"
 			elif not ignoreLine:
 				if newFileContent != "":
@@ -150,5 +150,5 @@ def nexrepair(nxsfile):
 	return nxsfile
 
 if __name__ == '__main__':
-	ensemblTree=TreeUtils.fetch_ensembl_genetree_by_id(treeID="ENSGT00390000003602", output="phyloxml", aligned=0, sequence="cdna")
-	executePipe(ensemblTree, al=0, type="cdna")
+	ensemblTree=TreeUtils.fetch_ensembl_genetree_by_id(treeID="ENSGT00390000003602", output="phyloxml", aligned=1, sequence="cdna")
+	executePipe(ensemblTree, al=1, type="cdna")
