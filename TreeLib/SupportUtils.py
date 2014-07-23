@@ -110,30 +110,30 @@ def executeCMD(cmd):
 	return error
 
 
-"""I'm ashamed of this, truly ashamed"""
 def nexrepair(nxsfile):
-	print "REFORMATING your nexus file to phyML input ..."
+	"""Repair nexus file for phyML"""
+	#print "REFORMATING your nexus file to phyML input ..."
 	with open(nxsfile, 'r') as infile, open("tmp", 'w') as outfile:
-		inMatrix = False
-		firstBlockPassed = False
+		found_matrix = False
+		first_block_passed = False
 		newFileContent = ""
 		for line in infile:
 			line = line.replace("\n", "")
 		  	lineup = line.upper()
 			ignoreLine = False
 			correctedLine = line 
-			if line == 'format missing=?':
+			if 'format missing=?'==line:
 				ignoreLine = True
-				print "CLustal missing line found"
+				#CLustal missing line found
 			
 			elif lineup == "MATRIX":
-				inMatrix = True
-				print "MATRIX LINE found"
+				found_matrix = True
+				#MATRIX LINE found
 		    
-			if inMatrix and not firstBlockPassed and line == "":
-				firstBlockPassed = True
+			if found_matrix and not first_block_passed and line == "":
+				first_block_passed = True
 		    
-			if line != "" and firstBlockPassed:
+			if line != "" and first_block_passed:
 				parts = line.split()
 				correctedLine = parts[-1]
 		  
