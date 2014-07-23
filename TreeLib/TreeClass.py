@@ -576,16 +576,17 @@ class TreeClass(TreeNode):
 					taxa['taxon_id'].append(taxon.id.get_valueOf_())
 
 			if(len(taxa['code'])>=1):
-				node.add_features(code=taxa['code'][0])
+				node.add_features(taxacode=taxa['code'][0])
 			if(len(taxa['sc_name'])>=1):
-				node.add_features(sc_name=taxa['sc_name'][0])
+				node.add_features(specie_scienc=taxa['sc_name'][0])
 			if(len(taxa['common_name'])>=1):
-				node.add_features(c_name=taxa['common_name'][0])
+				node.add_features(specie_common=taxa['common_name'][0])
 			if(len(taxa['taxon_id'])>=1):
 				node.add_features(tax_id=taxa['taxon_id'][0])
 
 			if(len(sequence['accession'])>=1):
-				node.add_features(accession=sequence['accession'][0])
+				node.add_features(alt_name=node.name)
+				node.add_features(name=sequence['accession'][0])
 			if(len(sequence['mol_seq']) >=1):
 				node.add_features(sequence=sequence['mol_seq'][0])
 
@@ -616,8 +617,8 @@ class TreeClass(TreeNode):
 				for leaf in self:
 					if("sequence" in leaf.features):
 						id=">%s" % leaf.name
-						if(comment and "accession" in leaf.features and "seqname" in leaf.features):
-							id= id+ " %s;%s" %(leaf.accession, leaf.seqname)
+						if(comment and "alt_name" in leaf.features and "seqname" in leaf.features):
+							id= id+ " %s;%s" %(leaf.alt_name, leaf.seqname)
 							if("sc_name" in leaf.features):
 								id= id+ (";%s"%leaf.sc_name)
 						seq=leaf.sequence+"\n"
