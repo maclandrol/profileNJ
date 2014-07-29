@@ -53,7 +53,7 @@ PolytomySolver is the executable version of **Multipolysolver**.
         Output file with the corrected tree. The genetree is printed on stdout if omitted. (default: None)
 
 +  *-gl GLINE, --gLine GLINE*
-        Index of the line in the gene tree file that corresponds to the current gene tree. First line is "1" (default: 1)
+        Index of the line in the gene tree file that corresponds to the current gene tree. Indexing start with "1" (default: 1)
 
 +  *-r {none,all,best}, --reroot {none,all,best}*
         Enable/Disable root mode. (default: none)
