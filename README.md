@@ -9,7 +9,7 @@ Utility package for tree processing written in python and based on the [ete2](ht
 Bases from the TreeNode class of the ete2 package, TreeClass is a tree representation class. A tree consists of a collection of TreeClass instances connected in a hierarchical way. A TreeClass object can be loaded from the New Hampshire Newick format (newick).
 TreeClass add specific functions for tree processing not present in the ete2 TreeNode.
 
-run **pydoc TreeClass.py** on your terminal for documentation.
+run pydoc for minimum documentation.
 
 ## TreeUtils 
 
