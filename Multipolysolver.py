@@ -472,13 +472,8 @@ def getMatrix(node_struct, gene_matrix, node_order, ind_to_keep, got_ind=False):
 		for node in node_struct:
 			ind_to_keep.append(node_order.index(node.name))
 	matrix= gene_matrix #same reference here
-	del_array=[]
-	for x in xrange(len(node_order)):
-		if(x not in ind_to_keep):
-			del_array.append(x)
-	matrix=numpy.delete(matrix, del_array,0)
-	matrix=numpy.delete(matrix,del_array,1)
-	return matrix
+	return numpy.take(numpy.take(matrix, ind_to_keep, axis=0), ind_to_keep, axis=1)
+
 
 
 def polytomy_preprocessing(polytomy, specietree, gene_matrix, node_order, maxVal, method='upgma'):
@@ -546,7 +541,7 @@ def findMaxX(polytomy, specietree):
 	return polytomy_name_set, row_node_corr
 
 
-def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=0, poly_limit=-1, method='upgma', maxVal=1e305):
+def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=0, path_limit=-1, method='upgma', maxVal=1e305, sol_limit=-1):
 	
 	#Start with only one polytomy
 	nb_polytomy=0
@@ -564,8 +559,8 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=0, poly
 				poly_parent= polytomy.up
 				node_to_replace=polytomy
 				matrice, order=polytomy_preprocessing(ptree, sptree, matrice, order, maxVal, method=method)
-				solution=polySolver(TreeUtils.treeHash(ptree), ptree,sptree, matrice, order,poly_limit, cluster_method=method, verbose=verbose)
-				#solution=polySolver(ptree,sptree, matrice, order,poly_limit, cluster_method=method, verbose=verbose)
+				solution=polySolver(TreeUtils.treeHash(ptree), ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
+				#solution=polySolver(ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
 				if(poly_parent== None):
 					#Here we have the root. Complete solution are here
 					next_tree_solution.extend(solution)
@@ -582,9 +577,12 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=0, poly
 		if not next_tree_solution:
 			break
 		polysolution = next_tree_solution
+		if(sol_limit > 0 and sol_limit <len(polysolution)):
+			path_limit=1
 
 	if(nb_polytomy<1):
 		raise ValueError("Polytomy not found in your gene tree")
 
 	#deepcopy is not working, neither is newick-copy
-	return [t.copy("simplecopy") for t in polysolution]
+	f_sol= polysolution[0:sol_limit] if sol_limit>0 else polysolution
+	return [t.copy("simplecopy") for t in f_sol]

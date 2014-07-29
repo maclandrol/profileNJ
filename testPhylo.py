@@ -79,3 +79,8 @@ if __name__ == '__main__':
 	#print "Partitions in tree2 that were not found in tree1:", parts_t1 - parts_t2
 	#print "Partitions in tree1 that were not found in tree2:", parts_t2 - parts_t1
 
+	#Ensembl sequence retrieving test
+	ensemblTree=TreeUtils.fetch_ensembl_genetree_by_id(treeID="ENSGT00390000003602", sequence='cdna', aligned=1, output="phyloxml")
+	print ensemblTree.get_all_features()
+	print ensemblTree.get_ascii(show_internal=False, attributes=['name', 'alt_name', 'support'])
+	print ensemblTree.write()
