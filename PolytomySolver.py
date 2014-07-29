@@ -99,6 +99,6 @@ for genetree in tree_list:
 	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
 	outlog.write('>Tree %s; cost=%s'%(count, polysolution[0].cost))
 	for tree in polysolution:
-		outlog.write(tree.write())
+		outlog.write(tree.write(format=9))
 	
 outlog.close()
