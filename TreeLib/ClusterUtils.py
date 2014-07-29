@@ -236,7 +236,7 @@ def treeCluster(matrice, node_order, large_number, depth=None, method='upgma'):
 		return UPGMA_cluster(matrice, node_order, large_number, upgma_depth=depth)
 
 
-def distMatProcessor(dist_file, maxValue):
+def distMatProcessor(dist_file, maxValue, nFlag=False):
 	"""Formating distance matrix from a file input and node order for 
 		UPGMA join
 	"""
@@ -253,7 +253,7 @@ def distMatProcessor(dist_file, maxValue):
 					read_fl=True
 				else:
 					x_ind+=1
-					line_list= [getIntValue(x.strip(), x_ind, y_ind, maxValue) for y_ind, x in enumerate(line.split())]
+					line_list= [getIntValue(x.strip(), x_ind, y_ind, maxValue, nFlag) for y_ind, x in enumerate(line.split())]
 					dist_matrix.append(line_list[1:])
 					node_order.append(line_list[0])
 	
@@ -280,10 +280,10 @@ def saveMatrix(filename, matrix, node_order):
 	return True
 
 
-def getIntValue(number, x_ind, y_ind, maxValue):
+def getIntValue(number, x_ind, y_ind, maxValue, nFlag=False):
 	"""Get a distance matrice validate input from a string"""
 	try:
 		n=float(number)
-		return n if (n!=0 or x_ind!=y_ind) else maxValue
+		return maxValue if ((n<0 and nFlag) or (x_ind==y_ind)) else n
 	except ValueError:
 		return number

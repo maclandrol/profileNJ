@@ -22,7 +22,7 @@ tree_list=[origenetree]
 
 #Comment filtrer les 
 for genetree in tree_list:
-	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=5, method='nj', path_limit=3)
+	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=30, method='nj', path_limit=-1)
 	print "Nombre de solution: ", len(polysolution)
 	#we are doing reconcilliation here, "yes", is to infere gene lost, default="no", see method doc
 	#specietree=TreeClass("(((a,b)e,g)h,(c,d)f)i;", format=1)
@@ -39,6 +39,10 @@ for genetree in tree_list:
 			#	node.del_feature('species')
 			#if node.has_feature('cost'):
 			#	m_score_sum+=float(node.cost)
+		print tree.cost
+		print tree.score
+		print tree.support
+		print tree.type
 		print "***************************************************"
 		#rf, max_rf,common_leaves, parts_t1, parts_t2= tree.robinson_foulds(c_tree)
 		#TreeUtils.customTreeCompare(TreeClass('nostar_genetree.tree'), c_tree, tree)
