@@ -92,7 +92,8 @@ PolytomySolver is the executable version of **Multipolysolver**.
 #### File formats
   see [polytomy-solver-distance] (https://github.com/UdeM-LBIT/polytomy-solver-distance#file-formats)
 
-### NCBI_tree_of_life 
+
+## NCBI_tree_of_life 
 
 *see specie.tar.gz file*
 
