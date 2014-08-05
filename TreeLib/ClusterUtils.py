@@ -150,8 +150,8 @@ def condense_node_order(matrice, smallest_index, node_order, method='upgma'):
 
 	for ind in pos:
 		if nodes[ind].is_leaf():
-			nodes[ind].add_features(Length=dist[ind])
-		nodes[ind].add_features(TipLength = dist[ind])
+			nodes[ind].add_features(tipLength=dist[ind])
+		nodes[ind].add_features(length = dist[ind])
 	#combine the two nodes into a new TreeNode object
 	new_node = TreeClass()
 	new_node.add_child(node1)

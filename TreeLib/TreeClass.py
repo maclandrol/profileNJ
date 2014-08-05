@@ -535,6 +535,12 @@ class TreeClass(TreeNode):
 				count+=1
 		return self
 
+	def get_ME_score(self):
+		cost=0
+		for node in self.traverse("levelorder"):
+			if(node.has_feature('length')):
+				cost+=node.length
+		return cost
 
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):

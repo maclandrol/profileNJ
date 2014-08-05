@@ -217,10 +217,10 @@ def reset_node_name(tree,sep):
 	return tree
 
 
-def make_random_tree(names=list(string.lowercase), contract_seuil=0, feature_to_contract='support'):
+def make_random_tree(names=list(string.lowercase), contract_seuil=0, feature_to_contract='support', random_branches=False):
 	"""Make a random Gene Tree"""
 	tree= TreeClass()
-	tree.populate(len(names), names_library=names, random_branches=True)
+	tree.populate(len(names), names_library=names, random_branches=random_branches)
 	tree.contract_tree(seuil=contract_seuil, feature=feature_to_contract)
 	return tree
 
@@ -299,7 +299,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 	if isinstance(specietree, basestring):
 		specietree, sep=newick_preprocessing(specietree, '')
 		specietree= TreeClass(specietree)
-		specietree.label_internal_node()
+	specietree.label_internal_node()
 
 	#distance matrice input
 	if(distance_file):
