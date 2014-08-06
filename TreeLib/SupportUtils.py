@@ -65,7 +65,7 @@ def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
 		print clustalcmd
 		error= executeCMD(clustalcmd)
 		if not error:
-			print "SUCCESSFULLY DONE! :  sequences ALIGNED with clustalw"
+			print "DONE! :  sequences ALIGNED with clustalw"
 		else:
 			print "FAILED at clustalw execution !!!"
 			return
@@ -83,7 +83,7 @@ def executePhyML(seqfile, treefile, quiet=0):
 	print phymlcmd
 	error=executeCMD(phymlcmd)
 	if not error:
-		print "SUCCESSFULLY DONE! : phyML EXECUTED"
+		print "DONE! : phyML EXECUTED"
 	else:
 		print "FAILED at phyML execution !!!"
 		return

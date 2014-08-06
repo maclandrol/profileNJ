@@ -22,7 +22,7 @@ dupcost,lostcost=1,1
 numpy.set_printoptions(threshold='nan')
 
 @memorize
-def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=0, cluster_method='upgma'):
+def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=False, cluster_method='upgma'):
 	"""This assume we that we are using the correct specietree for this genetree
 	the specie tree root is the latest common ancestor of all the specie in genetree"""
 	count=TreeUtils.getSpecieCount(genetree) # number of specie in the genetree
@@ -216,7 +216,7 @@ def findPathFromTable(path_table, row_node_corr, count, xpos, ypos):
 	return chemin
 
 
-def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, maxVal, verbose=0, method='upgma', cost=0):
+def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, maxVal, verbose=False, method='upgma', cost=0):
 	"""Construct tree from a path using the clustering method"""
 	# get the node order in the path
 	node_list= list(reversed(chemin.split(','))) 
@@ -541,7 +541,7 @@ def findMaxX(polytomy, specietree):
 	return polytomy_name_set, row_node_corr
 
 
-def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=0, path_limit=-1, method='upgma', maxVal=1e305, sol_limit=-1):
+def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, path_limit=-1, method='upgma', maxVal=1e305, sol_limit=-1):
 	
 	#Start with only one polytomy
 	nb_polytomy=0

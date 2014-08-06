@@ -280,7 +280,7 @@ def newick_preprocessing(newick, gene_sep=None):
 		"'newick' argument must be either a filename or a newick string."
 
 
-def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305):
+def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305, nFlag=False):
 	#################################################################
 	#TODO :
 	#	1) Correct newick
@@ -303,7 +303,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 
 	#distance matrice input
 	if(distance_file):
-		gene_matrix, node_order= clu.distMatProcessor(distance_file, dist_diagonal)
+		gene_matrix, node_order= clu.distMatProcessor(distance_file, dist_diagonal, nFlag)
 		#Difference check 1
 		if set(node_order).difference(set(genetree.get_leaf_names())):
 			reset_node_name(genetree, gene_sep)
