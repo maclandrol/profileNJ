@@ -242,16 +242,16 @@ def getSpecieGeneMap(genetree, specietree):
 	return mapGene
 
 
-def treeHash(tree):
+def treeHash(tree, addinfos=''):
 	"""Hashing the tree based on the sorted node name"""
 	newick_str= re.sub("(?<=\()([^()]+?)(?=\))",lambda m: ",".join(sorted(m.group(1).split(","))), tree.write(format=9))
 	#print "newick: ", tree.write(format=9), "parsing: ", newick_str
-	return hashlib.sha384(newick_str).hexdigest()
+	return hashlib.sha384('%s%s'%(newick_str, str(addinfos))).hexdigest()
 
 
 def newick_preprocessing(newick, gene_sep=None):
 	"""Newick format pre-processing in order to assure its correctness"""
-	DEF_SEP_LIST= [';;', ';', '-', '|', '%', '+','/']
+	DEF_SEP_LIST= [';;', '-', '|', '%', ':', ';', '+','/']
 
 	if isinstance(newick, basestring):
 		if os.path.exists(newick):
@@ -280,7 +280,7 @@ def newick_preprocessing(newick, gene_sep=None):
 		"'newick' argument must be either a filename or a newick string."
 
 
-def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305, nFlag=False):
+def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305, nFlag=False, smap=None):
 	#################################################################
 	#TODO : 
 	#	1) Correct newick
@@ -290,10 +290,28 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 	#################################################################
 	
 	#genetree input
-	if isinstance(genetree, basestring):
+	speciemap =None
+	if isinstance(genetree, basestring) and not smap:
 		genetree, gene_sep=newick_preprocessing(genetree, gene_sep)
 		genetree= TreeClass(genetree)
-	genetree.set_species(sep=gene_sep, capitalize=capitalize, pos=specie_pos)
+
+	elif smap:
+		genetree= TreeClass(genetree) if isinstance(genetree, basestring) else genetree
+		regexmap={}
+		speciemap={}
+		with open(smap, 'rU') if isinstance(smap, basestring) else smap as INPUT:
+			for line in INPUT:
+				g,s = line.strip().split()
+				g_regex=re.compile(g.replace('*', '.*'))
+				regexmap[g_regex]=s
+		
+		for leaf in genetree:
+			for key,value in regexmap.iteritems():
+				if key.match(leaf.name):
+					speciemap[leaf.name]=value
+
+
+	genetree.set_species(speciesMap=speciemap ,sep=gene_sep, capitalize=capitalize, pos=specie_pos)
 
 	#specietree input
 	if isinstance(specietree, basestring):
@@ -308,6 +326,8 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 		if set(node_order).difference(set(genetree.get_leaf_names())):
 			reset_node_name(genetree, gene_sep)
 	else:
+		#This is for debug, will never happen
+		print "error: dist file not found"
 		node_order= genetree.get_leaf_names()
 		gene_matrix= clu.makeFakeDstMatrice(len(node_order), 0, 1, dist_diagonal) #Alternative, retrieve aligned sequence and run phyML
 

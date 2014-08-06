@@ -237,9 +237,10 @@ class TreeClass(TreeNode):
 		argument fn: Pointer to a parsing python function that receives a node as first argument and returns the species name.
 
 		"""
-		if speciesMap is not None:
+		if speciesMap :
 			for node in self.traverse():
-				node.add_features(species=speciesMap.get(node.name, TreeClass.DEFAULT_SPECIE))
+				node_specie= speciesMap.get(node.name, TreeClass.DEFAULT_SPECIE)
+				node.add_features(self.__class__._capitalize(node_specie) if capitalize else node_specie)
 		else:
 			for leaf in self:
 				if use_fn is not None :
@@ -259,8 +260,10 @@ class TreeClass(TreeNode):
 
 		"""
 		for leaf in self:
-			if genesMap is not None:
-				leaf.add_features(genes=genesMap.get(leaf.name, TreeClass.DEFAULT_GENE))
+			if genesMap :
+				node_gene= genesMap.get(leaf.name, TreeClass.DEFAULT_GENE)
+				node.add_features(self.__class__._capitalize(node_gene) if capitalize else node_gene)
+
 			elif use_fn is not None :
 				leaf.add_features(genes=use_fn(leaf))
 			else:
@@ -535,11 +538,11 @@ class TreeClass(TreeNode):
 				count+=1
 		return self
 
-	def get_ME_score(self):
+	def get_feature_sum(self, feature):
 		cost=0
 		for node in self.traverse("levelorder"):
-			if(node.has_feature('length')):
-				cost+=node.length
+			if(node.has_feature(feature) and getattr(node,feature) is int):
+				cost+=getattr(node,feature)
 		return cost
 
 	@classmethod

@@ -16,6 +16,7 @@ from TreeLib import *
 #TreeUtils.reconcile(corrected_tree, mapping, "yes")
 #c_score=TreeUtils.ComputeDupLostScore(corrected_tree)
 
+
 origenetree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing('testinput/nostar_genetree.tree', 'testinput/speciestree.newick', 'testinput/nostar_famille_1.dist', capitalize=True, gene_sep = None)
 tree_list=[origenetree]
 #tree_list.extend(origenetree.reroot())
