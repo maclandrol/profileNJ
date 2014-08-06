@@ -43,6 +43,10 @@ PolytomySolver is the executable version of **Multipolysolver**.
 +  *-s SPECIETREE, --sFile SPECIETREE*
         Name of the file containing the species newick tree (default: None).
 
++  *S SMAP, --sMap SMAP*
+        Gene to species map. Use the standard format. (default: None)
+
+
 +  *-g GENETREE, --gFile GENETREE*
         Name of the file containing the gene newick tree (default: None).
 
