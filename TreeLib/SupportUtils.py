@@ -83,7 +83,7 @@ def convert_to_phylip(filename, filetype, old_ext, rm=False):
         al_input= AlignIO.parse(infile,  filetype)
         AlignIO.write(al_input, outfile, 'phylip')
     if(rm):
-        os.remove
+        os.remove(filename)
     return con_file
 
 
