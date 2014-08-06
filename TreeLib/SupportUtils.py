@@ -84,10 +84,15 @@ def convert_to_phylip(filename, filetype, old_ext):
 		AlignIO.write(al_input, outfile, 'phylip')
 	return con_file
 
+
 def construct_phyml_tree(input_tree):
 	phyml= _Phyml.PhymlCommandline(input=input_tree, datatype='nt', bootstrap=100, optimize='tlr')
 	print str(phyml)
 	phyml()
+
+
+def getDistMatrix(filename):
+	clustalo(filename, treeid, alignment_path, dist_matrix_path, aligned=True)
 
 
 def executeCMD(cmd):
