@@ -40,25 +40,25 @@ PolytomySolver is the executable version of **Multipolysolver**.
 +  *-h, --help*            
         Show the help message and exit.
 
-+  *-s SPECIETREE, --sFile SPECIETREE* 
++  *-s SPECIETREE, --sFile SPECIETREE*          
         Name of the file containing the species newick tree (default: None).
 
-+  *S SMAP, --sMap SMAP*
++  *S SMAP, --sMap SMAP*        
         Gene to species map. Use the standard format. (default: None)
 
-+  *-g GENETREE, --gFile GENETREE*
++  *-g GENETREE, --gFile GENETREE*              
         Name of the file containing the gene newick tree (default: None).
 
-+  *-d DISTFILE, --dist DISTFILE*
++  *-d DISTFILE, --dist DISTFILE*       
         Name of the file containing the distances between each pair of genes (The gene set should be the same for the leaf set of the genetree). (default: None)
 
-+  *-o OUTFILE, --output OUTFILE*
++  *-o OUTFILE, --output OUTFILE*       
         Output file with the corrected tree. The genetree is printed on stdout if omitted. (default: None)
 
-+  *-gl GLINE, --gLine GLINE*
++  *-gl GLINE, --gLine GLINE*           
         Index of the line in the gene tree file that corresponds to the current gene tree. Indexing start with "1" (default: 1)
 
-+  *-r {none,all,best}, --reroot {none,all,best}*
++  *-r {none,all,best}, --reroot {none,all,best}*               
         Enable/Disable root mode. (default: none)
           	* none: disable reroot mode, correct the input polytomies and return the result.
           	* all: enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.
