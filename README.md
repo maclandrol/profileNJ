@@ -40,7 +40,7 @@ PolytomySolver is the executable version of **Multipolysolver**.
 +  *-h, --help*            
         Show the help message and exit.
 
-+  *-s SPECIETREE, --sFile SPECIETREE*
++  *-s SPECIETREE, --sFile SPECIETREE* 
         Name of the file containing the species newick tree (default: None).
 
 +  *S SMAP, --sMap SMAP*
