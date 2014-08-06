@@ -1,5 +1,6 @@
 import collections
 import functools
+import sys
 
 class memorize(object):
 	"""Cache function output when it's called and return it
@@ -14,6 +15,7 @@ class memorize(object):
 		"""Call to memorize, (as decorator)"""
 
 		if hash in self.cache:
+			sys.stderr.write('In cache\n')
 			return self.cache[hash]
 
 		elif not isinstance(hash, collections.Hashable) or hash is None:

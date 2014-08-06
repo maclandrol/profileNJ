@@ -559,7 +559,7 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
 				poly_parent= polytomy.up
 				node_to_replace=polytomy
 				matrice, order=polytomy_preprocessing(ptree, sptree, matrice, order, maxVal, method=method)
-				solution=polySolver(TreeUtils.treeHash(ptree, addinfos=path_limit), ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
+				solution=polySolver(TreeUtils.treeHash(ptree, addinfos=str(path_limit)), ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
 				#solution=polySolver(ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
 				if(poly_parent== None):
 					#Here we have the root. Complete solution are here

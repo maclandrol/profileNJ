@@ -246,7 +246,7 @@ def treeHash(tree, addinfos=''):
 	"""Hashing the tree based on the sorted node name"""
 	newick_str= re.sub("(?<=\()([^()]+?)(?=\))",lambda m: ",".join(sorted(m.group(1).split(","))), tree.write(format=9))
 	#print "newick: ", tree.write(format=9), "parsing: ", newick_str
-	return hashlib.sha384('%s%s'%(newick_str, str(addinfos))).hexdigest()
+	return hashlib.sha384(newick_str+addinfos).hexdigest()
 
 
 def newick_preprocessing(newick, gene_sep=None):
