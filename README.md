@@ -76,7 +76,7 @@ PolytomySolver is the executable version of **Multipolysolver**.
 
 +  *-c {nj,upgma}, --cluster {nj,upgma}*
         Set the clustering methods. (default: nj)       
-            - **upgma** : UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo. 
+            - **upgma** : UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.    
             - **nj** : neighbor joining clustering method, (slower).
 
 
