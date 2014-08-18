@@ -2,6 +2,7 @@
 
 from numpy import *
 from TreeClass import TreeClass
+import os
 import numpy
 
 numpy.set_printoptions(precision=3)
@@ -11,7 +12,7 @@ Float = numerictypes(float)
 
 def find_smallest_index(matrice):
 	"""Return smallest number i,j index in a matrice
-	A Tuple (i,j) is returned. 
+	A Tuple (i,j) is returned.
 	Warning, the diagonal should have the largest number so it will never be choose
 	"""
 	#winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
@@ -20,7 +21,7 @@ def find_smallest_index(matrice):
 	#	m_reverse.reverse()
 	#	if(m_reverse in winner):
 	#		winner.remove(m)
-	
+
 	#print "number of possible solution here :" , len(winner) , "solution :", winner
 	return numpy.unravel_index(matrice.argmin(), matrice.shape)
 
@@ -46,11 +47,11 @@ def condense_matrix(matrice, smallest_index, large_value, method='upgma'):
 
 	else:
 		new_vector = average(rows, 0)
-	
+
 	#replace info in the row and column for first index with new_vector
 	matrice[first_index] = new_vector
 	matrice[:, first_index] = new_vector
-	#replace the info in the row and column for the second index with 
+	#replace the info in the row and column for the second index with
 	#high numbers so that it is ignored
 	matrice[second_index] = large_value
 	matrice[:, second_index] = large_value
@@ -77,7 +78,7 @@ def remove_ij(x, i, j):
 	return y
 
 def calculate_Q_matrix(matrice, maxVal):
-	
+
 	n= matrice.shape[0]
 	Q_matrix=numpy.zeros(shape=matrice.shape)
 	numpy.fill_diagonal(Q_matrix, maxVal)
@@ -118,7 +119,7 @@ def paired_node_distance(matrice, smallest_index,maxVal):
 		possible_val= range(0, n)
 		pair_dist_ind = list(set(possible_val)- set(m)) #the index of the final pair to join
 		distance = matrice[pair_dist_ind[0], pair_dist_ind[1]]
-		#In this case, we split the dist value by two 
+		#In this case, we split the dist value by two
 		return distance/2.0, distance/2.0
 
 
@@ -137,14 +138,14 @@ def condense_node_order(matrice, smallest_index, node_order, method='upgma'):
 	node2 = node_order[index2]
 	#get the distance between the nodes and assign 1/2 the distance to the
 	#Length property of each node
-	
+
 	if(method.lower()=='nj'):
 		dist = paired_node_distance(matrice,smallest_index,1e305)
-	
+
 	else:
 		distance = matrice[index1, index2]
 		dist= (distance/2.0 , distance/2.0)
-	
+
 	nodes = [node1,node2]
 	pos = [0,1]
 
@@ -170,7 +171,7 @@ def NJ_cluster(matrice, node_order, large_number, nj_depth=None):
 	node_order is a list of PhyloNode objects corresponding to the matrice.
 	large_number will be assigned to the matrice during the process and
 	should be much larger than any value already in the matrice.
-	
+
 	WARNING: Changes matrice in-place.
 	WARNING: Expects matrice to already have diagonals assigned to large_number
 	before this function is called.
@@ -236,27 +237,32 @@ def treeCluster(matrice, node_order, large_number, depth=None, method='upgma'):
 		return UPGMA_cluster(matrice, node_order, large_number, upgma_depth=depth)
 
 
-def distMatProcessor(dist_file, maxValue, nFlag=False):
-	"""Formating distance matrix from a file input and node order for 
+def distMatProcessor(distances, maxValue, nFlag=False):
+	"""Formating distance matrix from a file or string input and node order for
 		UPGMA join
 	"""
 
 	read_fl=False
 	dist_matrix= []
 	node_order=[]
-	with open(dist_file, 'r') as infile:
-		x_ind=0
-		for line in infile:
-			line= line.strip()
-			if(line):
-				if not read_fl:
-					read_fl=True
-				else:
-					x_ind+=1
-					line_list= [getIntValue(x.strip(), x_ind, y_ind, maxValue, nFlag) for y_ind, x in enumerate(line.split())]
-					dist_matrix.append(line_list[1:])
-					node_order.append(line_list[0])
-	
+
+        # Read in matrix if file name is given
+        if os.path.exists(distances):
+	    distances = open(distances, 'rU').read()
+
+        distances_lines = distances.splitlines()
+	x_ind=0
+	for line in distances_lines:
+	    line = line.strip()
+	    if(line):
+		if not read_fl:
+		    read_fl=True
+		else:
+		    x_ind+=1
+		    line_list = [getIntValue(x.strip(), x_ind, y_ind, maxValue, nFlag) for y_ind, x in enumerate(line.split())]
+		    dist_matrix.append(line_list[1:])
+		    node_order.append(line_list[0])
+
 	return numpy.array(dist_matrix), node_order
 
 

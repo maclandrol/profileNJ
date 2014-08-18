@@ -38,28 +38,31 @@ PolytomySolver is the executable version of **Multipolysolver**.
 #### Command line arguments
 
 +  *-h, --help*            
-        Show the help message and exit
+        Show the help message and exit.
 
-+  *-s SPECIETREE, --sFile SPECIETREE*
++  *-s SPECIETREE, --sFile SPECIETREE*          
         Name of the file containing the species newick tree (default: None).
 
-+  *-g GENETREE, --gFile GENETREE*
++  *S SMAP, --sMap SMAP*        
+        Gene to species map. Use the standard format. (default: None)
+
++  *-g GENETREE, --gFile GENETREE*              
         Name of the file containing the gene newick tree (default: None).
 
-+  *-d DISTFILE, --dist DISTFILE*
++  *-d DISTFILE, --dist DISTFILE*       
         Name of the file containing the distances between each pair of genes (The gene set should be the same for the leaf set of the genetree). (default: None)
 
-+  *-o OUTFILE, --output OUTFILE*
++  *-o OUTFILE, --output OUTFILE*       
         Output file with the corrected tree. The genetree is printed on stdout if omitted. (default: None)
 
-+  *-gl GLINE, --gLine GLINE*
++  *-gl GLINE, --gLine GLINE*           
         Index of the line in the gene tree file that corresponds to the current gene tree. Indexing start with "1" (default: 1)
 
-+  *-r {none,all,best}, --reroot {none,all,best}*
-        Enable/Disable root mode. (default: none)
-          	* none: disable reroot mode, correct the input polytomies and return the result.
-          	* all: enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.
-          	* best: enable reroot mode, rerrot the genetree at each node and return all polytomy corrected version for the rooted tree with the smallest Dup-Lost score (First one if not unique).
++  *-r {none,all,best}, --reroot {none,all,best}*               
+        Enable/Disable root mode. (default: none)       
+          	- **none** : disable reroot mode, correct the input polytomies and return the result.        
+          	- **all** : enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.   
+          	- **best** : enable reroot mode, rerrot the genetree at each node and return all polytomy corrected version for the rooted tree with the smallest Dup-Lost score (First one if not unique). 
                         
 +  *-nf, --nnflag*         
         Treat negative distances as large distances (default:False).
@@ -72,16 +75,18 @@ PolytomySolver is the executable version of **Multipolysolver**.
         Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue. (default: 1e+305)
 
 +  *-c {nj,upgma}, --cluster {nj,upgma}*
-        Set the clustering methods. (default: nj) 
-            * upgma: UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.
-            * nj: neighbor joining clustering method, (slower).
+        Set the clustering methods. (default: nj)       
+            - **upgma** : UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.    
+            - **nj** : neighbor joining clustering method, (slower).
 
 
 +  *--slimit SOL_LIMIT*    
-        Set the max number of solution per genetree. Possible values are -1 to return all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is computationally expensive. (default: 30)
+        Set the max number of solution per genetree. Possible values are -1 to return all the solution or n, n>0 for a specific number of solution.
+        Setting this argument to -1 is computationally expensive. (default: 30)
 
 +  *--plimit PATH_LIMIT*   
-        Set the max number of solution for each polytomy in the genetree. Possible values are -1 to explore all the solution or n, n>0 for a specific number of  solution. Setting this argument to -1 is also computationally expensive. (default: -1)
+        Set the max number of solution for each polytomy in the genetree. Possible values are -1 to explore all the solution or n, n>0 for a specific number of  solution.
+        Setting this argument to -1 is also computationally expensive. (default: -1)
 
 +  *-v*                    
         Output verbosity (default: False)

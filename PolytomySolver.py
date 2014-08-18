@@ -57,7 +57,7 @@ class Output(object):
 reroot_option= ['none', 'all', 'best'];
 parser = argparse.ArgumentParser(description='Polytomy solver with multiple solutions.',formatter_class=SmartFormatter)
 parser.add_argument('-s', '--sFile', type=argparse.FileType('r'),  dest='specietree', help="Name of the file containing the species newick tree.",required=True)
-parser.add_argument('-S', '--sMap', type=argparse.FileType('r'),  dest='smap', help="Gene to species map. Use the standard format.",required=True)
+parser.add_argument('-S', '--sMap', type=argparse.FileType('r'),  dest='smap', help="Gene to species map. Use the standard format.")
 parser.add_argument('-g', '--gFile', type=argparse.FileType('r'),  dest='genetree', help="Name of the file containing the gene newick tree.",required=True)
 parser.add_argument('-d', '--dist', type=argparse.FileType('r'),  dest='distfile', help="Name of the file containing the distances between each pair of genes (The gene set should be the same for the leaf set of the genetree).",required=True)
 parser.add_argument('-o', '--output', type=argparse.FileType('w'), dest='outfile',help="Output file with the corrected tree. The genetree is printed on stdout if omitted.")

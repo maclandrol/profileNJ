@@ -38,7 +38,7 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 		if not resp.status == 200:
 			print "Invalid response: ", resp.status
 			raise ValueError('Failled to process request!')
-		
+
 		if(output.lower()!="text/x-phyloxml"):
 			return TreeClass(content)
 		else:
@@ -48,7 +48,7 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 
 
 def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, output="nh", nh_format="full"):
-	
+
 	"""Fetch genetree from a member ID
 
 	:argument memberID: the ensembl gene ID member of the tree to fetch, this is mandatory! EX: ENSG00000157764
@@ -125,7 +125,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 				children_list=node.get_children()
 				for child_c in children_list:
 					if((lcaMap[child_c].up != lcaMap[node] and lcaMap[child_c] != lcaMap[node]) or (node.type==TreeClass.AD and lcaMap[node]!=lcaMap[child_c])):
-	
+
 						while((lcaMap[child_c].up!=lcaMap[node] and node.type==TreeClass.SPEC) or (lcaMap[child_c]!=lcaMap[node] and node.type!=TreeClass.SPEC)):
 							lostnode=TreeClass()
 							intern_lost=TreeClass()
@@ -192,7 +192,7 @@ def CleanFeatures(tree=None, features=[]):
 
 def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
 	"""
-	Read a phylogeny tree from a phyloxml string and return a TreeClass object 
+	Read a phylogeny tree from a phyloxml string and return a TreeClass object
 	or a list of TreeClass object
 	"""
 	project = Phyloxml()
@@ -246,7 +246,7 @@ def treeHash(tree, addinfos=''):
 	"""Hashing the tree based on the sorted node name"""
 	newick_str= re.sub("(?<=\()([^()]+?)(?=\))",lambda m: ",".join(sorted(m.group(1).split(","))), tree.write(format=9))
 	#print "newick: ", tree.write(format=9), "parsing: ", newick_str
-	return hashlib.sha384('%s%s'%(newick_str, str(addinfos))).hexdigest()
+	return hashlib.sha384(newick_str+addinfos).hexdigest()
 
 
 def newick_preprocessing(newick, gene_sep=None):
@@ -261,7 +261,7 @@ def newick_preprocessing(newick, gene_sep=None):
 		nw = nw.strip()
 		if nw.endswith(';'):
 			nw = nw[:-1]
-		
+
 		if gene_sep is None:
 			i=0
 			while i< len(DEF_SEP_LIST) and DEF_SEP_LIST[i] not in nw:
@@ -282,13 +282,13 @@ def newick_preprocessing(newick, gene_sep=None):
 
 def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305, nFlag=False, smap=None):
 	#################################################################
-	#TODO : 
+	#TODO :
 	#	1) Correct newick
 	#	2) Sequence retrieve
 	#	3) PhyML to align sequence and make a distance matrice
 	#
 	#################################################################
-	
+
 	#genetree input
 	speciemap =None
 	if isinstance(genetree, basestring) and not smap:
@@ -373,10 +373,11 @@ def customTreeCompare(original_t, corrected_t, t):
 
 	if(len(ct_success)==len(ct_leaves)):
 		print "**Leave remaining success for corrected tree"
-		#print "\n".join([str(h) for h in t_success])
+		print "\n".join([str(h) for h in t_success])
+		
 	else:
 		print "**Corrected tree doesn't follow patern"
-		#print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))
+		print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))
 
 
 	if(len(t_success)==len(t_leaves)):

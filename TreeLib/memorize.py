@@ -1,5 +1,6 @@
 import collections
 import functools
+import sys
 
 class memorize(object):
 	"""Cache function output when it's called and return it
