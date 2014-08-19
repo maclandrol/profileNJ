@@ -1,7 +1,7 @@
 import subprocess
 import TreeUtils
 from TreeClass import TreeClass
-import re, sys, os
+import re, sys, os,time
 import numpy as np
 from Bio.Phylo.Applications import _Phyml
 from Bio.Align.Applications import ClustalOmegaCommandline
@@ -19,38 +19,94 @@ phymlbootstrapmodel='_phyml_boot_stats.txt'
 phymltrees='_phyml_trees.txt'
 
 
-def executePipe(tree, nxsfile=None, fasta=None, al=0, type=None, treefile=None):
+def timeit(func):
 
-    n=[]
-    for leaf in tree:
-        if(len(n)<7):
-            n.append(leaf.name)
+    def timed(*args, **kw):
+        tstart = time.time()
+        result = func(*args, **kw)
+        tend = time.time()
+        ttime= tend-tstart
 
-    tree.prune(n)
+        print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
+        return result, ttime
 
-    if(treefile is not None):
-        tree=TreeClass(treefile)
-    else:
-        try:
-            tree.write(format=0, outfile="tree.nw");
-            treefile="tree.nw"
-        except Exception as e:
-            print e
-            print "Can't write tree to 'tree.nw'"
+    return timed
 
-    if not isinstance(tree, TreeClass):
-        raise ValueError ("You sould use a TreeNode instance")
 
-    if(nxsfile is None):
-        if fasta is None:
-            print
-            print "WRITING your sequence into a fasta file"
-            tree.writeSeqToFasta(comment=0)
-            fasta="seq.fasta"
+def methodCompare(mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo):
+    w_dir=os.path.dirname(mltree)
+    basename, align_ext=name_extractor(os.path.basename(alignfile), ext=".")
+    distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
+    logfile= os.path.join(w_dir, basename+".treefix.log")
+    ps_out=os.path.join(w_dir, basename+".polytomysolver.tree")
+    tf_out=os.path.join(w_dir, basename+".treefix.tree")
 
-        nxsfile=write_al_in_nxs_file(fasta, al=al)
+    runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit)
+    runTreeFix(mltree, smap, specietree, "."+align_ext, mltree_ext, logfile)
+    fix_ps_out(ps_out)
+    # compute pval and Dlnl for true tree using RAxML tree to optimize
+    tf_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".treefix.tree", ".tf.ml", correctPhylo)
+    executeCMD(tf_cmp_lk)
+    ps_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".polytomysolver.tree",".ps.ml", correctPhylo)
+    executeCMD(ps_cmp_lk)
 
-    executePhyML(nxsfile, treefile)
+    tt_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".tree",".tt.ml", correctPhylo)
+    executeCMD(tt_cmp_lk)
+
+    rx_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext,mltree_ext ,".rx.ml", correctPhylo)
+    executeCMD(rx_cmp_lk)
+
+    # compute dl cost
+    raxml_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, mltree_ext, ".raxml.output", mltree)
+    executeCMD(raxml_cmp_dl)
+
+    tf_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".treefix.tree", ".treefix.output", tf_out)
+    executeCMD(tf_cmp_dl)
+
+    ps_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".polytomysolver.tree", ".polytomysolver.output", ps_out)
+    executeCMD(ps_cmp_dl)
+
+    tt_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".tree", ".true.output", correctPhylo)
+    executeCMD(tt_cmp_dl)
+
+def getDistMatrix(alignfile, outfile):
+    cmd="fastdist -I fasta -O phylip -e -o %s %s"%(outfile, alignfile)
+    executeCMD(cmd)
+    return outfile
+
+
+def name_extractor(filename, ext="."):
+    prefix, ext, suffix = filename.partition(ext)
+    return prefix, suffix
+
+
+#raxmlHPC-SSE3 -f I -m GTRGAMMA -t 0.bootstrap.align.tree -n broot
+#
+@timeit
+def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit):
+    cmd="python PolytomySolver.py -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit)
+    executeCMD(cmd)
+
+
+@timeit
+def runTreeFix(mltree, smap, spectree, align_ext, mltree_ext, logfile):
+    cmd="treefix -s %s -S %s -A '%s' -o %s -n %s -V 2 -l %s %s"%(spectree, smap, align_ext, mltree_ext, ".treefix.tree", logfile, mltree)
+    executeCMD(cmd)
+
+
+def fix_ps_out(ps_out):
+    with open(ps_out, 'r') as infile, open("tmp", 'w') as outfile:
+        keepline=''
+        for line in infile:
+            if(line.startswith('>')):
+                print line
+            else:
+                keepline=line
+        outfile.write(keepline)
+    try:
+        os.rename("tmp", ps_out)
+    except Exception, e:
+        pass
 
 
 def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
@@ -91,10 +147,6 @@ def construct_phyml_tree(input_tree):
     phyml= _Phyml.PhymlCommandline(input=input_tree, datatype='nt', bootstrap=100, optimize='tlr')
     print str(phyml)
     phyml()
-
-
-def getDistMatrix(alignment_file_path):
-    clustalo(filename, treeid, alignment_path, dist_matrix_path, aligned=True)
 
 
 def executeCMD(cmd):

@@ -240,7 +240,8 @@ class TreeClass(TreeNode):
 		if speciesMap :
 			for node in self.traverse():
 				node_specie= speciesMap.get(node.name, TreeClass.DEFAULT_SPECIE)
-				node.add_features(self.__class__._capitalize(node_specie) if capitalize else node_specie)
+				node_specie=self.__class__._capitalize(node_specie) if capitalize else node_specie
+				node.add_features(species= node_specie)
 		else:
 			for leaf in self:
 				if use_fn is not None :
@@ -262,7 +263,8 @@ class TreeClass(TreeNode):
 		for leaf in self:
 			if genesMap :
 				node_gene= genesMap.get(leaf.name, TreeClass.DEFAULT_GENE)
-				node.add_features(self.__class__._capitalize(node_gene) if capitalize else node_gene)
+				node_gene=self.__class__._capitalize(node_gene) if capitalize else node_gene
+				node.add_features(genes=node_gene)
 
 			elif use_fn is not None :
 				leaf.add_features(genes=use_fn(leaf))

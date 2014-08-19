@@ -3,7 +3,7 @@
 import argparse, linecache
 from Multipolysolver import *
 from TreeLib import *
-import sys
+import sys, time
 from operator import itemgetter
 
 """
@@ -79,6 +79,7 @@ genetree = linecache.getline(args.genetree.name, args.gline)
 oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(genetree, args.specietree.name, args.distfile.name, capitalize=args.cap, gene_sep= args.gene_sep, nFlag= args.nflag, smap=args.smap)
 tree_list=[oritree]
 outlog= Output(args.outfile)
+start_time=time.time()
 
 if args.reroot.lower() == 'all':
 	tree_list.extend(oritree.reroot())
@@ -98,8 +99,11 @@ for genetree in tree_list:
 	first=True
 	count+=1
 	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
-	outlog.write('>Tree %s; cost=%s'%(count, polysolution[0].cost))
+	outlog.write('>Tree %s; m_cost=%s'%(count, polysolution[0].cost))
 	for tree in polysolution:
 		outlog.write(tree.write(format=9))
-	
+
+end_time=time.time()	
 outlog.close()
+if(args.verbose):
+	print "END  polytomySolver on file: '%s' (%f s)" %(args.genetree.name, (start_time-end_time))

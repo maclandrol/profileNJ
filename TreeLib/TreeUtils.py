@@ -108,7 +108,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
 	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
 	"""
-	if(map is None or geneTree is None):
+	if(lcaMap is None or geneTree is None):
 		raise Exception("lcaMapping or geneTree not found")
 	else :
 		for node in geneTree.traverse("levelorder"):
@@ -309,7 +309,6 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 			for key,value in regexmap.iteritems():
 				if key.match(leaf.name):
 					speciemap[leaf.name]=value
-
 
 	genetree.set_species(speciesMap=speciemap ,sep=gene_sep, capitalize=capitalize, pos=specie_pos)
 
