@@ -11,12 +11,11 @@ if [ -f $clout ]
 then
 	sudo rm $clout
 fi
-rm "$2/$1"/RAxML_*
 clustalo -i $fasta -o $clout --outfmt=fasta --force
-#RAXML best tree for 10 ML run with align file
-raxmlHPC-SSE3 -s $align -n align.tree -m GTRGAMMA -p $seed -w $outdir
+#RAXML best tree for 10 ML run with 
+#raxmlHPC-SSE3 -s $align -n align.tree -m GTRGAMMA -p $seed -w $outdir
+#raxmlHPC-SSE3 -s $clout -n fa.tree -m GTRGAMMA -p $seed -w $outdir
+
 #Raxml rapid  Bootstrap tree with 
 raxmlHPC-SSE3 -s $align -n bootstrap.align.tree -m GTRGAMMA -p $seed -x $seed -f a -# autoMR -w $outdir
-
-raxmlHPC-SSE3 -s $clout -n fa.tree -m GTRGAMMA -p $seed -w $outdir
 raxmlHPC-SSE3 -s $clout -n bootstrap.fa.tree -m GTRGAMMA -p $seed -x $seed -f a -# autoMR -w $outdir

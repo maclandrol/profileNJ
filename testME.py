@@ -3,31 +3,25 @@ from TreeLib import *
 from TreeLib.SupportUtils import *
 import os, shutil
 
-def runTest(basedir, align_type, smap, specietree, alignfile, mltree, phylogeny, slimit=-1, plimit=-1, reroot='none', seuil=95):
+def runTest(output, basedir, align_type, smap, specietree, alignfile, mltree, phylogeny, slimit=-1, plimit=-1, reroot='best', seuil=95, seq=1):
 
 	mltree_ext="%s.root.bootstrap.tree"%align_type
 
 	shutil.copy(os.path.join(basedir, 'RAxML_bipartitions.bootstrap%s.tree'%(align_type)),mltree)
 	cmd="raxmlHPC-SSE3 -f I -m GTRGAMMA -t %s -n %s -w %s" %(mltree, mltree_ext[1:], os.path.abspath(basedir))
 	executeCMD(cmd)
-	rooted_tree=os.path.join(basedir, os.path.basename(phylogeny).replace(".tree", mltree_ext))
-	print rooted_tree
-
+	shutil.copy(phylogeny, phylogeny.replace(".tree", ".true.tree"))
+	phylogeny=phylogeny.replace(".tree", ".true.tree")
+	rooted_tree=os.path.join(basedir, os.path.basename(phylogeny).replace(".true.tree", mltree_ext))
 	shutil.copy(os.path.join(basedir,"RAxML_rootedTree%s.root.bootstrap.tree"%align_type), rooted_tree)
 	
 	#mltree="exp/0.align.root.bootstrap.tree"
-	intree="exp/0.align.bootstrap.tree"
-	gtree="exp/0.align.bootstrap.nw"
+	gtree=os.path.join(basedir, os.path.basename(phylogeny).replace(".tree", "%s.%s.bootstrap.tree"%(align_type,seuil)))
+	maxLTree= TreeClass(mltree)
+	maxLTree.contract_tree(seuil=seuil)
+	maxLTree.write(outfile=gtree, format=0)
 
-	print alignfile
-	print mltree
-	print phylogeny
-
-	#maxLTree= TreeClass(intree)
-	#maxLTree.contract_tree(seuil=seuil)
-	#maxLTree.write(outfile=gtree, format=0)
-
-	#methodCompare(mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, reroot, slimit, plimit, phylogeny)
+	methodCompare(output, rooted_tree, smap, specietree, alignfile, gtree, seuil, mltree_ext, reroot, slimit, plimit, phylogeny)
 	#treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel --show-help
 	#treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel --show-help
 
@@ -53,13 +47,17 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
+	output=os.path.join(args.workdir, "output.txt")
+	def_tree="RAxML_bipartitions.bootstrap%s.tree"%(args.align_type)
+
 	if(args.sequence):
 		for seq in xrange(args.sequence[0], args.sequence[1]):
 			basedir=os.path.join(args.workdir, str(seq))
 			mltree= os.path.join(basedir, "%s%s.bootstrap.tree"%(seq,args.align_type))
 			alignfile=os.path.join(basedir, "%s%s"%(seq,args.align_type))
 			phylogeny=os.path.join(basedir, "%s.tree"%(seq))
-			runTest(basedir, args.align_type, args.smap, args.specietree, alignfile, mltree, phylogeny, reroot=args.reroot, seuil=args.seuil, plimit=args.path_limit, slimit=args.sol_limit)
+			if(os.path.exists(os.path.join(basedir, def_tree))):
+				runTest(output, basedir, args.align_type, args.smap, args.specietree, alignfile, mltree, phylogeny, reroot=args.reroot, seuil=args.seuil, plimit=args.path_limit, slimit=args.sol_limit, seq=seq)
 
 	else:
-		runTest(args.workdir,args.align_type, args.smap, args.specietree, os.path.join(args.workdir,args.alignment), os.path.join(args.workdir,args.mltree), os.path.join(args.workdir,args.realtree), reroot=args.reroot, seuil=args.seuil, plimit=args.path_limit, slimit=args.sol_limit)
+		runTest(output,args.workdir,args.align_type, args.smap, args.specietree, os.path.join(args.workdir,args.alignment), os.path.join(args.workdir,args.mltree), os.path.join(args.workdir,args.realtree), reroot=args.reroot, seuil=args.seuil, plimit=args.path_limit, slimit=args.sol_limit)

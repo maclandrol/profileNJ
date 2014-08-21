@@ -28,12 +28,14 @@ def timeit(func):
         ttime= tend-tstart
 
         print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
-        return result, ttime
+        return ttime
 
     return timed
 
 
-def methodCompare(mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo):
+def methodCompare(output, mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo):
+    
+    #with open(output, 'a') as outfile:
     w_dir=os.path.dirname(mltree)
     basename, align_ext=name_extractor(os.path.basename(alignfile), ext=".")
     distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
@@ -41,8 +43,8 @@ def methodCompare(mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext,
     ps_out=os.path.join(w_dir, basename+".polytomysolver.tree")
     tf_out=os.path.join(w_dir, basename+".treefix.tree")
 
-    runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit)
-    runTreeFix(mltree, smap, specietree, "."+align_ext, mltree_ext, logfile)
+    ps_time=runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit)
+    tf_time=trunTreeFix(mltree, smap, specietree, "."+align_ext, mltree_ext, logfile)
     fix_ps_out(ps_out)
     # compute pval and Dlnl for true tree using RAxML tree to optimize
     tf_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".treefix.tree", ".tf.ml", correctPhylo)
@@ -50,24 +52,26 @@ def methodCompare(mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext,
     ps_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".polytomysolver.tree",".ps.ml", correctPhylo)
     executeCMD(ps_cmp_lk)
 
-    tt_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".tree",".tt.ml", correctPhylo)
+    tt_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".true.tree",".tt.ml", correctPhylo)
     executeCMD(tt_cmp_lk)
 
     rx_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext,mltree_ext ,".rx.ml", correctPhylo)
     executeCMD(rx_cmp_lk)
 
     # compute dl cost
-    raxml_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, mltree_ext, ".raxml.output", mltree)
+    raxml_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, mltree_ext, ".raxml.output", mltree)
     executeCMD(raxml_cmp_dl)
 
-    tf_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".treefix.tree", ".treefix.output", tf_out)
+    tf_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".treefix.tree", ".treefix.output", tf_out)
     executeCMD(tf_cmp_dl)
 
-    ps_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".polytomysolver.tree", ".polytomysolver.output", ps_out)
+    ps_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".polytomysolver.tree", ".polytomysolver.output", ps_out)
     executeCMD(ps_cmp_dl)
 
-    tt_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".tree", ".true.output", correctPhylo)
+    tt_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".true.tree", ".true.output", correctPhylo)
     executeCMD(tt_cmp_dl)
+
+
 
 def getDistMatrix(alignfile, outfile):
     cmd="fastdist -I fasta -O phylip -e -o %s %s"%(outfile, alignfile)
