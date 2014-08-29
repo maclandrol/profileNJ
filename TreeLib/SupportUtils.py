@@ -33,45 +33,81 @@ def timeit(func):
     return timed
 
 
-def methodCompare(output, mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo):
+def methodCompare(outfile, mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo, datasize, unrootmltree, polytomy_number):
     
-    #with open(output, 'a') as outfile:
-    w_dir=os.path.dirname(mltree)
-    basename, align_ext=name_extractor(os.path.basename(alignfile), ext=".")
-    distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
-    logfile= os.path.join(w_dir, basename+".treefix.log")
-    ps_out=os.path.join(w_dir, basename+".polytomysolver.tree")
-    tf_out=os.path.join(w_dir, basename+".treefix.tree")
+        w_dir=os.path.dirname(mltree)
+        basename, align_ext=name_extractor(os.path.basename(alignfile), ext=".")
+        distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
+        logfile= os.path.join(w_dir, basename+".treefix.log")
+        ps_out=os.path.join(w_dir, basename+".polytomysolver.tree")
+        tf_out=os.path.join(w_dir, basename+".treefix.tree")
 
-    ps_time=runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit)
-    tf_time=trunTreeFix(mltree, smap, specietree, "."+align_ext, mltree_ext, logfile)
-    fix_ps_out(ps_out)
-    # compute pval and Dlnl for true tree using RAxML tree to optimize
-    tf_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".treefix.tree", ".tf.ml", correctPhylo)
-    executeCMD(tf_cmp_lk)
-    ps_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".polytomysolver.tree",".ps.ml", correctPhylo)
-    executeCMD(ps_cmp_lk)
+        ps_time=runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit)
+        tf_time=runTreeFix(mltree, smap, specietree, "."+align_ext, mltree_ext, logfile)
+        n_psol=fix_ps_out(ps_out)
+        likelihoods = phymlikelihood(alignfile, align_ext, ps_out, n_psol)
+        psrfs=[]
+        psdl_costs=[]
+        psdinls=[]
+        pspvals=[]
+        psmax_rfs=[]
+        # compute pval and Dlnl for true tree using RAxML tree to optimize
+        tf_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s -o %s %s" %("."+align_ext, mltree_ext, ".tf.ml", ".treefix.tree", tf_out)
+        executeCMD(tf_cmp_lk)
 
-    tt_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".true.tree",".tt.ml", correctPhylo)
-    executeCMD(tt_cmp_lk)
+        tt_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext,mltree_ext ,".tt.ml",correctPhylo)
+        executeCMD(tt_cmp_lk)
 
-    rx_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext,mltree_ext ,".rx.ml", correctPhylo)
-    executeCMD(rx_cmp_lk)
+        # compute dl cost
+        raxml_cmp_dl="treefix_compute --type cost -r -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, mltree_ext, ".raxml.output", mltree)
+        executeCMD(raxml_cmp_dl)
 
-    # compute dl cost
-    raxml_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, mltree_ext, ".raxml.output", mltree)
-    executeCMD(raxml_cmp_dl)
+        tf_cmp_dl="treefix_compute --type cost -r -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".treefix.tree", ".treefix.output", tf_out)
+        executeCMD(tf_cmp_dl)
 
-    tf_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".treefix.tree", ".treefix.output", tf_out)
-    executeCMD(tf_cmp_dl)
-
-    ps_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".polytomysolver.tree", ".polytomysolver.output", ps_out)
-    executeCMD(ps_cmp_dl)
-
-    tt_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -r -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".true.tree", ".true.output", correctPhylo)
-    executeCMD(tt_cmp_dl)
+        tt_cmp_dl="treefix_compute --type cost -r -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".tree", ".true.output", correctPhylo)
+        executeCMD(tt_cmp_dl)
 
 
+        with open(os.path.join(w_dir, basename+".polytomysolver.all"), 'w') as ps_outfile:
+                header=['#','dl-cost', 'dinl', 'pval', 'likelihood', 'rf', 'max_rf']
+                ps_outfile.write("\t".join(header)+"\n")
+                for n in xrange(n_psol):
+                    ps_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s -o %s %s" %("."+align_ext,mltree_ext,".ps.ml%s"%(n+1),".polytomysolver.tree", "%s%s"%(ps_out, (n+1)))
+                    executeCMD(ps_cmp_lk)
+                    ps_cmp_dl="treefix_compute --type cost -r -m treefix.models.duplossmodel.DupLossModel -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".polytomysolver.tree", ".polytomysolver.output%s"%(n+1), "%s%s"%(ps_out, (n+1)))
+                    executeCMD(ps_cmp_dl)
+                    polysolver_rf, polysolver_maxrf=getRFval(correctPhylo, "%s%s"%(ps_out, (n+1)))
+                    psrfs.append(polysolver_rf); psmax_rfs.append(polysolver_maxrf)
+
+                    with open(os.path.join(w_dir, basename+".ps.m%s"%(n+1)), 'r') as psml, open(os.path.join(w_dir, basename+".polytomysolver.output%s"%(n+1)), 'r') as psr:
+                        dinl, pval=psml.readline().strip().split()
+                        rdl=psr.readline().strip()
+                        psdl_costs.append(rdl); psdinls.append(dinl); pspvals.append(pval)
+                        ps_outfile.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\n"%((n+1),rdl, dinl, pval, likelihoods[n], polysolver_rf, polysolver_maxrf))
+
+
+        with open(os.path.join(w_dir, basename+".tf.ml"), 'r') as tfml,  open(os.path.join(w_dir, basename+".tt.ml"), 'r') as ttml, open(os.path.join(w_dir, basename+".treefix.output"), 'r') as tfr, open(os.path.join(w_dir, basename+".true.output"), 'r') as ttr, open(os.path.join(w_dir, basename+".raxml.output"), 'r') as rxr:
+            #ml score
+            treefix_dinl, treefix_pval=tfml.readline().strip().split()
+            default_dinl, default_pval=ttml.readline().strip().split()
+            #rf score
+            raxml_rf, raxml_maxrf= getRFval(correctPhylo, mltree, unroot=True)
+            treefix_rf, treefix_maxrf=getRFval(correctPhylo, tf_out)
+            #reconciliation output
+            treefix_rdl=tfr.readline().strip()
+            raxml_rdl=rxr.readline().strip()
+            default_rdl=ttr.readline().strip()
+            #best polysolver result
+            bestposition= selectBestTree(likelihoods)
+            polysolver_rdl=psdl_costs[bestposition]
+            polysolver_rf=psrfs[bestposition]
+            polysolver_maxrf=psmax_rfs[bestposition]
+            polysolver_dinl=psdinls[bestposition]
+            polysolver_pval=pspvals[bestposition]
+
+            line=[basename, datasize, default_rdl, default_dinl, default_pval, raxml_rdl, raxml_rf, raxml_maxrf, treefix_rdl, treefix_rf, treefix_maxrf,treefix_dinl, treefix_pval, tf_time, polysolver_rdl, polysolver_rf, polysolver_maxrf, polysolver_dinl,polysolver_pval, ps_time,polytomy_number, n_psol]
+            outfile.write("\t".join([str(val) for val in line])+"\n")
 
 def getDistMatrix(alignfile, outfile):
     cmd="fastdist -I fasta -O phylip -e -o %s %s"%(outfile, alignfile)
@@ -84,8 +120,31 @@ def name_extractor(filename, ext="."):
     return prefix, suffix
 
 
+def phymlikelihood(sequence, align_ext, treepath, n_sol):
+    
+    sequence=convert_to_phylip(sequence, 'fasta', 'align')
+    likelihoods=[]
+    output_stats = "%s_phyml_stats.txt" %sequence
+    output_tree = "%s_phyml_tree.txt" %sequence
+    ll_keyword = ". Log-likelihood:"
+ 
+    for n in xrange(n_sol):
+        phyml = _Phyml.PhymlCommandline(cmd="phyml", input=sequence, input_tree="%s%s"%(treepath,(n+1)) , optimize="none", bootstrap=0)
+        phyml()
+
+    with open(output_stats) as search:
+        for line in search:
+            if ll_keyword in line:
+                line = line.replace(ll_keyword, "")
+                likelihoods.append(float(line))
+
+    return likelihoods
+
 #raxmlHPC-SSE3 -f I -m GTRGAMMA -t 0.bootstrap.align.tree -n broot
-#
+
+def selectBestTree(likelihoods):
+    return likelihoods.index(max(likelihoods))
+
 @timeit
 def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit):
     cmd="python PolytomySolver.py -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit)
@@ -98,19 +157,33 @@ def runTreeFix(mltree, smap, spectree, align_ext, mltree_ext, logfile):
     executeCMD(cmd)
 
 
+def getRFval(refTree_path, tree_path, unroot=False):
+    refTree=TreeClass(refTree_path)
+    tree=TreeClass(tree_path)
+    rf, max_rf, c, p1, p2= refTree.robinson_foulds(tree, unrooted_trees=unroot)
+
+    ###test:
+    rooting= tree.reroot()
+    for t in rooting:
+        rrf, rmax_rf, rc, rp1, rp2= refTree.robinson_foulds(t, unrooted_trees=True)
+        if(rrf!=rf):
+            print "... rerooting don't yeld the same rf score for tree: %s"%tree_path
+            break
+
+    return rf, max_rf
+
+
 def fix_ps_out(ps_out):
-    with open(ps_out, 'r') as infile, open("tmp", 'w') as outfile:
-        keepline=''
+    nsol=0
+    with open(ps_out, 'r') as infile:
         for line in infile:
             if(line.startswith('>')):
-                print line
+                pass
             else:
-                keepline=line
-        outfile.write(keepline)
-    try:
-        os.rename("tmp", ps_out)
-    except Exception, e:
-        pass
+                nsol+=1
+                with open("%s%s"%(ps_out, nsol), 'w') as outfile:
+                    outfile.write(line)
+    return nsol
 
 
 def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
