@@ -102,7 +102,7 @@ elif args.reroot.lower() == 'best':
 
 count=0
 for genetree in tree_list:
-	first=True
+	first=True 
 	count+=1
 	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
 	
