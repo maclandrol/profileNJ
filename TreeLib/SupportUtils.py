@@ -11,14 +11,6 @@ from Bio.Alphabet import IUPAC
 SEQUENCE_ALPHABET = {'dna':IUPAC.unambiguous_dna, 'rna':IUPAC.unambiguous_rna, 'protein':IUPAC.protein}
 
 
-phymllk='phyml_lk.txt'
-phymltree='_phyml_tree.txt'
-phymlmodel='_phyml_stats.txt'
-phymlbootstrap='_phyml_boot_trees.txt'
-phymlbootstrapmodel='_phyml_boot_stats.txt'
-phymltrees='_phyml_trees.txt'
-
-
 def timeit(func):
 
     def timed(*args, **kw):
@@ -28,46 +20,10 @@ def timeit(func):
         ttime= tend-tstart
 
         print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
-        return result, ttime
+        return ttime
 
     return timed
 
-
-def methodCompare(mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo):
-    w_dir=os.path.dirname(mltree)
-    basename, align_ext=name_extractor(os.path.basename(alignfile), ext=".")
-    distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
-    logfile= os.path.join(w_dir, basename+".treefix.log")
-    ps_out=os.path.join(w_dir, basename+".polytomysolver.tree")
-    tf_out=os.path.join(w_dir, basename+".treefix.tree")
-
-    runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit)
-    runTreeFix(mltree, smap, specietree, "."+align_ext, mltree_ext, logfile)
-    fix_ps_out(ps_out)
-    # compute pval and Dlnl for true tree using RAxML tree to optimize
-    tf_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".treefix.tree", ".tf.ml", correctPhylo)
-    executeCMD(tf_cmp_lk)
-    ps_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".polytomysolver.tree",".ps.ml", correctPhylo)
-    executeCMD(ps_cmp_lk)
-
-    tt_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext, ".tree",".tt.ml", correctPhylo)
-    executeCMD(tt_cmp_lk)
-
-    rx_cmp_lk= "treefix_compute --type likelihood -m treefix.models.raxmlmodel.RAxMLModel -A %s -U %s -n %s %s" %("."+align_ext,mltree_ext ,".rx.ml", correctPhylo)
-    executeCMD(rx_cmp_lk)
-
-    # compute dl cost
-    raxml_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, mltree_ext, ".raxml.output", mltree)
-    executeCMD(raxml_cmp_dl)
-
-    tf_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".treefix.tree", ".treefix.output", tf_out)
-    executeCMD(tf_cmp_dl)
-
-    ps_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".polytomysolver.tree", ".polytomysolver.output", ps_out)
-    executeCMD(ps_cmp_dl)
-
-    tt_cmp_dl="treefix_compute --type cost -m treefix.models.duplossmodel.DupLossModel  -s %s -S %s -o %s -n %s %s"%(specietree, smap, ".tree", ".true.output", correctPhylo)
-    executeCMD(tt_cmp_dl)
 
 def getDistMatrix(alignfile, outfile):
     cmd="fastdist -I fasta -O phylip -e -o %s %s"%(outfile, alignfile)
@@ -80,8 +36,30 @@ def name_extractor(filename, ext="."):
     return prefix, suffix
 
 
-#raxmlHPC-SSE3 -f I -m GTRGAMMA -t 0.bootstrap.align.tree -n broot
-#
+def phymlikelihood(sequence, align_ext, treepath, n_sol):
+    
+    sequence=convert_to_phylip(sequence, 'fasta', 'align')
+    likelihoods=[]
+    output_stats = "%s_phyml_stats.txt" %sequence
+    output_tree = "%s_phyml_tree.txt" %sequence
+    ll_keyword = ". Log-likelihood:"
+ 
+    for n in xrange(n_sol):
+        phyml = _Phyml.PhymlCommandline(cmd="phyml", input=sequence, input_tree="%s%s"%(treepath,(n+1)) , optimize="none", bootstrap=0)
+        phyml()
+
+    with open(output_stats) as search:
+        for line in search:
+            if ll_keyword in line:
+                line = line.replace(ll_keyword, "")
+                likelihoods.append(float(line))
+
+    return likelihoods
+
+def selectBestTree(likelihoods):
+    return likelihoods.index(max(likelihoods))
+
+
 @timeit
 def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit):
     cmd="python PolytomySolver.py -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit)
@@ -94,19 +72,32 @@ def runTreeFix(mltree, smap, spectree, align_ext, mltree_ext, logfile):
     executeCMD(cmd)
 
 
+def getRFval(refTree_path, tree_path, unroot=False):
+    refTree=TreeClass(refTree_path)
+    tree=TreeClass(tree_path)
+    rf, max_rf, c, p1, p2= refTree.robinson_foulds(tree, unrooted_trees=unroot)
+
+    rooting= tree.reroot()
+    for t in rooting:
+        rrf, rmax_rf, rc, rp1, rp2= refTree.robinson_foulds(t, unrooted_trees=True)
+        if(rrf!=rf):
+            print "... rerooting don't yeld the same rf score for tree: %s"%tree_path
+            break
+
+    return rf, max_rf
+
+
 def fix_ps_out(ps_out):
-    with open(ps_out, 'r') as infile, open("tmp", 'w') as outfile:
-        keepline=''
+    nsol=0
+    with open(ps_out, 'r') as infile:
         for line in infile:
             if(line.startswith('>')):
-                print line
+                pass
             else:
-                keepline=line
-        outfile.write(keepline)
-    try:
-        os.rename("tmp", ps_out)
-    except Exception, e:
-        pass
+                nsol+=1
+                with open("%s%s"%(ps_out, nsol), 'w') as outfile:
+                    outfile.write(line)
+    return nsol
 
 
 def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
@@ -129,7 +120,6 @@ def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
             print "FAILED at clustalw execution !!!"
             return
 
-
     return nexrepair(outnxs)
 
 
@@ -147,41 +137,6 @@ def construct_phyml_tree(input_tree):
     phyml= _Phyml.PhymlCommandline(input=input_tree, datatype='nt', bootstrap=100, optimize='tlr')
     print str(phyml)
     phyml()
-
-
-def executeCMD(cmd):
-    p=subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    error=0
-    while True:
-        out = p.stderr.read(1)
-        if p.poll() != None:
-            print "Process terminated"
-            break
-
-        if out != '':
-            sys.stdout.write(out)
-            sys.stdout.flush()
-
-        else :
-            print "Something went wrong"
-            error=1
-            break
-
-    return error
-
-
-def nexus_repair(nexus_file_path):
-    with open(nexus_file_path, "r") as nexus_file:
-        with open(nexus_file_path+".repaired", "w") as repaired:
-            for line in nexus_file:
-                #PhyML does not support the "missing" or "gap" format parameters
-                if not "missing" or not "gap" in line:
-                    repaired.write(line)
-
-    os.remove(nexus_file_path)
-    os.rename(nexus_file_path+".repaired", nexus_file_path)
-    return nexus_file_path
-
 
 
 def clustalo(geneSeq_file_path, treeid, alignment_out_path="", dist_matrix_out_path="", aligned=False, cmd_path="utils/clustalo-1.2.0"):
@@ -204,7 +159,6 @@ def clustalo(geneSeq_file_path, treeid, alignment_out_path="", dist_matrix_out_p
             clustalo = ClustalOmegaCommandline(cmd=cmd_path, infile=geneSeq_file_path, max_hmm_iterations=-1, distmat_full=True, distmat_out=dist_matrix_out_path, dealign=True, verbose=False)
 
     clustalo()
-
 
 
 def phyml(geneSeq_file_path, trees_processed, treeid, cmd_path='utils/phyml'):
@@ -254,6 +208,19 @@ def phyml(geneSeq_file_path, trees_processed, treeid, cmd_path='utils/phyml'):
     return trees_processed
 
 
+def nexus_repair(nexus_file_path):
+    with open(nexus_file_path, "r") as nexus_file:
+        with open(nexus_file_path+".repaired", "w") as repaired:
+            for line in nexus_file:
+                #PhyML does not support the "missing" or "gap" format parameters
+                if not "missing" or not "gap" in line:
+                    repaired.write(line)
+
+    os.remove(nexus_file_path)
+    os.rename(nexus_file_path+".repaired", nexus_file_path)
+    return nexus_file_path
+
+
 def nexrepair(nxsfile):
     """Repair nexus file for phyML"""
     #print "REFORMATING your nexus file to phyML input ..."
@@ -293,3 +260,24 @@ def nexrepair(nxsfile):
 
     subprocess.call(['mv', "tmp", nxsfile])
     return nxsfile
+
+
+def executeCMD(cmd):
+    p=subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
+    error=0
+    while True:
+        out = p.stderr.read(1)
+        if p.poll() != None:
+            print "Process terminated"
+            break
+
+        if out != '':
+            sys.stdout.write(out)
+            sys.stdout.flush()
+
+        else :
+            print "Something went wrong"
+            error=1
+            break
+
+    return error
