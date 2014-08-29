@@ -88,8 +88,14 @@ elif args.reroot.lower() == 'best':
 	tree_list.extend(oritree.reroot())
 	dl_costs=[]
 	for genetree in tree_list:
+		#Solving with upgma instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
 		sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
-		dl_costs.append(sol[0].cost)
+		
+		f_tree= sol[0].copy(method =='simplecopy')
+		lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+		TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+		dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+		dl_costs.append(dl_cost)
 
 	best_dl = min(enumerate(dl_costs), key=itemgetter(1))[0]
 	tree_list= [tree_list[best_dl]]
@@ -99,7 +105,14 @@ for genetree in tree_list:
 	first=True
 	count+=1
 	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
-	outlog.write('>Tree %s; m_cost=%s'%(count, polysolution[0].cost))
+	
+	#Copy, in order to not change the solution newick for export
+	f_tree= polysolution[0].copy(method='simplecopy')
+	lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+	TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+	dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+
+	outlog.write('>Tree %s; m_cost=%s'%(count,dl_cost))
 	for tree in polysolution:
 		outlog.write(tree.write(format=9))
 
