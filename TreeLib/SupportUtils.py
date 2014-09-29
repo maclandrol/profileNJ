@@ -20,7 +20,7 @@ def timeit(func):
         ttime= tend-tstart
 
         print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
-        return ttime
+        return ttime, result
 
     return timed
 
@@ -35,7 +35,7 @@ def name_extractor(filename, ext="."):
     prefix, ext, suffix = filename.partition(ext)
     return prefix, suffix
 
-
+@timeit
 def phymlikelihood(sequence, align_ext, treepath, n_sol):
     
     sequence=convert_to_phylip(sequence, 'fasta', 'align')
@@ -48,11 +48,11 @@ def phymlikelihood(sequence, align_ext, treepath, n_sol):
         phyml = _Phyml.PhymlCommandline(cmd="phyml", input=sequence, input_tree="%s%s"%(treepath,(n+1)) , optimize="none", bootstrap=0)
         phyml()
 
-    with open(output_stats) as search:
-        for line in search:
-            if ll_keyword in line:
-                line = line.replace(ll_keyword, "")
-                likelihoods.append(float(line))
+        with open(output_stats) as search:
+            for line in search:
+                if ll_keyword in line:
+                    line = line.replace(ll_keyword, "")
+                    likelihoods.append(float(line))
 
     return likelihoods
 
@@ -61,8 +61,8 @@ def selectBestTree(likelihoods):
 
 
 @timeit
-def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit):
-    cmd="python PolytomySolver.py -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit)
+def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit, algo):
+    cmd="python PolytomySolver.py -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s -c %s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit, algo)
     executeCMD(cmd)
 
 
@@ -76,14 +76,6 @@ def getRFval(refTree_path, tree_path, unroot=False):
     refTree=TreeClass(refTree_path)
     tree=TreeClass(tree_path)
     rf, max_rf, c, p1, p2= refTree.robinson_foulds(tree, unrooted_trees=unroot)
-
-    rooting= tree.reroot()
-    for t in rooting:
-        rrf, rmax_rf, rc, rp1, rp2= refTree.robinson_foulds(t, unrooted_trees=True)
-        if(rrf!=rf):
-            print "... rerooting don't yeld the same rf score for tree: %s"%tree_path
-            break
-
     return rf, max_rf
 
 
