@@ -328,6 +328,10 @@ class TreeClass(TreeNode):
 			self.delete()
 
 
+	def toStar(self):
+		"""Create a star tree from a tree topology"""
+		self.toPolytomy(break_tree_topo=True)
+
 	def get_leaves_by_feature(self, **condition):
 		"""Return leaves that match the features passed as argument"""
 		match= self.search_nodes(**condition)

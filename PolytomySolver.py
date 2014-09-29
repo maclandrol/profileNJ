@@ -91,7 +91,7 @@ elif args.reroot.lower() == 'best':
 		#Solving with upgma instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
 		sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
 		
-		f_tree= sol[0].copy(method =='simplecopy')
+		f_tree= sol[0].copy(method ='simplecopy')
 		lcamap=TreeUtils.lcaMapping(f_tree, specietree)
 		TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
 		dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
