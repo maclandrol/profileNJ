@@ -425,7 +425,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 		print chemin
 		for node in node_in_tree:
 			print node.get_ascii(show_internal=True, attributes=['species'])
-		raise ValueError("The tree construction from you path went wrong!, node still not used : %i\n" %len(node_in_tree))
+		raise ValueError("Cannot construct your tree, %i node still not used !\n" %len(node_in_tree))
 
 
 def findSpeciationBestJoint(matrice, node_order, parent_node, node_in_tree, maxVal, method='upgma'):
