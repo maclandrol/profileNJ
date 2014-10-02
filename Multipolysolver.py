@@ -420,6 +420,11 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 		return node_in_tree[0]
 	else:
 		#Display error or raise exception ??
+		print specietree.get_ascii(show_internal=True), "\n"
+		print genetree,"\n Node in tree\n\n"
+		print chemin
+		for node in node_in_tree:
+			print node.get_ascii(show_internal=True, attributes=['species'])
 		raise ValueError("The tree construction from you path went wrong!, node still not used : %i\n" %len(node_in_tree))
 
 
@@ -492,7 +497,10 @@ def polytomy_preprocessing(polytomy, specietree, gene_matrix, node_order, maxVal
 
 			if(	node.name==TreeClass.DEFAULT_NAME):
 				global PARTIAL_RESOLUTION_ITERATOR
-				node.name="%s_%i"%(node.species, PARTIAL_RESOLUTION_ITERATOR)
+				node.name="%s_I_%i"%(node.species, PARTIAL_RESOLUTION_ITERATOR)
+				while node.name in node_order:
+					PARTIAL_RESOLUTION_ITERATOR+=1
+					node.name="%s_I_%i"%(node.species, PARTIAL_RESOLUTION_ITERATOR)
 				PARTIAL_RESOLUTION_ITERATOR+=1
 
 			cluster=treeCluster(getMatrix(children_list, gene_matrix, node_order, ind_order, got_ind=False), children_list, maxVal, method=method)

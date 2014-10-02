@@ -36,7 +36,7 @@ def name_extractor(filename, ext="."):
     return prefix, suffix
 
 @timeit
-def phymlikelihood(sequence, align_ext, treepath, n_sol):
+def phymlikelihood(sequence, align_ext, treepath, n_sol, s_model='HKY85'):
     
     sequence=convert_to_phylip(sequence, 'fasta', 'align')
     likelihoods=[]
@@ -45,7 +45,7 @@ def phymlikelihood(sequence, align_ext, treepath, n_sol):
     ll_keyword = ". Log-likelihood:"
  
     for n in xrange(n_sol):
-        phyml = _Phyml.PhymlCommandline(cmd="phyml", input=sequence, input_tree="%s%s"%(treepath,(n+1)) , optimize="none", bootstrap=0)
+        phyml = _Phyml.PhymlCommandline(cmd="phyml", input=sequence, input_tree="%s%s"%(treepath,(n+1)) , optimize="none", bootstrap=0, model=s_model)
         phyml()
 
         with open(output_stats) as search:
@@ -81,15 +81,16 @@ def getRFval(refTree_path, tree_path, unroot=False):
 
 def fix_ps_out(ps_out):
     nsol=0
+    dl_cost=np.inf
     with open(ps_out, 'r') as infile:
         for line in infile:
             if(line.startswith('>')):
-                pass
+                dl_cost=int(line.split('=')[1].strip())
             else:
                 nsol+=1
                 with open("%s%s"%(ps_out, nsol), 'w') as outfile:
                     outfile.write(line)
-    return nsol
+    return nsol, dl_cost
 
 
 def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
@@ -104,7 +105,6 @@ def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
         print 'Sequence not aligned!!'
         print 'ALIGNING sequences with clustalw ...'
         clustalcmd="clustalw -INFILE=" +fastafile+" -OUTFILE="+outnxs+ " -OUTPUT=NEXUS"
-        print clustalcmd
         error= executeCMD(clustalcmd)
         if not error:
             print "DONE! :  sequences ALIGNED with clustalw"
@@ -170,7 +170,7 @@ def phyml(geneSeq_file_path, trees_processed, treeid, cmd_path='utils/phyml'):
             newick_file.write(t_tmp.write(features=[])+"\n")
 
     # Set everything up to run PhyML on the sequences and get the log likelihood for tree
-    phyml = _Phyml.PhymlCommandline(cmd=cmd_path, input=geneSeq_file_path, input_tree=input_trees, optimize="none", bootstrap=0)
+    phyml = _Phyml.PhymlCommandline(cmd=cmd_path, input=geneSeq_file_path, input_tree=input_trees, optimize="none", bootstrap=-1)
     phyml()
 
     # Get file extension (nexus or phylip)
@@ -255,21 +255,9 @@ def nexrepair(nxsfile):
 
 
 def executeCMD(cmd):
-    p=subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    error=0
-    while True:
-        out = p.stderr.read(1)
-        if p.poll() != None:
-            print "Process terminated"
-            break
-
-        if out != '':
-            sys.stdout.write(out)
-            sys.stdout.flush()
-
-        else :
-            print "Something went wrong"
-            error=1
-            break
-
-    return error
+    print "\n", cmd
+    p=subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    print "STDERR\n---------\n" , err
+    print "\nSTDOUT\n---------\n", out
+    return err

@@ -356,7 +356,7 @@ class TreeClass(TreeNode):
 		"""
         Return True if current node is an internal node.
     	"""
-		return (not self.is_root() and not self.is_leaf())
+		return not (self.is_root() or self.is_leaf())
 
 
 	def get_all_features(self):
@@ -505,9 +505,14 @@ class TreeClass(TreeNode):
 
 	def delete_single_child_internal(self):
 		for node in self.traverse("postorder"):
-			if(node.is_internal() and len(node.children)<2):
+			if(node.is_internal() and len(node.get_children())<2):
 				node.delete()
 
+	def has_single_child_internal(self):
+		for node in self.traverse("postorder"):
+			if(node.is_internal() and len(node.children)<2):
+				return True
+		return False
 
 	def iter_polytomies(self, is_polytomy_fn=None, strategy="postorder"):
 		"""
