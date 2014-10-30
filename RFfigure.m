@@ -17,7 +17,7 @@ set(gca, 'YTick',[0 25 50 75 100],...
     'TickLength',[0.001 0],...
     'Xtick', binrange,...
     'FontSize',14,...
-    'FontName','Arial');
+    'FontName','Arial', 'box','off');
 
 % Create xlabel
 xlabel('RF distance','FontSize',15);
@@ -29,3 +29,4 @@ ylabel('% of trees','FontSize',15);
 legend1 = legend(order);
 set(legend1,'FontSize',18);
 title('RF comparision between TreeSolver, TreeFix and RAxML method')
+%

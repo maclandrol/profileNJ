@@ -129,7 +129,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 						while((lcaMap[child_c].up!=lcaMap[node] and node.type==TreeClass.SPEC) or (lcaMap[child_c]!=lcaMap[node] and node.type!=TreeClass.SPEC)):
 							lostnode=TreeClass()
 							intern_lost=TreeClass()
-							intern_lost.type=TreeClass.SPEC
+							intern_lost.add_features(type=TreeClass.SPEC)
 							if lcaMap[child_c].is_root():
 								intern_lost.species=",".join(lcaMap[child_c].get_leaf_names())
 								lcaMap.update({intern_lost:lcaMap[child_c]})
@@ -141,7 +141,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 
 							#change here to display a subtree and not a leaf with a lot of specie
 							lostnode.species=",".join(set(lcaMap[intern_lost].get_leaf_names())-set(child_c.species.split(",")))
-							lostnode.type=TreeClass.LOST
+							lostnode.add_features(type=TreeClass.LOST)
 							child_c.detach()
 							#print "***********************\n\n** node : ", node, "\n\n** child_c: ", child_c, "\n\n** child parent", child_c.up
 							#node.remove_child(child_c)
@@ -161,10 +161,9 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 					#print node.species
 					if(unadded_specie):
 						lostnode=TreeClass()
-						lostnode.type=TreeClass.LOST
+						lostnode.add_features(type=TreeClass.LOST)
 						lostnode.species=",".join(unadded_specie)
 						node.add_child(lostnode)
-
 
 def ComputeDupLostScore(genetree=None):
 	"""
@@ -173,10 +172,30 @@ def ComputeDupLostScore(genetree=None):
 	if(genetree is None or 'type' not in genetree.get_all_features()):
 		raise Exception("Your Genetree didn't undergoes reconciliation yet")
 	count=0
-	for node in genetree.traverse("levelorder"):
+	for node in genetree.iter_descendants():
 		if(node.has_feature('type') and node.type==TreeClass.NAD or node.type==TreeClass.LOST or node.type==TreeClass.AD):
 			count+=1
-	return count
+	return count + (genetree.type!=0)
+
+
+def detComputeDupLostScore(genetree):
+	"""
+	Compute the duplication and lost cost
+	"""
+	if(genetree is None or 'type' not in genetree.get_all_features()):
+		raise Exception("Your Genetree didn't undergoes reconciliation yet")
+	nad=0
+	ad=0 
+	lost=0
+	for node in genetree.traverse():
+		if node.has_feature('type'):
+			if(node.type==TreeClass.NAD):
+				nad+=1
+			elif node.type==TreeClass.AD:
+				ad+=1
+			elif node.type==TreeClass.LOST :
+				lost+=1
+	return (nad, ad, lost)
 
 
 def CleanFeatures(tree=None, features=[]):

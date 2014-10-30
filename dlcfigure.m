@@ -9,6 +9,7 @@ for i=1:size(matrix, 2)
    scatter(1:size(matrix, 1), matrix(:, i),shape{i}, 'MarkerEdgeColor',colors(i, :) , 'MarkerFaceColor', colors(i, :),'LineWidth',0.5);
    hold on;
 end
+ylim([0, 10]);
 yt=cellstr(get(gca, 'YtickLabel'));
 yt(strcmp('1', yt))={'Correct cost -->'};
 set(gca, 'YtickLabel', yt);

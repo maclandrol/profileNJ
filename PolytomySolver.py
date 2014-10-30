@@ -90,21 +90,24 @@ elif args.reroot.lower() == 'best':
 	for genetree in tree_list:
 		#Solving with upgma instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
 		sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
-		
 		f_tree= sol[0].copy(method ='simplecopy')
 		lcamap=TreeUtils.lcaMapping(f_tree, specietree)
 		TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
 		dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
 		dl_costs.append(dl_cost)
-
-	best_dl = min(enumerate(dl_costs), key=itemgetter(1))[0]
-	tree_list= [tree_list[best_dl]]
+	best_dl = min(dl_costs) 
+	tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
+	if(type(tree_list)!=tuple):
+		tree_list=[tree_list]
 
 count=0
 for genetree in tree_list:
 	first=True 
 	count+=1
-	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
+	if genetree.has_polytomies():
+		polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
+	else :
+		polysolution = [genetree]
 	
 	#Copy, in order to not change the solution newick for export
 	f_tree= polysolution[0].copy(method='simplecopy')

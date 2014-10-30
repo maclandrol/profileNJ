@@ -15,7 +15,7 @@ def find_smallest_index(matrice):
 	A Tuple (i,j) is returned.
 	Warning, the diagonal should have the largest number so it will never be choose
 	"""
-	#winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
+	winner = numpy.argwhere(matrice==numpy.amin(matrice)).tolist()
 	#for m in winner:
 	#	m_reverse=m[:]
 	#	m_reverse.reverse()
@@ -259,7 +259,7 @@ def distMatProcessor(distances, maxValue, nFlag=False):
 		    read_fl=True
 		else:
 		    x_ind+=1
-		    line_list = [getIntValue(x.strip(), x_ind, y_ind, maxValue, nFlag) for y_ind, x in enumerate(line.split())]
+		    line_list = [getFloatValue(x.strip(), x_ind, y_ind, maxValue, nFlag) for y_ind, x in enumerate(line.split())]
 		    dist_matrix.append(line_list[1:])
 		    node_order.append(line_list[0])
 
@@ -286,7 +286,7 @@ def saveMatrix(filename, matrix, node_order):
 	return True
 
 
-def getIntValue(number, x_ind, y_ind, maxValue, nFlag=False):
+def getFloatValue(number, x_ind, y_ind, maxValue, nFlag=False):
 	"""Get a distance matrice validate input from a string"""
 	try:
 		n=float(number)
