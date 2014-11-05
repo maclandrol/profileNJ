@@ -7,10 +7,11 @@ from TreeClass import TreeClass
 import ClusterUtils as clu
 from ete2 import Phyloxml
 from ete2.parser.newick import NewickError
-import httplib2
+import urllib2
 import hashlib, re
 import os
-import collections, string
+from collections import defaultdict as ddict
+import string
 
 
 #TreeUtils:
@@ -28,23 +29,24 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 	if not treeID:
 		raise valueError('Please provide a genetree id')
 	else:
-		http = httplib2.Http(".cache")
-		server = "http://beta.rest.ensembl.org"
+		#http = httplib2.Http(".cache")
+		server = "http://rest.ensembl.org"
 		ext = "/genetree/id/%s?sequence=%s;aligned=%i" %(treeID,sequence,aligned)
 		if(output=="nh"):
 			ext = ext+";nh_format=%s" %nh_format
 		output="text/x-"+output
-		resp, content = http.request(server+ext, method="GET", headers={"Content-Type":output})
-		if not resp.status == 200:
-			print "Invalid response: ", resp.status
+		request = urllib2.Request(server+ext, headers={"Content-Type":output})
+		resp = urllib2.urlopen(request)
+		content=resp.read()
+		#resp, content = http.request(server+ext, method="GET", headers={"Content-Type":output})
+		if not resp.getcode() == 200:
+			print "Invalid response: ", resp.getcode()
 			raise ValueError('Failled to process request!')
 
 		if(output.lower()!="text/x-phyloxml"):
 			return TreeClass(content)
 		else:
 			return getTreeFromPhyloxml(content)
-
-
 
 
 def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, output="nh", nh_format="full"):
@@ -62,7 +64,7 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 		raise valueError('Please provide a genetree id')
 	else:
 		http = httplib2.Http(".cache")
-		server = "http://beta.rest.ensembl.org"
+		server = "http://rest.ensembl.org"
 		ext = "/genetree/member/id/%s?" %(memberID)
 		if species:
 			ext=ext+"species="+species+";"
@@ -246,7 +248,7 @@ def make_random_tree(names=list(string.lowercase), contract_seuil=0, feature_to_
 
 def getSpecieCount(tree):
 	"""Species distribution in the genetree"""
-	count= collections.defaultdict(int)
+	count= ddict(int)
 	for node in tree.get_children():
 		count[node.species]+=1
 	return count

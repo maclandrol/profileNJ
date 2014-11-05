@@ -1,0 +1,19 @@
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Simulation data
+tests/*.mat
+tests/Simulation
+
+# Distribution and packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg

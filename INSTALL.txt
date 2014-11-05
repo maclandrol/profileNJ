@@ -1,0 +1,2 @@
+python setup.py install [--user]
+DEPENDENCIES: ete2.xx, numpy> 1.7, lxml

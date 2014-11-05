@@ -1,4 +1,4 @@
-from Multipolysolver import *
+from PolytomySolver.Multipolysolver import *
 from TreeLib import *
 from TreeLib.SupportUtils import *
 import os, shutil, glob

@@ -1,6 +1,3 @@
-#usr/bin/env python
-
-from numpy import *
 from TreeClass import TreeClass
 import os
 import numpy
@@ -39,14 +36,14 @@ def condense_matrix(matrice, smallest_index, large_value, method='upgma'):
 	"""
 	first_index, second_index = smallest_index
 	#get the rows and make a new vector by updating distance
-	rows = take(matrice, smallest_index, 0)
+	rows = numpy.take(matrice, smallest_index, 0)
 
 	#default we use upgma
 	if(method.lower()=='nj'):
 		new_vector = (numpy.sum(rows, 0)-matrice[first_index,second_index])*0.5
 
 	else:
-		new_vector = average(rows, 0)
+		new_vector = numpy.average(rows, 0)
 
 	#replace info in the row and column for first index with new_vector
 	matrice[first_index] = new_vector
@@ -82,7 +79,7 @@ def calculate_Q_matrix(matrice, maxVal):
 	n= matrice.shape[0]
 	Q_matrix=numpy.zeros(shape=matrice.shape)
 	numpy.fill_diagonal(Q_matrix, maxVal)
-	diag_value= numpy.unique(matrice[diag([True]*len(matrice))])
+	diag_value= numpy.unique(matrice[numpy.diag([True]*len(matrice))])
 	infinite_pos=numpy.where(numpy.apply_along_axis(lambda x : (x==maxVal).all(), 1, matrice))[0]
 	m= infinite_pos.tolist()
 	i=0; j=0
@@ -105,7 +102,7 @@ def paired_node_distance(matrice, smallest_index,maxVal):
 	n= matrice.shape[0]
 	infinite_pos=numpy.where(numpy.apply_along_axis(lambda x : (x==maxVal).all(), 1, matrice))[0]
 	m= infinite_pos.tolist()
-	diag_value= numpy.unique(matrice[diag([True]*len(matrice))])
+	diag_value= numpy.unique(matrice[numpy.diag([True]*len(matrice))])
 	#http://en.wikipedia.org/wiki/Neighbor_joining#equation_2
 	#distance from the pair members to the new node second term
 	x=numpy.sum(matrice[i][numpy.invert(numpy.in1d(matrice[i], diag_value))]) - numpy.sum(matrice[:,j][numpy.invert(numpy.in1d(matrice[:,j], diag_value))])
@@ -191,7 +188,7 @@ def NJ_cluster(matrice, node_order, large_number, nj_depth=None):
 		#we shouldn't have the smallest index on the diagonal
 		#if that happen, reset the diagonal to large number
 		if index1 == index2:
-			matrice[diag([True]*len(matrice))] = large_number
+			matrice[numpy.diag([True]*len(matrice))] = large_number
 			smallest_index = find_smallest_index(matrice)
 		row_order = condense_node_order(matrice, smallest_index, node_order, method='nj')
 		matrice= condense_matrix(matrice, smallest_index, large_number, method='nj')
@@ -221,7 +218,7 @@ def UPGMA_cluster(matrice, node_order, large_number, upgma_depth=None):
 		index1, index2 = smallest_index
 		#if smallest_index is on the diagonal set the diagonal to large_number
 		if index1 == index2:
-			matrice[diag([True]*len(matrice))] = large_number
+			matrice[numpy.diag([True]*len(matrice))] = large_number
 			smallest_index = find_smallest_index(matrice)
 		row_order = condense_node_order(matrice, smallest_index, node_order, method='upgma')
 		matrice = condense_matrix(matrice, smallest_index, large_number, method='upgma')

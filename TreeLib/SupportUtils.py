@@ -1,11 +1,13 @@
 import subprocess
 import TreeUtils
 from TreeClass import TreeClass
-import re, sys, os,time, glob
+import re
+import sys
+import os
+import time
+import glob
 import numpy as np
 from Bio.Phylo.Applications import _Phyml
-from Bio import SeqIO
-import fileinput
 from Bio import AlignIO
 from Bio.Alphabet import IUPAC
 SEQUENCE_ALPHABET = {'dna':IUPAC.unambiguous_dna, 'rna':IUPAC.unambiguous_rna, 'protein':IUPAC.protein}
@@ -14,9 +16,9 @@ SEQUENCE_ALPHABET = {'dna':IUPAC.unambiguous_dna, 'rna':IUPAC.unambiguous_rna, '
 def timeit(func):
 
 	def timed(*args, **kw):
-		tstart = time.time()
+		tstart = time.clock()
 		result = func(*args, **kw)
-		tend = time.time()
+		tend = time.clock()
 		ttime= tend-tstart
 
 		print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
@@ -63,7 +65,7 @@ def selectBestTree(values):
 
 @timeit
 def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit, algo):
-	cmd="python PolytomySolver.py -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s -c %s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit, algo)
+	cmd="profileNJ -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s -c %s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit, algo)
 	executeCMD(cmd)
 
 

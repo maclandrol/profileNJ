@@ -7,7 +7,7 @@ TreeClass add additional specific function
 from ete2 import TreeNode
 from ete2.phylo import spoverlap
 import types
-import collections
+from collections import defaultdict as ddict
 import copy
 
 try:
@@ -577,8 +577,8 @@ class TreeClass(TreeNode):
 
 		for node in phyloxml:
 			clade = node.phyloxml_clade
-			sequence=collections.defaultdict(list)
-			taxa=collections.defaultdict(list)
+			sequence=ddict(list)
+			taxa=ddict(list)
 			for seq in clade.get_sequence():
 				sequence['name'].append(seq.get_name())
 				sequence['symbol'].append(seq.get_symbol())

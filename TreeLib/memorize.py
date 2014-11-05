@@ -1,6 +1,5 @@
-import collections
-import functools
-import sys
+from collections import Hashable as hashable
+from functools import partial
 
 class memorize(object):
 	"""Cache function output when it's called and return it
@@ -17,7 +16,7 @@ class memorize(object):
 		if hash in self.cache:
 			return self.cache[hash]
 
-		elif not isinstance(hash, collections.Hashable) or hash is None:
+		elif not isinstance(hash, hashable) or hash is None:
 			#hash is None or uncachable
 			return self.function(*args, **kwargs)
 
@@ -33,4 +32,4 @@ class memorize(object):
 
 	def __get__(self, obj, objtype):
 		"""Instance methods support"""
-		return functools.partial(self.__call__,obj )
+		return partial(self.__call__,obj )

@@ -9,7 +9,6 @@ import random
 from pprint import pprint
 import copy
 from TreeLib import *
-
 """
 Gene matrix are represented by a numpy array
 """
@@ -255,7 +254,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 			if(n_node==node and n_pos<pos): 
 				# ind to keep is empty on purpose, we have to find the good index
 				# and remove the row we don't want the clustering algorithm to work with
-				cluster=treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, maxVal, 1, method=method)
+				cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, maxVal, 1, method=method)
 				# find the resulting duplication tree
 				dup_tree= cluster[0]
 				# set the name of the duplication, i'll try noName next time
@@ -266,7 +265,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 				dup_tree.add_features(score=gene_matrix[merged_index[1], merged_index[0]])
 				dup_tree.add_features(species=node)
 				# Update the gene matrix and the node order
-				gene_matrix=del_row_column(gene_matrix,merged_index, maxVal, method=method)
+				gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
 				node_order[merged_index[0]]=dup_tree.name
 				node_order.pop(merged_index[1])
 
@@ -321,14 +320,14 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 						#node_structs= [ node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[x],ind_to_keep ) and ((node_s.is_leaf() and node_s.species == genetree.search_nodes(name=node_s.name)[0].species) or not(node_s.is_leaf())))]
 						# carefully choose the true node, not the added(in case of lost)
 						node_structs= [ node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[x],ind_to_keep ) and (not node_s.has_feature('lostnode') or not node_s.lostnode==1))]
-						cluster=treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep, got_ind=True), node_structs, maxVal, method=method)
+						cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep, got_ind=True), node_structs, maxVal, method=method)
 						spec_tree= cluster[0]
 						spec_tree.name="-".join([spec_tree.get_child_at(0).name, spec_tree.get_child_at(1).name])
 						spec_tree.add_features(type="SPEC")
 						merged_index=map(lambda x: ind_to_keep[x], cluster[2])
 						spec_tree.add_features(species=node)
 						spec_tree.add_features(score=gene_matrix[merged_index[0], merged_index[1]])
-						gene_matrix=del_row_column(gene_matrix,merged_index, maxVal, method=method)
+						gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
 						node_order[merged_index[0]]=spec_tree.name
 						node_order.pop(merged_index[1])
 						#Remove child from path_table and add parent
@@ -392,7 +391,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 				node_structs.extend([x for x in node_in_tree if(x.name in node_struct_name and not x in node_structs)])
 				node_structs= [ node_s for node_s in node_structs if (not node_s.has_feature('lostnode') or not node_s.lostnode==1)]
 				ind_to_keep=[]
-				cluster=treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, maxVal, 1, method=method)
+				cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, maxVal, 1, method=method)
 				dup_tree= cluster[0]
 				dup_tree.name="-".join([dup_tree.get_child_at(0).name, dup_tree.get_child_at(1).name])
 				dup_tree.add_features(type="DUP")
@@ -400,7 +399,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 				merged_index=map(lambda x: ind_to_keep[x], cluster[2])
 				dup_tree.add_features(species=node)
 				dup_tree.add_features(score=gene_matrix[merged_index[0], merged_index[1]])
-				gene_matrix=del_row_column(gene_matrix,merged_index, maxVal, method=method)
+				gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
 				node_order[merged_index[0]]=dup_tree.name
 				node_order.pop(merged_index[1])
 
@@ -458,7 +457,7 @@ def findSpeciationBestJoint(matrice, node_order, parent_node, node_in_tree, maxV
 	if(method=='upgma'):
 		val_matrix = matrice
 	else:
-		val_matrix= nj.calculate_Q_matrix(matrice, maxVal)
+		val_matrix= ClusterUtils.calculate_Q_matrix(matrice, maxVal)
 
 	for x_0 in child_0_list:
 		for x_1 in child_1_list:
@@ -503,10 +502,10 @@ def polytomy_preprocessing(polytomy, specietree, gene_matrix, node_order, maxVal
 					node.name="%s_I_%i"%(node.species, PARTIAL_RESOLUTION_ITERATOR)
 				PARTIAL_RESOLUTION_ITERATOR+=1
 
-			cluster=treeCluster(getMatrix(children_list, gene_matrix, node_order, ind_order, got_ind=False), children_list, maxVal, method=method)
+			cluster=ClusterUtils.treeCluster(getMatrix(children_list, gene_matrix, node_order, ind_order, got_ind=False), children_list, maxVal, method=method)
 			merged_index=map(lambda x: ind_order[x], cluster[2])
 			node.add_features(score=gene_matrix[merged_index[0], merged_index[1]])
-			gene_matrix=del_row_column(gene_matrix,merged_index, maxVal, method=method)
+			gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
 			node_order[merged_index[0]]=node.name
 			node_order.pop(merged_index[1])
 	return gene_matrix, node_order
