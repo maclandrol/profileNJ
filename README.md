@@ -1,8 +1,13 @@
-python-tree-processing
+profileNJ
 =======================
 
 Utility package for tree processing written in python and based on the [ete2](https://pythonhosted.org/ete2/index.html) toolkit.
 
+## installation 
+
+python setup.py install
+
+You may need sudo privileges. You can also install a local version by using the *'--user'* flag. 
 
 ## TreeClass
 
@@ -31,9 +36,9 @@ ClusterUtils is an implementation of UPGMA (Unweighted Pair Group Method with Ar
 Multipolysolver is a module for polytomy correction in genetree using the duplication-lost criterion. Mutltipolysolver output all the binary solution for a non-binary gene tree that minimize the duplication-lost score. If the input tree is considered unrooted, Multipolysolver can test every possible root and return the binary tree with the lowest duplication-lost or all rooted binary tree.
 
 
-## PolytomySolver
+## profileNJ
 
-PolytomySolver is the executable version of **Multipolysolver**.
+profileNJ is the executable version of **Multipolysolver**.
 
 #### Command line arguments
 
@@ -43,7 +48,7 @@ PolytomySolver is the executable version of **Multipolysolver**.
 +  *-s SPECIETREE, --sFile SPECIETREE*          
         Name of the file containing the species newick tree (default: None).
 
-+  *S SMAP, --sMap SMAP*        
++  *-S SMAP, --sMap SMAP*        
         Gene to species map. Use the standard format. (default: None)
 
 +  *-g GENETREE, --gFile GENETREE*              
