@@ -5,7 +5,9 @@ Utility package for tree processing written in python and based on the [ete2](ht
 
 ## installation 
 
-python setup.py install
+
+`python setup.py install`
+
 
 You may need sudo privileges. You can also install a local version by using the *'--user'* flag. 
 
