@@ -69,9 +69,9 @@ profileNJ is the executable version of **Multipolysolver**.
 
 +  *-r {none,all,best}, --reroot {none,all,best}*               
         Enable/Disable root mode. (default: none)       
-          	- **none** : disable reroot mode, correct the input polytomies and return the result.        
-          	- **all** : enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.   
-          	- **best** : enable reroot mode, rerrot the genetree at each node and return all polytomy corrected version for the rooted tree with the smallest Dup-Lost score (First one if not unique). 
+          	- **none** : disable reroot mode, correct the input genetree and return the result.        
+          	- **all** : enable reroot mode, reroot the genetree at each node and return all solution for each rooted tree.   
+          	- **best** : enable reroot mode, reroot the genetree at each node and return any solution that minimize the reconciliation score. 
                         
 +  *-nf, --nnflag*         
         Treat negative distances as large distances (default:False).
