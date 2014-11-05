@@ -100,6 +100,6 @@ PolytomySolver is the executable version of **Multipolysolver**.
 
 ## NCBI_tree_of_life 
 
-*see specie.tar.gz file*
+*see SPECIES_TREE*
 
 Script to reconstruct the tree of life using the ncbi taxonomy. The current newick file (**tree.nw**) is obtained with the latest ncbi taxonomy release.
