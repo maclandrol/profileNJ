@@ -1,17 +1,26 @@
-python-tree-processing
+profileNJ
 =======================
 
 Utility package for tree processing written in python and based on the [ete2](https://pythonhosted.org/ete2/index.html) toolkit.
 
+## Installation 
 
-## TreeClass
+
+`python setup.py install`
+
+
+You may need sudo privileges. You can also install a local version by using the *'--user'* flag. 
+
+
+## Minimum Documentation
+### TreeClass
 
 Bases from the TreeNode class of the ete2 package, TreeClass is a tree representation class. A tree consists of a collection of TreeClass instances connected in a hierarchical way. A TreeClass object can be loaded from the New Hampshire Newick format (newick).
 TreeClass add specific functions for tree processing not present in the ete2 TreeNode.
 
 run pydoc for minimum documentation.
 
-## TreeUtils 
+### TreeUtils 
 
 TreeUtils offer several static functions related to phylogeny tree. With You can fetch ensembl genetree and reconcile a gene tree to its species tree.
 
@@ -21,19 +30,19 @@ TreeUtils offer several static functions related to phylogeny tree. With You can
 + **lcaMapping** : Map a genetree to a specietree.
 + **reconcile** : Reconcile the genetree with the specietree
 
-## ClusterUtils 
+### ClusterUtils 
 
 ClusterUtils is an implementation of UPGMA (Unweighted Pair Group Method with Arithmetic Mean) and NJ (Neighbor-Joining), two clustering distance-based method for tree construction.
 
 
-## Multipolysolver
+### Multipolysolver
 
 Multipolysolver is a module for polytomy correction in genetree using the duplication-lost criterion. Mutltipolysolver output all the binary solution for a non-binary gene tree that minimize the duplication-lost score. If the input tree is considered unrooted, Multipolysolver can test every possible root and return the binary tree with the lowest duplication-lost or all rooted binary tree.
 
 
-## PolytomySolver
+### profileNJ
 
-PolytomySolver is the executable version of **Multipolysolver**.
+profileNJ is the executable version of **Multipolysolver**.
 
 #### Command line arguments
 
@@ -43,7 +52,7 @@ PolytomySolver is the executable version of **Multipolysolver**.
 +  *-s SPECIETREE, --sFile SPECIETREE*          
         Name of the file containing the species newick tree (default: None).
 
-+  *S SMAP, --sMap SMAP*        
++  *-S SMAP, --sMap SMAP*        
         Gene to species map. Use the standard format. (default: None)
 
 +  *-g GENETREE, --gFile GENETREE*              
@@ -60,9 +69,9 @@ PolytomySolver is the executable version of **Multipolysolver**.
 
 +  *-r {none,all,best}, --reroot {none,all,best}*               
         Enable/Disable root mode. (default: none)       
-          	- **none** : disable reroot mode, correct the input polytomies and return the result.        
-          	- **all** : enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.   
-          	- **best** : enable reroot mode, rerrot the genetree at each node and return all polytomy corrected version for the rooted tree with the smallest Dup-Lost score (First one if not unique). 
+          	- **none** : disable reroot mode, correct the input genetree and return the result.        
+          	- **all** : enable reroot mode, reroot the genetree at each node and return all solution for each rooted tree.   
+          	- **best** : enable reroot mode, reroot the genetree at each node and return any solution that minimize the reconciliation score. 
                         
 +  *-nf, --nnflag*         
         Treat negative distances as large distances (default:False).
@@ -100,6 +109,6 @@ PolytomySolver is the executable version of **Multipolysolver**.
 
 ## NCBI_tree_of_life 
 
-*see specie.tar.gz file*
+*see SPECIES_TREE*
 
 Script to reconstruct the tree of life using the ncbi taxonomy. The current newick file (**tree.nw**) is obtained with the latest ncbi taxonomy release.
