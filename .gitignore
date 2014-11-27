@@ -2,10 +2,14 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+TreeLib/*pyc
 
 # Simulation data
 tests/*.mat
 tests/Simulation
+tests/matlab/*mat
+tests/matlab/data/*
+tests/matlab/images/*
 
 # Distribution and packaging
 .Python
