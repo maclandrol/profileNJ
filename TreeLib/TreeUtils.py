@@ -211,6 +211,19 @@ def CleanFeatures(tree=None, features=[]):
 	return cleaned
 
 
+
+def totalDuplicationConsistency(tree):
+	"""Compute the total duplication consistency score for a tree"""
+	dps=0
+	for node in tree.traverse():
+		if(node.type==TreeClass.AD or node.type==TreeClass.NAD):
+			try:
+				dps+=node.compute_dup_cons()
+			except AssertionError:
+				pass
+	return dps
+
+
 def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
 	"""
 	Read a phylogeny tree from a phyloxml string and return a TreeClass object

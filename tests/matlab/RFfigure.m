@@ -6,27 +6,36 @@ function RFfigure(matrix, order)
 % Create figure
 figure1 = figure;
 
+set(gcf,'units','normalized','outerposition',[0 0 1 0.95])
+fsize= 16;
+set(findall(figure1,'type','text'),'FontSize',fsize, 'FontName', 'AvantGarde')
+set(figure1, 'PaperPositionMode', 'auto');
+set(figure1,'InvertHardcopy','on');
+set(figure1,'PaperUnits', 'inches');
+
 % Create axes
 binrange=0:2:max(matrix(:));
 bincount= histc(matrix, binrange);
 bincount= bincount*100.0/size(matrix,1);
 
 % Create multiple lines using matrix input to bar
-bar(binrange, bincount, 'grouped');
+bar(binrange, bincount,'grouped');
 set(gca, 'YTick',[0 25 50 75 100],...
-    'TickLength',[0.001 0],...
+    'TickLength',[0.002 0],...
     'Xtick', binrange,...
-    'FontSize',14,...
+    'TickDir', 'out', ...
+    'FontSize',fsize,...
+    'LineWidth', 1.2,...
     'FontName','Arial', 'box','off');
-
+xlim([-4,50]);
 % Create xlabel
-xlabel('RF distance','FontSize',15);
+xlabel('RF distance')
 
 % Create ylabel
-ylabel('% of trees','FontSize',15);
+ylabel('% of trees')
 
 % Create legend
 legend1 = legend(order);
 set(legend1,'FontSize',18);
-title('RF comparision between TreeSolver, TreeFix and RAxML method')
+title('RF comparision between TreeSolver, TreeFix and RAxML method', 'FontSize', 18, 'FontWeight' , 'bold');
 %

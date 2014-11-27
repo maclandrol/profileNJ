@@ -550,11 +550,22 @@ class TreeClass(TreeNode):
 		return self
 
 	def get_feature_sum(self, feature):
-		cost=0
+ 		cost=0
 		for node in self.traverse("levelorder"):
 			if(node.has_feature(feature) and getattr(node,feature) is int):
 				cost+=getattr(node,feature)
 		return cost
+
+	def compute_dup_cons(self):
+		"""Compute duplication consitency score at the node, this function will raise an error if the node is a polytomy or a speciation node"""
+		assert(!self.is_leaf() and self.is_binary() and self.type>0) #self should be a duplication node
+		r_child_spec_set = self.get_child_at(0).get_leaf_species()
+		l_child_spec_set = self.get_child_at(1).get_leaf_species()
+		inter_set= r_child_spec_set.intersection(l_child_spec_set)
+		union_set = r_child_spec_set.union(l_child_spec_set)
+		self.add_feature('dupcons', inter_set/union_set)
+		return self.dupcons
+
 
 	@classmethod
 	def import_from_PhyloxmlTree(cls,phyloxml):

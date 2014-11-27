@@ -1,71 +1,65 @@
-function sizeStat(treesize, njtree, dup, lost, nad, time, rf, stat_order, roundValue)
+function sizeStat(treesize, njtree, ad, lost, nad, time, rf, stat_order, time_label,datatype, roundValue)
 %Compute statistique based on tree size
 % true_dlc est une matrice 
 
 if nargin ==8, roundValue=1; end
 treesize=round(treesize/roundValue)*roundValue;
 unique_size= unique(treesize);
+unique_size=unique_size(unique_size<=60);
 dup_size=zeros(numel(unique_size), numel(stat_order));
-lost_size=zeros(numel(unique_size), numel(stat_order));
-nad_size=zeros(numel(unique_size), numel(stat_order));
-rf_size=zeros(numel(unique_size), numel(stat_order));
-time_size=zeros(numel(unique_size), numel(stat_order));
 
-dup_accuracy= accuracy(dup, njtree.TruePhylo_dup);
+lost_size=zeros(numel(unique_size), numel(stat_order));
+rf_size=zeros(numel(unique_size), numel(stat_order));
+time_size=zeros(numel(unique_size), numel(time_label));
+
+dup=ad+nad;
+dup_accuracy = accuracy(dup, njtree.TruePhylo_dup+njtree.TruePhylo_nad);
 lost_accuracy= accuracy(lost, njtree.TruePhylo_lost);
-nad_accuracy= accuracy(nad, njtree.TruePhylo_nad);
 
 for i=1:numel(unique_size)
     ind_i=(treesize==unique_size(i));
     dup_size(i, :)= (sum(dup_accuracy(ind_i, :), 1)*100.0)./nnz(ind_i);
     lost_size(i, :)= (sum(lost_accuracy(ind_i, :), 1)*100.0)./nnz(ind_i);
-    nad_size(i, :)= (sum(nad_accuracy(ind_i, :), 1)*100.0)./nnz(ind_i);
     rf_size(i, :) = sum(rf(ind_i, :)==0, 1)*100.0./nnz(ind_i);
     time_size(i, :)= mean(time(ind_i, :), 1);
 end
 
-figure,
+fsize=15;
+h1=figure;
 plot(unique_size, dup_size);
-ylim([0, 120])
-legend(stat_order);
-xlabel('number of genes per tree')
-title('Accuracy of inferred apparent duplication for gene trees of increasing size for simulated fungal dataset')
-ylabel('apparent duplication accuracy (%)');
+ylim([0, 130])
+legend(stat_order,'FontSize', fsize-1);
+xlabel('number of genes per tree', 'FontSize', fsize);
+title(['Accuracy of inferred duplication for gene trees of increasing size for simulated ', datatype, ' dataset'],'FontWeight', 'bold','FontSize', fsize+1);
+ylabel('duplication accuracy (%)', 'FontSize', fsize);
+set_figures(h1, gca)
 
-figure, 
+h2=figure; 
 plot(unique_size, lost_size);
-ylim([0, 120])
-legend(stat_order);
-xlabel('number of genes per tree')
-title('Accuracy of inferred lost for gene trees of increasing size for simulated fungal dataset')
-ylabel('non apparent lost accuracy (%)');
+ylim([0, 130])
+legend(stat_order,'FontSize', fsize-1);
+xlabel('number of genes per tree', 'FontSize', fsize);
+title(['Accuracy of inferred lost for gene trees of increasing size for simulated ', datatype,' dataset'],'FontWeight', 'bold','FontSize', fsize+1);
+ylabel('lost accuracy (%)', 'FontSize', fsize);
+set_figures(h2, gca)
 
-figure, 
-plot(unique_size, nad_size);
-ylim([0, 120])
-legend(stat_order);
-xlabel('number of genes per tree')
-ylabel('non apparent duplication accuracy (%)');
-
-title('Accuracy of inferred non-apparent duplication for gene trees of increasing size for simulated fungal dataset')
-
-
-figure, 
+h4=figure; 
 plot(unique_size, rf_size);
-ylim([0, 120])
-legend(stat_order);
-xlabel('number of genes per tree');
-ylabel('Topologies correct (%)');
-title('Accuracy of the inferred topology for gene trees of increasing size for simulated fungal dataset')
+ylim([0, 130])
+legend(stat_order, 'FontSize', fsize-1);
+xlabel('number of genes per tree', 'FontSize', fsize);
+ylabel('Topologies correct (%)', 'FontSize', fsize);
+title(['Accuracy of the inferred topology for gene trees of increasing size for simulated ', datatype,' dataset'],'FontWeight', 'bold','FontSize', fsize+1);
+set_figures(h4, gca)
 
-
-figure, 
-plot(unique_size, time_size(:,2:end));
-ylim([0, max(max(time_size))*2])
-legend(stat_order(2:end));
-xlabel('number of genes per tree');
-ylabel('time (s)');
-title('Runtime for gene trees of increasing size for simulated fungal dataset')
+h5=figure; 
+plot(unique_size, time_size);
+ylim([0, max(max(time_size))*1.5])
+legend(time_label, 'FontSize', fsize-1);
+xlabel('number of genes per tree', 'FontSize', fsize);
+ylabel('time (s)', 'FontSize', fsize);
+title(['Runtime for gene trees of increasing size for simulated ',datatype, ' dataset'],'FontWeight', 'bold','FontSize', fsize+1);
+set_figures(h5, gca)
 
 end
 
@@ -74,5 +68,13 @@ function acc=accuracy(matrix, trueval)
     acc=bsxfun(@eq,matrix,trueval);
 end
 
+
+function set_figures(fig, axis)
+    set(fig,'units','normalized','outerposition',[0 0 1 0.95])
+    set(fig, 'PaperPositionMode', 'auto');
+    set(fig,'InvertHardcopy','on');
+    set(fig,'PaperUnits', 'inches');
+    set(axis, 'TickDir', 'out',   'TickLength', [.01 .0001], 'box', 'off');
+end
 
 
