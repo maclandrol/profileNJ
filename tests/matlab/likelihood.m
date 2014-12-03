@@ -1,7 +1,6 @@
 function likelihood(lkl_matrix, p_value_matrix, rf_matrix, max_rf_matrix, order)
 
 rf_ratio= rf_matrix./max_rf_matrix;
-colors= distinguishable_colors(numel(order));
 h1=figure;
 h2=figure;
 fsize=15;
@@ -9,13 +8,13 @@ set_figures(h1,fsize)
 set_figures(h2,fsize)
 
 shapes={'+', 'o', '^', 's', 'd', '*'};
-cols={'r', 'b', 'g', 'k', 'y', 'c'};
+cols={'b', 'g', 'r', 'k', 'y', 'c'};
 
 for i=1:numel(order)-1
     %Figure1 setting
     figure(h1)
     ax1=subplot(1,3,i);
-    semilogy(rf_ratio(:,i), lkl_matrix(:,i), 'x', 'color', colors(i,:))
+    semilogy(rf_ratio(:,i), lkl_matrix(:,i), 'x', 'color', getrgbfromcolors(cols{i}))
     %scatter( 'x', 'MarkerEdgeColor', );
     ylabel('Log Likelihood', 'FontSize', 14);
     xlabel('RF distance', 'FontSize', 14);
@@ -31,7 +30,7 @@ for i=1:numel(order)-1
     %Figure 2 setting
     figure(h2)
     ax2=subplot(1,3,i);
-    scatter(rf_ratio(:,i), p_value_matrix(:,i), 'x', 'MarkerEdgeColor',colors(i,:) );
+    scatter(rf_ratio(:,i), p_value_matrix(:,i), 'x', 'MarkerEdgeColor',getrgbfromcolors(cols{i}));
     xlim(ax2, [-0.09, 1]);
     ylabel('SH-test pval', 'FontSize', 14);
     xlabel('RF distance', 'FontSize', 14);
@@ -76,7 +75,7 @@ title(sprintf('Tree likelihood according to \nthe RF distance with the true tree
 % Box plot setting
 h4=figure;
 
-boxplot(p_value_matrix, 'labels', order, 'notch','on', 'colors', distinguishable_colors(numel(order)), 'boxstyle', 'outline')
+boxplot(p_value_matrix, 'labels', order, 'notch','on', 'colors','bgrk', 'boxstyle', 'outline')
 ylabel('AU test p-value');
 title(sprintf('Comparision of AU test p-value between the true tree \nand tree returned by RAxML, profileNJ and TreeFix'), 'FontName', 'Helvetica','FontSize', fsize, 'FontWeight', 'bold');
 set(gca, 'YTick', [0, 0.05, 0.2, 0.4, 0.6, 0.8, 1]);
@@ -92,6 +91,11 @@ set(gca,'TickDir', 'out', 'FontSize', 14, 'Box', 'off','TickLength'  , [.01 .01]
 set(gcf,'units','normalized','outerposition',[0 0 0.7 0.6])
 set(gcf, 'PaperPositionMode', 'auto');
 
+end
+
+function rgb=getrgbfromcolors(colorstring)
+    rgb=rem(floor((strfind('kbgcrmyw', colorstring)-1)*[0.25,0.5,1]),2);
+    
 end
 
 function set_figures(fig, fsize)

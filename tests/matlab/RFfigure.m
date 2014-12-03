@@ -27,7 +27,7 @@ set(gca, 'YTick',[0 25 50 75 100],...
     'FontSize',fsize,...
     'LineWidth', 1.2,...
     'FontName','Arial', 'box','off');
-xlim([-4,50]);
+xlim([-2,29]);
 % Create xlabel
 xlabel('RF distance')
 
@@ -37,5 +37,6 @@ ylabel('% of trees')
 % Create legend
 legend1 = legend(order);
 set(legend1,'FontSize',18);
-title('RF comparision between TreeSolver, TreeFix and RAxML method', 'FontSize', 18, 'FontWeight' , 'bold');
+
+title('Topology accuracy of RAxMl, ProfileNJ and TreeFix trees mesured by the RF distance with the simulated tree', 'FontSize', 18, 'FontWeight' , 'bold');
 %

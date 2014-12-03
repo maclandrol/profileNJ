@@ -16,7 +16,7 @@ function savefig(dir, name)
 
 hfigs = get(0, 'children');                          %Get list of figures
 
-names = {'timevssol', 'runtime', 'acctopo', 'accloss', 'accdup', 'au_test', 'allrfloglkl', 'rfsh', 'rfloglik', 'rfbycost', 'rfall', 'rf', 'reconall', 'recon'};
+names = {'timevssol', 'runtime', 'acctopo', 'accrecon', 'accloss', 'accdup', 'au_test', 'allrfloglkl', 'rfsh', 'rfloglik', 'rfbycost', 'rfall', 'rf', 'reconall', 'recon'};
 for m = 1:length(hfigs)
     figure(hfigs(m) ) %Bring Figure to foreground
     filename=fullfile(dir, strcat(names{m}, name));

@@ -1,8 +1,13 @@
-function rfbycost (rf_value, maxrf_value, true_recon, order, roundValue)
+function rfbycost (rf_value, maxrf_value, true_recon, order, roundValue, lim)
 
-if nargin ==4, roundValue=1; end
+if nargin <5, roundValue=1; lim=inf; end
+
+nnz(true_recon>lim)
+numel(true_recon)
+
 reconcost=round(true_recon/roundValue)*roundValue;
 recon_uniq= unique(reconcost);
+recon_uniq=recon_uniq(recon_uniq<lim);
 
 % Create figure
 rf_value=rf_value./maxrf_value;
@@ -20,31 +25,40 @@ end
 
 h=figure;
 fsize=14;
-ax1=subplot(2,1,1);
+ax2=subplot(2,1,1);
 plot(recon_uniq, rf_accu_plot)
 xlim([0, max(recon_uniq)+1.55]);
 xlabel('Reconciliation cost');
 ylabel('Topology Accuracy (RF=0)');
-legend(order)
+legend2=legend(order);
+set(legend2,'FontSize',fsize);
+axt1=title('RAxML, ProfileNJ, TreeFix topology accuracy for increasing number of evolutionary event');
 
-
-ax2=subplot(2,1,2);
+ax3=subplot(2,1,2);
 area(recon_uniq, rf_mean_plot)
 xlim([0, max(recon_uniq)+1.55])
 xlabel('Reconciliation cost');
 ylabel('mean RF');
 colormap jet;
-legend(order)
-set(ax1,'box', 'off', 'FontSize', fsize, 'FontName', 'Helvetica', 'TickDir', 'out')
-set(ax2,'box', 'off', 'FontSize', fsize, 'FontName', 'Helvetica', 'TickDir', 'out')
+l2=legend(order);
+set(l2,'FontSize',fsize);
+axt2=title('mean RF distance between true tree and RAxML, ProfileNJ, TreeFix for increasing number of evolutionary event');
+
 
 set_figures(h, fsize)
 
-set(gcf,'NextPlot','add');
-axes;
-ht = title('RAxML, ProfileNJ, TreeFix accuracy for increasing number of evolutionary event', 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
-set(gca,'Visible','off');
-set(ht,'Visible','on');
+set(ax2,'box', 'off', 'FontSize', fsize, 'LineWidth', 1.2,'FontName', 'Helvetica', 'TickDir', 'out')
+set(ax3,'box', 'off', 'FontSize', fsize,'LineWidth', 1.2, 'FontName', 'Helvetica', 'TickDir', 'out')
+set(axt1, 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
+set(axt2, 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
+
+
+% set(gcf,'NextPlot','add');
+% axes;
+% 
+% set(gca,'Visible','off');
+% set(axt1,'Visible','on');
+% set(axt2,'Visible','on');
 
 end
 

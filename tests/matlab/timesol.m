@@ -27,7 +27,7 @@ set_figures(h, fsize)
 
 set(gcf,'NextPlot','add');
 axes;
-ht = title('profileNJ execution time as a function of the number of solutions', 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
+ht = title('profileNJ runtime as a function of the number of solutions', 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
 set(gca,'Visible', 'off');
 set(ht,'Visible','on');
 

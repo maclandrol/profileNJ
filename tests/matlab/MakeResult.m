@@ -57,10 +57,10 @@ racmltime=njrac95.ML_time;
 mltime(nj95.polysolver_nsol<2)=0;
 racmltime(njrac95.polysolver_nsol<2)=0;
 
-time= [njtree.Treefix_time, njrac95.PolySolver_time+racmltime, nj95.PolySolver_time, nj95.PolySolver_time+mltime];
+time= [njtree.Treefix_time, nj95.PolySolver_time, nj95.PolySolver_time+mltime];
 order={'RAxML', 'TreeFix','profileNJ', 'Expected Tree'};
 
-time_label={'TreeFix', 'profileNJ root', 'profileNJ Unroot', 'profileNJ + logL comp.'};
+time_label={'TreeFix', 'profileNJ','profileNJ - consel'};
 
 %% Phase 1 : recon cost
 reconcost(true_dlc, all_order, all_ad_matrix+all_nad_matrix, all_lost_matrix, all_recon_matrix);
@@ -73,17 +73,17 @@ RFfigure(all_rf_matrix(:, 3:end) , all_order(3:end));
 
 %% Phase 3: rf by cost computation
 %rfbycost(all_rf_matrix, all_maxrf_matrix, true_dlc(:,end), all_order, 5)
-rfbycost(rf_matrix, maxrf_matrix, true_dlc(:,end), order(1:end-1), 2)
+rfbycost(rf_matrix, maxrf_matrix, true_dlc(:,end), order(1:end-1), 2, 18)
 
 %% Phase 4: likelihood
 likelihood(lkl_matrix, au_matrix, rf_matrix, maxrf_matrix, order)
 
 %% Phase 5 : Size stat
-sizeStat(njtree.leaves, njtree, ad_matrix,lost_matrix, nad_matrix,  time, rf_matrix, order(1:end-1), time_label, datatype, 10);
+sizeStat(njtree.leaves, njtree, ad_matrix,lost_matrix, nad_matrix, recon_matrix,  time, rf_matrix, order(1:end-1), time_label, datatype, 10);
 
 
 %% Time xx nsol
-timesol([nj95.PolySolver_time, nj95.PolySolver_time+mltime], nj95.polysolver_nsol, {'profileNJ', 'profileNJ + logL comp.'},2);
+timesol([nj95.PolySolver_time, nj95.PolySolver_time+mltime], nj95.polysolver_nsol, {'profileNJ - consel', 'profileNJ'},2);
 
 savefig(fullfile('images', strcat(datatype, param)), strcat(datatype, param))
 
