@@ -558,7 +558,7 @@ class TreeClass(TreeNode):
 
 	def compute_dup_cons(self):
 		"""Compute duplication consitency score at the node, this function will raise an error if the node is a polytomy or a speciation node"""
-		assert(!self.is_leaf() and self.is_binary() and self.type>0) #self should be a duplication node
+		assert(not self.is_leaf() and self.is_binary() and self.type>0) #self should be a duplication node
 		r_child_spec_set = self.get_child_at(0).get_leaf_species()
 		l_child_spec_set = self.get_child_at(1).get_leaf_species()
 		inter_set= r_child_spec_set.intersection(l_child_spec_set)
