@@ -17,8 +17,7 @@ DUP='d'
 LOST='l'
 SPEC='s'
 PARTIAL_RESOLUTION_ITERATOR=1
-dupcost,lostcost=1,1
-numpy.set_printoptions(threshold='nan')
+numpy.set_printoptions(threshold='nan', precision=10)
 
 @memorize
 def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=False, cluster_method='upgma'):
@@ -32,7 +31,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 	polytomy_specie_set, row_node_corr= findMaxX(genetree, specietree)
 
 	max_x=len(polytomy_specie_set)
-	cost_table= numpy.zeros((max_x,max_y)) # cost cost_table to fill
+	cost_table= numpy.zeros((max_x,max_y),  dtype=float) # cost cost_table to fill
 	path_table=numpy.ndarray((max_x,max_y), dtype='object') # table to save the possible path
 
 	# fill the cost_table and the path_table
@@ -41,19 +40,19 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 		zeropos=count[node.name]-1  
 		# We have zeropos when the number of node from a specie is the same as the column number
 		# Fill the table, using the next/previous case cost
-		# The node is a leaf, just fill with dupcost and lostcost
+		# The node is a leaf, just fill with dupcost and losscost
 		if(node.is_leaf()):
 			# find the column with a cost of zero (zeropos) and fill the table
 			# according to this position
 			# by default, all the position in the table are 0
 			i=zeropos-1
 			while(i>=0):
-				cost_table[n,i]=cost_table[n,i+1]+dupcost
+				cost_table[n,i]=cost_table[n,i+1]+params.dupcost
 				path_table[n,i]=DUP
 				i-=1
 			i=zeropos+1
 			while(i<max_y):
-				cost_table[n,i]=cost_table[n,i-1]+lostcost
+				cost_table[n,i]=cost_table[n,i-1]+params.losscost
 				path_table[n,i]=LOST
 				i+=1
 			# We should take into account the special case here
@@ -75,19 +74,19 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 			for pos in minpos[0]:
 				i=pos-1
 				while(i>=0):
-					if(cost_table[n,i]==cost_table[n,i+1]+lostcost):
+					if(cost_table[n,i]==cost_table[n,i+1]+params.dupcost):
 						if DUP not in path_table[n,i]: path_table[n,i]+=DUP 
-					elif (cost_table[n,i]>cost_table[n,i+1]+lostcost):
-						cost_table[n,i]=min(cost_table[n,i+1]+lostcost, cost_table[n,i])
+					elif (cost_table[n,i]>cost_table[n,i+1]+params.dupcost):
+						cost_table[n,i]=min(cost_table[n,i+1]+params.dupcost, cost_table[n,i])
 						path_table[n,i]=DUP
 					i-=1
 
 				i=pos+1
 				while(i<max_y):
-					if(cost_table[n,i]==cost_table[n,i-1]+lostcost):
+					if(cost_table[n,i]==cost_table[n,i-1]+params.losscost):
 						if LOST not in path_table[n,i]: path_table[n,i]+=LOST 
-					elif (cost_table[n,i]>cost_table[n,i-1]+lostcost):
-						cost_table[n,i]=min(cost_table[n,i-1]+lostcost, cost_table[n,i])
+					elif (cost_table[n,i]>cost_table[n,i-1]+params.losscost):
+						cost_table[n,i]=min(cost_table[n,i-1]+params.losscost, cost_table[n,i])
 						path_table[n,i]=LOST
 					i+=1
 

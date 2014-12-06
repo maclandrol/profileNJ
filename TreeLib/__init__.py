@@ -1,3 +1,4 @@
 from TreeClass import TreeClass
 from memorize import memorize
-__all__=["TreeUtils", "ClusterUtils", "TreeClass", "memorize"]
+import params
+__all__=["TreeUtils", "ClusterUtils", "TreeClass", "memorize", "params"]
