@@ -39,7 +39,7 @@ class TreeClass(TreeNode):
 			raise IndexError("Index out of bound, Can't access the child at index: %i"%i)
 
 
-	def copy(self, method="cpickle", nw_features=[], nw_format_root_node=True, binary_correct=False):
+	def copy(self, method="simplecopy", nw_features=[], nw_format_root_node=True, binary_correct=False):
 		""" .. override of ete TreeNode original copy
 
 		Returns a copy of the current node.
@@ -69,6 +69,11 @@ class TreeClass(TreeNode):
 			etc.)
 
 		"""
+		
+		
+		
+		#nw_features = ["name", "species"]
+		
 		if method=="newick":
 			new_node = self.__class__(self.write(features=["name"], format_root_node=True))
 		elif method=="newick-extended":
@@ -550,7 +555,7 @@ class TreeClass(TreeNode):
 		return self
 
 	def get_feature_sum(self, feature):
- 		cost=0
+		cost=0
 		for node in self.traverse("levelorder"):
 			if(node.has_feature(feature) and getattr(node,feature) is int):
 				cost+=getattr(node,feature)

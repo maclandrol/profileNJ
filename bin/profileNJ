@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import argparse, linecache
 from PolytomySolver import *
+
 from TreeLib import TreeUtils, TreeClass
 import sys, time
 from operator import itemgetter
+
+from multiprocessing.pool import Pool
+from multiprocessing.pool import ThreadPool
 
 """
 ProfileNJ
@@ -83,40 +87,110 @@ start_time=time.time()
 if args.reroot.lower() == 'all':
 	tree_list.extend(oritree.reroot())
 
+
+
+
+
 elif args.reroot.lower() == 'best':
 	tree_list.extend(oritree.reroot())
 	dl_costs=[]
+	
+	pool = Pool(processes=10)
+	
+	results = []
+	
 	for genetree in tree_list:
+                
+                #thread.start_new_thread( solvePolytomy, (gprime, specietree, distance_matrix, node_order, False, 1, 'upgma', 1e8, 1) )
+                
+                pz = (genetree, specietree, distance_matrix, node_order, False, 1, 'upgma', 1e8, 1)
+                        
+                async_result = pool.apply_async(solvePolytomy, pz)
+                results.append(async_result)
+                                
 		#Solving with upgma instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
-		sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
-		f_tree= sol[0].copy(method ='simplecopy')
-		lcamap=TreeUtils.lcaMapping(f_tree, specietree)
-		TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
-		dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
-		dl_costs.append(dl_cost)
+		
+		#sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
+		#f_tree= sol[0].copy(method ='simplecopy')
+		#lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+		#TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+		#dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+		#dl_costs.append(dl_cost)
+        
+                #if dl_cost <= 197:
+                #    outlog.write("COST=" + str(dl_cost))
+                #    outlog.write(sol[0].write(format=9))
+        for i in range(len(results)):        
+                sol = results[i].get()
+                f_tree= sol[0].copy(method ='simplecopy')
+                lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+                TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+                dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+                dl_costs.append(dl_cost)
+                
+                
+                
+        
+        pool.close()
+        pool.join()
+        
 	best_dl = min(dl_costs) 
+	
+	
 	tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
 	if(type(tree_list)!=tuple):
 		tree_list=[tree_list]
+		
+		
 
 count=0
+
+pool = Pool(processes=10)
+results = []
+
 for genetree in tree_list:
-	first=True 
+        #parallelized version
+        pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.mval, args.sol_limit)
+        async_result = pool.apply_async(solvePolytomy, pz)
+        results.append(async_result)
+        #/parallelized version
+	
 	count+=1
-	if genetree.has_polytomies():
-		polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
-	else :
-		polysolution = [genetree]
+	#if genetree.has_polytomies():
+	#	polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
+	#else :
+	#	polysolution = [genetree]
 	
 	#Copy, in order to not change the solution newick for export
-	f_tree= polysolution[0].copy(method='simplecopy')
-	lcamap=TreeUtils.lcaMapping(f_tree, specietree)
-	TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
-	dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+	#f_tree= polysolution[0].copy(method='simplecopy')
+	#lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+	#TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+	#dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
 
-	outlog.write('>Tree %s; m_cost=%s'%(count,dl_cost))
-	for tree in polysolution:
-		outlog.write(tree.write(format=9))
+	#outlog.write('>Tree %s; m_cost=%s'%(count,dl_cost))
+	#for tree in polysolution:
+	#	outlog.write(tree.write(format=9))
+
+
+
+
+#parallelized version
+for i in range(len(results)):
+        polysolution = results[i].get()
+        f_tree= polysolution[0].copy(method='simplecopy')
+        lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+        TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+        dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+
+        outlog.write('>Tree %s; m_cost=%s'%(i + 1,dl_cost))
+        for tree in polysolution:
+                outlog.write(tree.write(format=9))
+#/parallelized version
+
+
+pool.close()
+pool.join()
+
 
 end_time=time.time()	
 outlog.close()
