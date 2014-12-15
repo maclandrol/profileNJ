@@ -87,8 +87,7 @@ def calculate_Q_matrix(matrice, maxVal):
         while(i<n):
                 while(j<n):
                         if(i!=j and not (i in m or j in m) ) :# and not ((matrice[i]==maxVal).all() or (matrice[:,j]==maxVal).all())):
-                        #if(i!=j and not ((matrice[i]==maxVal).all() or (matrice[:,j]==maxVal).all())):
-                                Q_matrix[i,j]= (n-len(m)-2)*matrice[i,j] - (numpy.sum(matrice[i][numpy.invert(numpy.in1d(matrice[i], diag_value))])) - (numpy.sum(matrice[:,j][numpy.invert(numpy.in1d(matrice[:,j], diag_value))]))
+                            Q_matrix[i,j]= (n-len(m)-2)*matrice[i,j] - (numpy.sum(matrice[i][numpy.invert(numpy.in1d(matrice[i], diag_value))])) - (numpy.sum(matrice[:,j][numpy.invert(numpy.in1d(matrice[:,j], diag_value))]))
                         j+=1
                 i+=1
                 j=0

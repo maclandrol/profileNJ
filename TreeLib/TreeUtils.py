@@ -12,6 +12,7 @@ import hashlib, re
 import os
 from collections import defaultdict as ddict
 import string
+import params
 
 
 #TreeUtils:
@@ -207,15 +208,12 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 
 def ComputeDupLostScore(genetree=None):
 	"""
-	Compute the duplication and lost cost
+	Compute the reconciliation cost
 	"""
 	if(genetree is None or 'type' not in genetree.get_all_features()):
 		raise Exception("Your Genetree didn't undergoes reconciliation yet")
-	count=0
-	for node in genetree.iter_descendants():
-		if(node.has_feature('type') and node.type==TreeClass.NAD or node.type==TreeClass.LOST or node.type==TreeClass.AD):
-			count+=1
-	return count + (genetree.type!=0)
+	nadscore, adscore, lossscore = detComputeDupLostScore(genetree)
+	return (nadscore+adscore)*params.dupcost +lossscore*params.losscost
 
 
 def detComputeDupLostScore(genetree):
@@ -226,7 +224,7 @@ def detComputeDupLostScore(genetree):
 		raise Exception("Your Genetree didn't undergoes reconciliation yet")
 	nad=0
 	ad=0 
-	lost=0
+	loss=0
 	for node in genetree.traverse():
 		if node.has_feature('type'):
 			if(node.type==TreeClass.NAD):
@@ -234,8 +232,8 @@ def detComputeDupLostScore(genetree):
 			elif node.type==TreeClass.AD:
 				ad+=1
 			elif node.type==TreeClass.LOST :
-				lost+=1
-	return (nad, ad, lost)
+				loss+=1
+	return (nad, ad, loss)
 
 
 def CleanFeatures(tree=None, features=[]):

@@ -67,6 +67,7 @@ class TreeClass(TreeNode):
 			(this is the slowest method but it allows to copy complex
 			objects even if attributes point to lambda functions,
 			etc.)
+			- "simplecopy" : Simple recursive tree topology and feature copy
 
 		"""
 		
@@ -362,6 +363,16 @@ class TreeClass(TreeNode):
         Return True if current node is an internal node.
     	"""
 		return not (self.is_root() or self.is_leaf())
+
+	def get_internal_node(self, strategy="levelorder"):
+		"""
+		Return an iterator over all the internal nodes in the current node
+		"""
+		internal_nodes=[]
+		for n in self.traverse(strategy=strategy):
+			if n.is_internal():
+				internal_nodes.append(n)
+		return internal_nodes
 
 
 	def get_all_features(self):
