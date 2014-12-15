@@ -109,10 +109,10 @@ profileNJ is the executable version of **Multipolysolver**.
 +  *--parallelize*  
         use parallelization (default False)
 
-+  *--firstbest*
++  *--firstbest*  
         Only output solution for the first root with the best dl score encountered
 
-+  *--cost D L*
++  *--cost D L*  
         Change the cost of duplications (D) and losses(L). 
         D L : 2 float values, duplication and loss cost in this order (default:  D=1 and L=1 )
 
