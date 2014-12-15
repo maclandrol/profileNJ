@@ -107,7 +107,7 @@ profileNJ is the executable version of **Multipolysolver**.
         Use this flag to enable batch mode. In batch mode, gLine value is discarded, --dist should be a file whose line link to the distance matrix file of the genetree at the same line number in your genetree file
 
 +  *--parallelize*  
-        use parallelization (default False)
+        Use parallelization (default False)
 
 +  *--firstbest*  
         Only output solution for the first root with the best dl score encountered
