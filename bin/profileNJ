@@ -194,6 +194,7 @@ for gtree in gtrees:
 				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.mval, args.sol_limit)
 				async_result = pool.apply_async(solvePolytomy, pz)
 				results.append(async_result)
+			
 			else:
 				isexecuted[count] =False
 				results.append(None)
@@ -223,6 +224,12 @@ for gtree in gtrees:
 			count+=1
 			if genetree.has_polytomies():
 				polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
+			
+
+			elif (args.seuil):
+				genetree = genetree.contract_tree(seuil=args.seuil)
+				polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
+
 			else :
 				polysolution = [genetree]
 			
