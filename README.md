@@ -103,6 +103,23 @@ profileNJ is the executable version of **Multipolysolver**.
 +  *--cap*                 
         Capitalize the species name of the genetree leaves to  match each species. Almost all functions are case sensitive. (default: False)
 
++  *--batch*  
+        Use this flag to enable batch mode. In batch mode, gLine value is discarded, --dist should be a file whose line link to the distance matrix file of the genetree at the same line number in your genetree file
+
++  *--parallelize*  
+        use parallelization (default False)
+
++  *--firstbest*
+        Only output solution for the first root with the best dl score encountered
+
++  *--cost D L*
+        Change the cost of duplications (D) and losses(L). 
+        D L : 2 float values, duplication and loss cost in this order (default:  D=1 and L=1 )
+
++  *--seuil*  
+        Branch contraction threshold, when the tree is binary. Use only when the tree is binary.
+
+
 #### File formats
   see [polytomy-solver-distance] (https://github.com/UdeM-LBIT/polytomy-solver-distance#file-formats)
 
