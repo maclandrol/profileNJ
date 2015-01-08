@@ -85,7 +85,7 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 
 
 def lcaMapping_old(geneTree, specieTree):
-	
+
 	mapping ={}
 	try:
 		for node in geneTree.traverse(strategy="postorder"):
@@ -105,44 +105,40 @@ def lcaMapping_old(geneTree, specieTree):
 		print("Leaves without species")
 	else :
 		return mapping
-		
-		
-		
-		
-def lcaMapping(geneTree, specieTree):
-        
-        smap = {}
-        mapping ={}
-        #try:
-        for node in geneTree.traverse(strategy="postorder"):
-                if not node.is_leaf():
-                        #leaf_under_node= node.get_leaves()
-                        #species = set([i.species for i in leaf_under_node])
-                        
-                        #ML ADDED THIS
-                        species = set([mapping[n] for n in node.get_children()])
-                        
-                        
-                        if(len(species)>1):
-                                mapping[node]= specieTree.get_common_ancestor(species)
-                        else:
-                                mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
 
-                        node.add_features(species=",".join([x.name for x in species]))
-                else:
-                        sname=node.species
-                        if not sname in smap:
-                          s = specieTree.search_nodes(name=node.species)[0]
-                          smap[sname] = s                                  
-                        else:
-                          s = smap[sname]
-                          
-                        mapping[node]=s
-        #except Exception as e:
-        #        print type(e)
-        #        print("Leaves without species")
-        #else :
-        return mapping
+
+
+
+def lcaMapping(geneTree, specieTree):
+
+		smap = {}
+		mapping ={}
+		#try:
+		for node in geneTree.traverse(strategy="postorder"):
+			if not node.is_leaf():
+				#leaf_under_node= node.get_leaves()
+				#species = set([i.species for i in leaf_under_node])
+				#ML ADDED THIS
+				species = set([mapping[n] for n in node.get_children()])
+
+				if(len(species)>1):
+					mapping[node]= specieTree.get_common_ancestor(species)
+				else:
+					mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
+				node.add_features(species=",".join([x.name for x in species]))
+			else:
+				sname=node.species
+				if not sname in smap:
+					s = specieTree.search_nodes(name=node.species)[0]
+					smap[sname] = s
+				else:
+					s = smap[sname]
+				mapping[node]=s
+		#except Exception as e:
+		#        print type(e)
+		#        print("Leaves without species")
+		#else :
+		return mapping
 
 
 def reconcile(geneTree=None, lcaMap=None, lost="no"):
@@ -223,7 +219,7 @@ def detComputeDupLostScore(genetree):
 	if(genetree is None or 'type' not in genetree.get_all_features()):
 		raise Exception("Your Genetree didn't undergoes reconciliation yet")
 	nad=0
-	ad=0 
+	ad=0
 	loss=0
 	for node in genetree.traverse():
 		if node.has_feature('type'):
@@ -350,7 +346,7 @@ def newick_preprocessing(newick, gene_sep=None):
 		"'newick' argument must be either a filename or a newick string."
 
 
-def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305, nFlag=False, smap=None):
+def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None):
 	#################################################################
 	#TODO :
 	#	1) Correct newick
@@ -374,7 +370,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 				g,s = line.strip().split()
 				g_regex=re.compile(g.replace('*', '.*'))
 				regexmap[g_regex]=s
-		
+
 		for leaf in genetree:
 			for key,value in regexmap.iteritems():
 				if key.match(leaf.name):
@@ -390,7 +386,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 
 	#distance matrice input
 	if(distance_file):
-		gene_matrix, node_order= clu.distMatProcessor(distance_file, dist_diagonal, nFlag)
+		gene_matrix, node_order= clu.distMatProcessor(distance_file, nFlagVal, nFlag)
 		#Difference check 1
 		if set(node_order).difference(set(genetree.get_leaf_names())):
 			reset_node_name(genetree, gene_sep)
@@ -398,7 +394,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 		#This is for debug, will never happen
 		print "error: dist file not found"
 		node_order= genetree.get_leaf_names()
-		gene_matrix= clu.makeFakeDstMatrice(len(node_order), 0, 1, dist_diagonal) #Alternative, retrieve aligned sequence and run phyML
+		gene_matrix= clu.makeFakeDstMatrice(len(node_order), 0, 1) #Alternative, retrieve aligned sequence and run phyML
 
 	#Find list of species not in genetree
 	specieGeneList= set(genetree.get_leaf_species())
@@ -443,7 +439,7 @@ def customTreeCompare(original_t, corrected_t, t):
 	if(len(ct_success)==len(ct_leaves)):
 		print "**Leave remaining success for corrected tree"
 		print "\n".join([str(h) for h in t_success])
-		
+
 	else:
 		print "**Corrected tree doesn't follow patern"
 		print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))

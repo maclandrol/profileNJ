@@ -11,19 +11,19 @@ from multiprocessing import cpu_count
 ProfileNJ
 
 Given a non-binary gene tree, a species tree and a gene distance matrix, ProfileNJ outputs all possible
-binarization of the gene tree that minimizes the duplication+loss score. The algorithm use clustering algorithm 
+binarization of the gene tree that minimizes the duplication+loss score. The algorithm use clustering algorithm
 like NJ and UPGMA distance criterion to join the 'nearest' subtrees first. If the tree is treated as unrooted (using the -r argument),
-the program tries every possible root (this takes a while) in order to find the one that yields the lowest 
+the program tries every possible root (this takes a while) in order to find the one that yields the lowest
 DL-score after correction, or to output every rooted correction.
 
 The output file contains the newick tree separated by a new line for all the solutions.
 
 The output format is the following
-> Rooted tree 1 ; cost = 
+> Rooted tree 1 ; cost =
 newick solution1
 newick solution2
 
-> Rooted tree 2 ; cost = 
+> Rooted tree 2 ; cost =
 newick solution1
 newick solution2
 
@@ -35,15 +35,13 @@ try:
 except (NotImplementedError):
 	CPU_COUNT=1
 
-print "CPU_COUNT found = %s"%(CPU_COUNT)
-
 
 class SmartFormatter(argparse.ArgumentDefaultsHelpFormatter):
 
 	def _split_lines(self, text, width):
 		# this is the RawTextHelpFormatter._split_lines
 		if text.startswith('C|'):
-			return text[2:].splitlines()  
+			return text[2:].splitlines()
 		return argparse.ArgumentDefaultsHelpFormatter._split_lines(self, text, width)
 
 class Output(object):
@@ -56,7 +54,7 @@ class Output(object):
 
 	def write(self, line):
 		self.out.write('%s\n'%line)
-	
+
 	def close(self):
 		if self.out is not sys.stdout:
 			self.out.close()
@@ -81,7 +79,7 @@ parser.add_argument('-r', '--reroot', choices=reroot_option, dest='reroot', defa
 parser.add_argument('--cost', type=float, nargs=2,  dest='costdl', help="D L : 2 float values, duplication and loss cost in this order")
 parser.add_argument('-n', '-nf', '--nnflag', action='store_true',  dest='nflag', help="Treat negative distances as large distances.")
 parser.add_argument('--sep', dest='gene_sep', help="Gene-Specie separator for each leaf name in the genetree. PolytomySolver will guess by default in a very limited list of special character. ***';;' is not a valid separator for the newick format! IF YOUR SEPARATOR IS \";;\", DON'T USE THIS FLAG. THE PROGRAM WILL AUTOMATICALLY GUESS. ***")
-parser.add_argument('--mValue', type=float, dest='mval', default=1e305, help="Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue.")
+parser.add_argument('--nflagval', type=float, dest='mval', default=1e305, help="Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue.")
 parser.add_argument('-c', '--cluster', choices=['nj', 'upgma'], default='nj', help="C|Set the clustering methods.\n\tupgma: UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.\n\tnj: neighbor joining clustering method, (slower).\n\n")
 parser.add_argument('--slimit', type=int, dest="sol_limit", default=30, help="Set the max number of solution per genetree. Possible values are -1 to return all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is computationally expensive.")
 parser.add_argument('--plimit', type=int, default=-1,  dest="path_limit", help="Set the max number of solution for each polytomy in the genetree. Possible values are -1 to explore all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is also computationally expensive.")
@@ -94,7 +92,7 @@ parser.add_argument('--firstbest', dest='firstbest',  action='store_true', help=
 
 
 args= parser.parse_args()
-	
+
 if(args.costdl):
 	params.set(args.costdl[0], args.costdl[1])
 
@@ -114,7 +112,7 @@ for gtree in gtrees:
 	outlog= Output("%s%s"%(args.outfile, (gtree_number+1 if len(gtrees)>1 else ""))) if args.outfile is not None else Output()
 	start_time=time.time()
 
-	oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, dists[0], capitalize=args.cap, gene_sep= args.gene_sep, nFlag= args.nflag, smap=args.smap.name if args.batch else args.smap)
+	oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, dists[0], capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap))
 	tree_list=[oritree]
 
 	bestroot_para = parallelize(args.parallele, len(tree_list))
@@ -127,29 +125,29 @@ for gtree in gtrees:
 		dl_costs=[]
 
 		if(args.parallele):
-			#print "parallele mode : " , bestroot_para
+            #print "parallele mode : " , bestroot_para
 			# parallelisation code
 			pool = Pool(processes=bestroot_para)
 			results = []
-		
+
 			for genetree in tree_list:
-				
+
 				#thread.start_new_thread( solvePolytomy, (gprime, specietree, distance_matrix, node_order, False, 1, 'upgma', 1e8, 1) )
-				#parameter for solvePolytomy, 
-				#Solving with upgma instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
-				pz = (genetree, specietree, distance_matrix, node_order, False, 1, 'upgma', args.mval, 1)
+				#parameter for solvePolytomy,
+				#Solving with rand instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
+				pz = (genetree, specietree, distance_matrix, node_order, False, 1, 'rand', 1)
 				async_result = pool.apply_async(solvePolytomy, pz)
 				results.append(async_result)
 				#sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
 
-			for res in results:        
+			for res in results:
 				sol = res.get()
 				f_tree= sol[0].copy(method ='simplecopy')
 				lcamap=TreeUtils.lcaMapping(f_tree, specietree)
 				TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
 				dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
 				dl_costs.append(dl_cost)
-			
+
 			#close pool
 			pool.close()
 			pool.join()
@@ -157,15 +155,15 @@ for gtree in gtrees:
 		else :
 			#WE are not doing parallele computation here
 			for genetree in tree_list:
-				sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, False, 1, 'upgma', args.mval, 1)
+				sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, False, 1, 'rand', 1)
 				f_tree= sol[0].copy(method ='simplecopy')
 				lcamap=TreeUtils.lcaMapping(f_tree, specietree)
 				TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
 				dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
-				dl_costs.append(dl_cost)	
+				dl_costs.append(dl_cost)
 
 
-		best_dl = min(dl_costs) 
+		best_dl = min(dl_costs)
 
 		tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
 		if(type(tree_list)!=tuple):
@@ -175,26 +173,26 @@ for gtree in gtrees:
 			tree_list = [tree_list[0]]
 
 	count=0
-	
-	if(args.parallele): 
-		# euuuuuuuuuuuuuh. Not sure why am doing this, but the number of process should be a function of the number of tree to solve
-		multipoly_para = len(tree_list) if len(tree_list)<= CPU_COUNT else parallele(args.parallele, len(tree_list)) 
+
+	if(args.parallele):
+		# euuuuuuuuuuuuuh. The number of process should be a function of the number of tree to solve
+		multipoly_para = len(tree_list) if len(tree_list)<= CPU_COUNT else parallele(args.parallele, len(tree_list))
 		pool = Pool(processes=multipoly_para)
 		results = []
 		isexecuted=[True]*len(tree_list)
 		for genetree in tree_list:
 			if genetree.has_polytomies():
 				#parallelized version
-				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.mval, args.sol_limit)
+				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.sol_limit)
 				async_result = pool.apply_async(solvePolytomy, pz)
 				results.append(async_result)
-			
+
 			elif (args.seuil):
 				genetree = genetree.contract_tree(seuil=args.seuil)
-				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.mval, args.sol_limit)
+				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.sol_limit)
 				async_result = pool.apply_async(solvePolytomy, pz)
 				results.append(async_result)
-			
+
 			else:
 				isexecuted[count] =False
 				results.append(None)
@@ -220,19 +218,19 @@ for gtree in gtrees:
 
 	else :
 		for genetree in tree_list:
-			first=True 
+			first=True
 			count+=1
 			if genetree.has_polytomies():
-				polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
-			
+				polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order,  verbose=args.verbose, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit)
+
 
 			elif (args.seuil):
 				genetree = genetree.contract_tree(seuil=args.seuil)
-				polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit, verbose= args.verbose, maxVal=args.mval)
+				polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order, verbose=args.verbose, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit)
 
 			else :
 				polysolution = [genetree]
-			
+
 			#Copy, in order to not change the solution newick for export
 			f_tree= polysolution[0].copy(method='simplecopy')
 			lcamap=TreeUtils.lcaMapping(f_tree, specietree)
@@ -244,10 +242,13 @@ for gtree in gtrees:
 				outlog.write(tree.write(format=9))
 
 
-	end_time=time.time()	
+	end_time=time.time()
 	gtree_number+=1
 
 	outlog.close()
-	print "\nEND  profileNJ on file: '%s', line %s in %f s" %(args.genetree.name, gtree_number, (-start_time+end_time))
+	para_mode=""
+	if(args.parallele):
+		para_mode="with parallelization (CPU_COUNT=%s)"%(CPU_COUNT)
+	print "\nEND  profileNJ on file: '%s', line %s in %f s, %s" %(args.genetree.name, gtree_number, (-start_time+end_time), para_mode)
 
 linecache.clearcache()
