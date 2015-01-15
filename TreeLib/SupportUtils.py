@@ -40,7 +40,7 @@ def name_extractor(filename, ext="."):
 
 @timeit
 def phymlikelihood(sequence, align_ext, treepath, n_sol, s_model='HKY85'):
-	
+
 	sequence=convert_to_phylip(sequence, 'fasta', 'align')
 	likelihoods=[]
 	output_stats = "%s_phyml_stats.txt" %sequence
@@ -232,7 +232,7 @@ def retrieveDupAndLostCost(treefile, streefile, smap, sep=None, pos='prefix'):
 			g,s = line.strip().split()
 			g_regex=re.compile(g.replace('*', '.*'))
 			regexmap[g_regex]=s
-	
+
 	for leaf in genetree:
 		for key,value in regexmap.iteritems():
 			if key.match(leaf.name):
@@ -322,11 +322,3 @@ def extractRAXMLikelihood(filename, n):
 				break
 
 	return list(reversed(likelihoods))
-
-
-
-
-
-
-	
-

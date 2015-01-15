@@ -21,7 +21,7 @@ PARTIAL_RESOLUTION_ITERATOR=1
 numpy.set_printoptions(threshold='nan', precision=10)
 
 @memorize
-def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_method='upgma', verbose=False):
+def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_method='upgma', verbose=False, mode="solve"):
 	"""This assume we that we are using the correct specietree for this genetree
 	the specie tree root is the latest common ancestor of all the specie in genetree"""
 	count=TreeUtils.getSpecieCount(genetree) # number of specie in the genetree
@@ -96,39 +96,41 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
 
 	# find the shape of the cost_table
 	xsize,ysize=cost_table.shape
+	if(mode is not "solve"):
+		return cost_table
+	else:
+		paths= findPathFromTable(path_table, row_node_corr, count, xsize-1, 0);
+		solution=[]
 
-	paths= findPathFromTable(path_table, row_node_corr, count, xsize-1, 0);
-	solution=[]
+		if(verbose):
+			print "Matrix M: \n"
+			print cost_table
+			print
+			print "Path table for tree construction: \n"
+			print path_table
+			print
+			print "Correspondance: \n"
+			pprint(row_node_corr)
+			print
+			print "Gene Tree:\n"
+			print genetree.get_ascii(attributes=['species', 'name'])
+			print
+			print "Specie Tree:\n"
+			print specietree.get_ascii()
+			print "\nNumber of Tree found : ", len(paths), "\n"
+			print "List of possible path: "
+			for path in paths:
+				print path
+			print
 
-	if(verbose):
-		print "Matrix M: \n"
-		print cost_table
-		print
-		print "Path table for tree construction: \n"
-		print path_table
-		print
-		print "Correspondance: \n"
-		pprint(row_node_corr)
-		print
-		print "Gene Tree:\n"
-		print genetree.get_ascii(attributes=['species', 'name'])
-		print
-		print "Specie Tree:\n"
-		print specietree.get_ascii()
-		print "\nNumber of Tree found : ", len(paths), "\n"
-		print "List of possible path: "
+		i=1
 		for path in paths:
-			print path
-		print
+			if(limit>0 and i>limit):
+				break
+			solution.append(constructFromPath(path, genetree, specietree, numpy.copy(gene_matrix), node_order[:], verbose=verbose, method=cluster_method, cost=cost_table[xsize-1,0]))
+			i+=1
 
-	i=1
-	for path in paths:
-		if(limit>0 and i>limit):
-			break
-		solution.append(constructFromPath(path, genetree, specietree, numpy.copy(gene_matrix), node_order[:], verbose=verbose, method=cluster_method, cost=cost_table[xsize-1,0]))
-		i+=1
-
-	return solution
+		return solution
 
 
 def findSpeciationPathFromTable(path_table, row_node_corr,count, xpos, ypos):
@@ -500,7 +502,7 @@ def getIndex(node_order, node):
 	"""Get the index of a node in a node list"""
 	return node_order.index(node.name)
 
-def polytomy_preprocessing(polytomy, specietree, gene_matrix, node_order, method='upgma'):
+def polytomyPreprocess(polytomy, specietree, gene_matrix, node_order, method='upgma'):
 	"""Preprocessing of a polytomy """
 
 	for node in polytomy.traverse("postorder"):
@@ -587,7 +589,7 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
 				order= node_order[:]
 				poly_parent= polytomy.up
 				node_to_replace=polytomy
-				matrice, order=polytomy_preprocessing(ptree, sptree, matrice, order, method=method)
+				matrice, order=polytomyPreprocess(ptree, sptree, matrice, order, method=method)
 				solution=polySolver(TreeUtils.treeHash(ptree, addinfos=str(path_limit) + method), ptree,sptree, matrice, order, path_limit, cluster_method=method, verbose=verbose)
 				#solution=polySolver(ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
 				if(poly_parent== None):
@@ -615,3 +617,38 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
 	#deepcopy is not working, neither is newick-copy
 	f_sol= polysolution[0:sol_limit] if sol_limit>0 else polysolution
 	return [t.copy("simplecopy") for t in f_sol]
+
+
+def computePolytomyReconCost(genetree, specietree, verbose=False):
+	"""This is a copy pasta from the solvePolytomy function that return only the cost of a node
+	"""
+	recon_cost= 0
+	#genetree = origene.copy(method="simplecopy")
+	lcamap = TreeUtils.lcaMapping_old(genetree, specietree, multspeciename=False)
+
+	for node in genetree.iter_internal_node(strategy="postorder", enable_root=True):
+
+		if (node.is_binary()):
+
+			# if node is binary, we just compute the recon cost
+			try:
+				cost = TreeUtils.binary_recon_score(node, lcamap)
+				recon_cost += cost[0]
+
+			except Exception as e:
+				print e
+
+		elif(node.is_polytomy()):
+			sptree=specietree.copy(method="simplecopy")
+			# here, the node is a polytomy, so we compute the table and
+			# find the solution cost at [-1, 0]
+			mat_table = polySolver(TreeUtils.treeHash(node), node, sptree, None, [], 1, verbose=verbose, mode="none")
+			if(verbose):
+				print node
+				pprint(mat_table)
+				print "%s : -------------------------------------------------------\n"%(recon_cost)
+			recon_cost += mat_table[-1,0]
+
+		else:
+			raise Exception("Internal node with only one child in your tree")
+	return recon_cost

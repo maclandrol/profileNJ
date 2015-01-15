@@ -84,7 +84,7 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 			return getTreeFromPhyloxml(content)
 
 
-def lcaMapping_old(geneTree, specieTree):
+def lcaMapping_old(geneTree, specieTree, multspeciename=True):
 
 	mapping ={}
 	try:
@@ -97,16 +97,20 @@ def lcaMapping_old(geneTree, specieTree):
 				else:
 					mapping[node]=specieTree.get_leaves_by_name(list(species)[0])[0]
 				#node.add_features(species=mapping[node].name.replace("/",",")) ######Change will depends
-				node.add_features(species=",".join(species))
+
+				if(multspeciename):
+					node.add_features(species=",".join(species))
+				else:
+					node.add_features(species=mapping[node].name)
+
 			else:
 				mapping[node]=specieTree.search_nodes(name=node.species)[0]
+
 	except Exception as e:
 		print type(e)
 		print("Leaves without species")
 	else :
 		return mapping
-
-
 
 
 def lcaMapping(geneTree, specieTree):
@@ -160,8 +164,9 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 		if(lost.upper()=="YES"):
 			for node in geneTree.traverse("postorder"):
 				children_list=node.get_children()
+				node_is_dup=(node.type==TreeClass.NAD or node.type==TreeClass.AD)
 				for child_c in children_list:
-					if((lcaMap[child_c].up != lcaMap[node] and lcaMap[child_c] != lcaMap[node]) or (node.type==TreeClass.AD and lcaMap[node]!=lcaMap[child_c])):
+					if( (node_is_dup and lcaMap[child_c] != lcaMap[node]) or (not node_is_dup and (lcaMap[child_c].up != lcaMap[node]))):
 
 						while((lcaMap[child_c].up!=lcaMap[node] and node.type==TreeClass.SPEC) or (lcaMap[child_c]!=lcaMap[node] and node.type!=TreeClass.SPEC)):
 							lostnode=TreeClass()
@@ -201,6 +206,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 						lostnode.add_features(type=TreeClass.LOST)
 						lostnode.species=",".join(unadded_specie)
 						node.add_child(lostnode)
+
 
 def ComputeDupLostScore(genetree=None):
 	"""
@@ -243,6 +249,44 @@ def CleanFeatures(tree=None, features=[]):
 	return cleaned
 
 
+def binary_recon_score(node, lcamap):
+	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
+	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
+	"""
+	score = 0
+	dup = 0
+	lost = 0
+	if(lcamap is None or node is None):
+		raise Exception("lcaMapping or geneTree not found")
+	else :
+		#print node.name , node.species, " and children name ", node.get_children_name()," and children species ", node.get_children_species()
+		if(not node.is_leaf() and (lcamap[node].name == lcamap[node.get_child_at(0)].name or lcamap[node].name==lcamap[node.get_child_at(1)].name)):
+			score += 1
+			dup += 1
+
+		children_list = node.get_children()
+		supposed_children_species = lcamap[node].get_children_name()
+		child_number=0
+		for child in children_list:
+			c = lcamap[child]
+			child_number+=1
+			child_lost=0
+
+			if(dup==0):
+				while(c is not None and (c.name not in supposed_children_species)):
+					score += 1
+					lost += 1
+					child_lost+=1
+					c = c.up
+
+			if(dup>0):
+				while(c is not None and c.name!=node.species):
+					score += 1
+					lost += 1
+					child_lost+=1
+					c = c.up
+
+	return score, dup, lost
 
 def totalDuplicationConsistency(tree):
 	"""Compute the total duplication consistency score for a tree"""
@@ -347,14 +391,8 @@ def newick_preprocessing(newick, gene_sep=None):
 
 
 def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None):
-	#################################################################
-	#TODO :
-	#	1) Correct newick
-	#	2) Sequence retrieve
-	#	3) PhyML to align sequence and make a distance matrice
-	#
-	#################################################################
-
+	"""Preprocess genetree for polytomysolver
+	"""
 	#genetree input
 	speciemap =None
 	if isinstance(genetree, basestring) and not smap:

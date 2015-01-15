@@ -32,7 +32,7 @@ newick solution2
 
 PROCESSES_CHOOSER=1.2
 try:
-	CPU_COUNT= cpu_count()
+    CPU_COUNT= cpu_count()
 except (NotImplementedError):
 	CPU_COUNT=1
 
@@ -125,14 +125,47 @@ for gtree in gtrees:
 		tree_list.extend(oritree.reroot())
 		dl_costs=[]
 
-		for genetree in tree_list:
-			cost = Multipolysolver.computePolytomyReconCost(genetree, specietree, verbose=False)
-			dl_costs.append(cost)
+		if(args.parallele):
+			#print "parallele mode : " , bestroot_para
+			# parallelisation code
+			pool = Pool(processes=bestroot_para)
+			results = []
 
-		# We find the list of tree with lowest dup score
+			for genetree in tree_list:
+
+				#thread.start_new_thread( solvePolytomy, (gprime, specietree, distance_matrix, node_order, False, 1, 'upgma', 1e8, 1) )
+				#parameter for solvePolytomy,
+				#Solving with rand instead of nj shouldn't change the dl_cost, only the rf. So this is faster in order to estimate the dl_cost
+				pz = (genetree, specietree, distance_matrix, node_order, False, 1, 'rand', 1)
+				async_result = pool.apply_async(solvePolytomy, pz)
+				results.append(async_result)
+				#sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, sol_limit=1, method='upgma', path_limit=1, verbose=False)
+
+			for res in results:
+				sol = res.get()
+				f_tree= sol[0].copy(method ='simplecopy')
+				lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+				TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+				dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+				dl_costs.append(dl_cost)
+
+			#close pool
+			pool.close()
+			pool.join()
+
+		else :
+			#WE are not doing parallele computation here
+			for genetree in tree_list:
+				sol= solvePolytomy(genetree, specietree, distance_matrix, node_order, False, 1, 'rand', 1)
+				f_tree= sol[0].copy(method ='simplecopy')
+				lcamap=TreeUtils.lcaMapping(f_tree, specietree)
+				TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
+				dl_cost=TreeUtils.ComputeDupLostScore(f_tree)
+				dl_costs.append(dl_cost)
+
+
 		best_dl = min(dl_costs)
 		tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
-
 		if(type(tree_list)!=tuple):
 			tree_list=[tree_list]
 
@@ -142,7 +175,7 @@ for gtree in gtrees:
 	count=0
 
 	if(args.parallele):
-		#The number of process should be a function of the number of tree to solve
+		# euuuuuuuuuuuuuh. The number of process should be a function of the number of tree to solve
 		multipoly_para = len(tree_list) if len(tree_list)<= CPU_COUNT else parallele(args.parallele, len(tree_list))
 		pool = Pool(processes=multipoly_para)
 		results = []
@@ -150,14 +183,14 @@ for gtree in gtrees:
 		for genetree in tree_list:
 			if genetree.has_polytomies():
 				#parallelized version
-				arguments = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.sol_limit)
-				async_result = pool.apply_async(solvePolytomy, arguments)
+				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.sol_limit)
+				async_result = pool.apply_async(solvePolytomy, pz)
 				results.append(async_result)
 
 			elif (args.seuil):
 				genetree = genetree.contract_tree(seuil=args.seuil)
-				arguments = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.sol_limit)
-				async_result = pool.apply_async(solvePolytomy, arguments)
+				pz = (genetree, specietree, distance_matrix, node_order, args.verbose, args.path_limit, args.cluster, args.sol_limit)
+				async_result = pool.apply_async(solvePolytomy, pz)
 				results.append(async_result)
 
 			else:
@@ -165,11 +198,12 @@ for gtree in gtrees:
 				results.append(None)
 			count +=1
 
+		#parallelized version
 		for i in range(len(results)):
 
 			polysolution = results[i].get() if isexecuted[i] else [tree_list[i]]
-
 			#Copy, in order to not change the solution newick for export
+
 			f_tree= polysolution[0].copy(method='simplecopy')
 			lcamap=TreeUtils.lcaMapping(f_tree, specietree)
 			TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
@@ -177,13 +211,12 @@ for gtree in gtrees:
 
 			outlog.write('>Tree %s; m_cost=%s'%(i + 1,dl_cost))
 			for tree in polysolution:
-				outlog.write(tree.write(format=9))#, features=["species"]))
+				outlog.write(tree.write(format=9))
 
 		pool.close()
 		pool.join()
 
 	else :
-		#Not paralellized mode
 		for genetree in tree_list:
 			first=True
 			count+=1
@@ -206,7 +239,7 @@ for gtree in gtrees:
 
 			outlog.write('>Tree %s; m_cost=%s'%(count,dl_cost))
 			for tree in polysolution:
-				outlog.write(tree.write(format=9))#, features=["species"]))
+				outlog.write(tree.write(format=9))
 
 
 	end_time=time.time()
