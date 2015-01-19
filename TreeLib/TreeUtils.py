@@ -84,7 +84,9 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 			return getTreeFromPhyloxml(content)
 
 
-def lcaMapping_old(geneTree, specieTree, multspeciename=True):
+def lcaMapping(geneTree, specieTree, multspeciename=True):
+
+        return lcaMapping_old(geneTree, specieTree, multspeciename)
 
 	mapping ={}
 	try:
@@ -112,37 +114,43 @@ def lcaMapping_old(geneTree, specieTree, multspeciename=True):
 	else :
 		return mapping
 
-
-def lcaMapping(geneTree, specieTree):
+#TODO : this is actually the new lca mapping, the other is old.  
+def lcaMapping_old(geneTree, specieTree, multspeciename=True):
 
 		smap = {}
-		mapping ={}
-		#try:
-		for node in geneTree.traverse(strategy="postorder"):
-			if not node.is_leaf():
-				#leaf_under_node= node.get_leaves()
-				#species = set([i.species for i in leaf_under_node])
-				#ML ADDED THIS
-				species = set([mapping[n] for n in node.get_children()])
+                mapping ={}
+                #try:
+                for node in geneTree.traverse(strategy="postorder"):
+                        if not node.is_leaf():
+                                #leaf_under_node= node.get_leaves()
+                                #species = set([i.species for i in leaf_under_node])
+                                #ML ADDED THIS
+                                species = set([mapping[n] for n in node.get_children()])
 
-				if(len(species)>1):
-					mapping[node]= specieTree.get_common_ancestor(species)
-				else:
-					mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
-				node.add_features(species=",".join([x.name for x in species]))
-			else:
-				sname=node.species
-				if not sname in smap:
-					s = specieTree.search_nodes(name=node.species)[0]
-					smap[sname] = s
-				else:
-					s = smap[sname]
-				mapping[node]=s
-		#except Exception as e:
-		#        print type(e)
-		#        print("Leaves without species")
-		#else :
-		return mapping
+                                if(len(species)>1):
+                                        mapping[node]= specieTree.get_common_ancestor(species)
+                                else:
+                                        mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
+                                        
+                                        
+                                if(multspeciename):
+                                        node.add_features(species=",".join([x.name for x in species]))
+                                else:
+                                        node.add_features(species=mapping[node].name)
+                                
+                        else:
+                                sname=node.species
+                                if not sname in smap:
+                                        s = specieTree.search_nodes(name=node.species)[0]
+                                        smap[sname] = s
+                                else:
+                                        s = smap[sname]
+                                mapping[node]=s
+                #except Exception as e:
+                #        print type(e)
+                #        print("Leaves without species")
+                #else :
+                return mapping
 
 
 def reconcile(geneTree=None, lcaMap=None, lost="no"):

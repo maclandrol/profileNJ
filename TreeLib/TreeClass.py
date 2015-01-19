@@ -401,7 +401,7 @@ class TreeClass(TreeNode):
 		"""reroot tree at each node"""
 		#self.label_internal_node()
 		for node in self.iter_descendants():
-			c_tree= self.copy("newick-extended", nw_format_root_node=True)
+			c_tree= self.copy("simplecopy", nw_format_root_node=True)
 			#c_node =c_tree&node.name
 			c_node = c_tree.get_common_ancestor(node.get_leaf_name()) if node.is_internal() else c_tree&node.name
 			c_tree.set_outgroup(c_node)
