@@ -19,13 +19,11 @@ import params
 
 def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output="nh", nh_format="full"):
 	"""Fetch genetree from ensembl tree ID
-
 	:argument treeID: the ensembl tree ID, this is mandatory
 	:argument aligned: boolean (0/1), used with sequence to retrieve aligned sequence
 	:argument sequence: none / protein /cdna /gene, should we retrieve sequence also?, work only with phyloxml nh_format
 	:argument output: nh / phyloxml, type of output we are looking for!
 	:argument nh_format: full / display_label_composite / simple / species / species_short_name / ncbi_taxon / ncbi_name / njtree / phylip, The format of the nh output, only useful when the output is set to nh
-
 	"""
 	if not treeID:
 		raise valueError('Please provide a genetree id')
@@ -53,13 +51,11 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, output="nh", nh_format="full"):
 
 	"""Fetch genetree from a member ID
-
 	:argument memberID: the ensembl gene ID member of the tree to fetch, this is mandatory! EX: ENSG00000157764
 	:argument species: Registry name/aliases used to restrict searches by. Only required if a stable ID is not unique to a species (not the case with Ensembl databases) EX: human, homo_sapiens
 	:argument id_type: Object type to restrict searches to. Used when a stable ID is not unique to a single class. EX: gene, transcript
 	:argument output: nh / phyloxml, type of output we are looking for!
 	:argument nh_format: full / display_label_composite / simple / species / species_short_name / ncbi_taxon / ncbi_name / njtree / phylip, The format of the nh output, only useful when the output is set to nh
-
 	"""
 	if not memberID:
 		raise valueError('Please provide a genetree id')
@@ -84,9 +80,9 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 			return getTreeFromPhyloxml(content)
 
 
-def lcaMapping(geneTree, specieTree, multspeciename=True):
+def lcaMapping_old(geneTree, specieTree, multspeciename=True):
 
-        return lcaMapping_old(geneTree, specieTree, multspeciename)
+        return lcaMapping(geneTree, specieTree, multspeciename)
 
 	mapping ={}
 	try:
@@ -114,43 +110,44 @@ def lcaMapping(geneTree, specieTree, multspeciename=True):
 	else :
 		return mapping
 
-#TODO : this is actually the new lca mapping, the other is old.  
-def lcaMapping_old(geneTree, specieTree, multspeciename=True):
+
+def lcaMapping(geneTree, specieTree, multspeciename=True):
 
 		smap = {}
-                mapping ={}
-                #try:
-                for node in geneTree.traverse(strategy="postorder"):
-                        if not node.is_leaf():
-                                #leaf_under_node= node.get_leaves()
-                                #species = set([i.species for i in leaf_under_node])
-                                #ML ADDED THIS
-                                species = set([mapping[n] for n in node.get_children()])
+		mapping ={}
+		#try:
+		for node in geneTree.traverse(strategy="postorder"):
+			if not node.is_leaf():
+				#leaf_under_node= node.get_leaves()
+				#species = set([i.species for i in leaf_under_node])
+				#ML ADDED THIS
+				species = set([mapping[n] for n in node.get_children()])
 
-                                if(len(species)>1):
-                                        mapping[node]= specieTree.get_common_ancestor(species)
-                                else:
-                                        mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
-                                        
-                                        
-                                if(multspeciename):
+				if(len(species)>1):
+					mapping[node]= specieTree.get_common_ancestor(species)
+				else:
+					mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
+				#node.add_features(species=",".join([x.name for x in species]))
+				
+				if(multspeciename):
                                         node.add_features(species=",".join([x.name for x in species]))
                                 else:
                                         node.add_features(species=mapping[node].name)
-                                
-                        else:
-                                sname=node.species
-                                if not sname in smap:
-                                        s = specieTree.search_nodes(name=node.species)[0]
-                                        smap[sname] = s
-                                else:
-                                        s = smap[sname]
-                                mapping[node]=s
-                #except Exception as e:
-                #        print type(e)
-                #        print("Leaves without species")
-                #else :
-                return mapping
+				
+				
+			else:
+				sname=node.species
+				if not sname in smap:
+					s = specieTree.search_nodes(name=node.species)[0]
+					smap[sname] = s
+				else:
+					s = smap[sname]
+				mapping[node]=s
+		#except Exception as e:
+		#        print type(e)
+		#        print("Leaves without species")
+		#else :
+		return mapping
 
 
 def reconcile(geneTree=None, lcaMap=None, lost="no"):
@@ -294,7 +291,7 @@ def binary_recon_score(node, lcamap):
 					child_lost+=1
 					c = c.up
 
-	return score, dup, lost
+	return dup*params.dupcost + lost*params.losscost, dup, lost
 
 def totalDuplicationConsistency(tree):
 	"""Compute the total duplication consistency score for a tree"""

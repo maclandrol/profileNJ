@@ -126,13 +126,21 @@ for gtree in gtrees:
 		dl_costs=[]
 
 		for genetree in tree_list:
+                        #tmp = genetree.copy()
 			cost = Multipolysolver.computePolytomyReconCost(genetree, specietree, verbose=False)
+			#print "COST=%.9f"%(cost)
 			dl_costs.append(cost)
 
 		# We find the list of tree with lowest dup score
 		best_dl = min(dl_costs)
-		tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
+		
 
+		
+		#tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
+		
+		#stupid floats
+		tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if abs(dl_costs[x] - best_dl) < 0.0000001])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
+		
 		if(type(tree_list)!=tuple):
 			tree_list=[tree_list]
 
@@ -143,7 +151,7 @@ for gtree in gtrees:
 
 	if(args.parallele):
 		#The number of process should be a function of the number of tree to solve
-		multipoly_para = len(tree_list) if len(tree_list)<= CPU_COUNT else parallele(args.parallele, len(tree_list))
+		multipoly_para = len(tree_list) if len(tree_list)<= CPU_COUNT else parallelize(args.parallele, len(tree_list))
 		pool = Pool(processes=multipoly_para)
 		results = []
 		isexecuted=[True]*len(tree_list)
@@ -216,6 +224,6 @@ for gtree in gtrees:
 	para_mode=""
 	if(args.parallele):
 		para_mode="with parallelization (CPU_COUNT=%s)"%(CPU_COUNT)
-	print "\nEND  profileNJ on file: '%s', line %s in %f s, %s" %(args.genetree.name, gtree_number, (-start_time+end_time), para_mode)
+	#print "\nEND  profileNJ on file: '%s', line %s in %f s, %s" %(args.genetree.name, gtree_number, (-start_time+end_time), para_mode)
 
 linecache.clearcache()
