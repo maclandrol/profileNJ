@@ -126,18 +126,12 @@ for gtree in gtrees:
 		dl_costs=[]
 
 		for genetree in tree_list:
-                        #tmp = genetree.copy()
 			cost = Multipolysolver.computePolytomyReconCost(genetree, specietree, verbose=False)
-			#print "COST=%.9f"%(cost)
 			dl_costs.append(cost)
+			#print "COST=%.9f"%(cost)
 
 		# We find the list of tree with lowest dup score
 		best_dl = min(dl_costs)
-		
-
-		
-		#tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if dl_costs[x]==best_dl])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
-		
 		#stupid floats
 		tree_list= itemgetter(*[x for x in xrange(len(dl_costs)) if abs(dl_costs[x] - best_dl) < 0.0000001])(tree_list) #(this should output all the solution with the minimum reconcilliation cost
 		

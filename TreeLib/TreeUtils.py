@@ -258,7 +258,6 @@ def binary_recon_score(node, lcamap):
 	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
 	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
 	"""
-	score = 0
 	dup = 0
 	lost = 0
 	if(lcamap is None or node is None):
@@ -266,7 +265,6 @@ def binary_recon_score(node, lcamap):
 	else :
 		#print node.name , node.species, " and children name ", node.get_children_name()," and children species ", node.get_children_species()
 		if(not node.is_leaf() and (lcamap[node].name == lcamap[node.get_child_at(0)].name or lcamap[node].name==lcamap[node.get_child_at(1)].name)):
-			score += 1
 			dup += 1
 
 		children_list = node.get_children()
@@ -279,14 +277,12 @@ def binary_recon_score(node, lcamap):
 
 			if(dup==0):
 				while(c is not None and (c.name not in supposed_children_species)):
-					score += 1
 					lost += 1
 					child_lost+=1
 					c = c.up
 
 			if(dup>0):
 				while(c is not None and c.name!=node.species):
-					score += 1
 					lost += 1
 					child_lost+=1
 					c = c.up
