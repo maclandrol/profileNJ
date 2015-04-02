@@ -19,7 +19,11 @@ bincount= histc(matrix, binrange);
 bincount= bincount*100.0/size(matrix,1);
 
 % Create multiple lines using matrix input to bar
-bar(binrange, bincount,'grouped');
+barh = bar(binrange, bincount,'grouped');
+set(barh, 'BarWidth', 0.5);
+%geth=get(barh,'child');
+%set(geth,'BarWidth',.9) 
+
 set(gca, 'YTick',[0 25 50 75 100],...
     'TickLength',[0.002 0],...
     'Xtick', binrange,...
@@ -27,7 +31,7 @@ set(gca, 'YTick',[0 25 50 75 100],...
     'FontSize',fsize,...
     'LineWidth', 1.2,...
     'FontName','Arial', 'box','off');
-xlim([-2,29]);
+xlim([-2,23]);
 % Create xlabel
 xlabel('RF distance')
 

@@ -40,7 +40,7 @@ def runTest(outfile, basedir, align_type, smap, specietree, alignfile, mltree, p
 		headerWrite(OUT, header)
 		treefixtree=treeCompute(OUT, rooted_tree, smap, specietree, alignfile, mltree_ext, phylogeny, data_size, mltree)
 
-	header=['tree', 'PolySolver_dlc','PolySolver_nad','PolySolver_dup','PolySolver_lost', 'PolySolver_rf','PolySolver_maxrf', 'PolySolver_dinl','PolySolver_p-val',  'PolySolver_time', 'ML_time', 'total_polytomy', 'polysolver_nsol', 'best_sol_aLRT', 'is_bestrf',  'best_rf']
+	header=['tree', 'PolySolver_dlc','PolySolver_nad','PolySolver_dup','PolySolver_lost', 'PolySolver_rf','PolySolver_maxrf', 'PolySolver_dinl','PolySolver_p-val',  'PolySolver_time', 'Matrix_time', 'ML_time', 'total_polytomy', 'polysolver_nsol', 'best_sol_aLRT', 'is_bestrf',  'best_rf']
 
 	for thres in seuil:
 		gtree=os.path.join(basedir, os.path.basename(phylogeny).replace(".tree", "%s.%s.bootstrap.tree"%(align_type,thres)))
@@ -98,7 +98,7 @@ def cleanup(basedir):
 def pscompute(outfile, mltree, smap, specietree, alignfile, gtree, seuil, mltree_ext, r_option, slimit, plimit, correctPhylo, polytomy_number, algo):
 	w_dir=os.path.dirname(mltree)
 	basename, align_ext=name_extractor(os.path.basename(alignfile), ext=".")
-	distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
+	disttime, distmat= getDistMatrix(alignfile,os.path.join(w_dir, basename+".dist"))
 	ps_out=os.path.join(w_dir, basename+".%s.polytomysolver.tree"%seuil)
 	ps_time, rst=runPolytomySolver(gtree, smap, specietree, ps_out, distmat, r_option, slimit, plimit, algo)
 	
@@ -155,7 +155,7 @@ def pscompute(outfile, mltree, smap, specietree, alignfile, gtree, seuil, mltree
 		polysolver_maxrf=psmax_rfs[bestposition]
 		polysolver_dinl=psdinls[bestposition]
 		polysolver_pval=pspvals[bestposition]
-		line= [basename, polysolver_dlc, psnad_costs[bestposition],psdup_costs[bestposition],pslost_costs[bestposition], polysolver_rf, polysolver_maxrf, polysolver_dinl,polysolver_pval, ps_time, lik_time, polytomy_number, n_psol, likelihoods[bestposition], polysolver_rf==best_rf, best_rf]
+		line= [basename, polysolver_dlc, psnad_costs[bestposition],psdup_costs[bestposition],pslost_costs[bestposition], polysolver_rf, polysolver_maxrf, polysolver_dinl,polysolver_pval, ps_time, disttime, lik_time, polytomy_number, n_psol, likelihoods[bestposition], polysolver_rf==best_rf, best_rf]
 		outfile.write("\t".join([str(val) for val in line])+"\n")
 
 	return "%s%s"%(ps_out, bestposition+1), basename

@@ -25,7 +25,8 @@ end
 
 h=figure;
 fsize=14;
-ax2=subplot(2,1,1);
+%ax2=subplot(2,1,1);
+ax2= gca;
 plot(recon_uniq, rf_accu_plot)
 xlim([0, max(recon_uniq)+1.55]);
 xlabel('Reconciliation cost');
@@ -34,24 +35,23 @@ legend2=legend(order);
 set(legend2,'FontSize',fsize);
 axt1=title('RAxML, ProfileNJ, TreeFix topology accuracy for increasing number of evolutionary event');
 
-ax3=subplot(2,1,2);
-area(recon_uniq, rf_mean_plot)
-xlim([0, max(recon_uniq)+1.55])
-xlabel('Reconciliation cost');
-ylabel('mean RF');
-colormap jet;
-l2=legend(order);
-set(l2,'FontSize',fsize);
-axt2=title('mean RF distance between true tree and RAxML, ProfileNJ, TreeFix for increasing number of evolutionary event');
+set(ax2,'box', 'off', 'FontSize', fsize, 'LineWidth', 1.2,'FontName', 'Helvetica', 'TickDir', 'out')
+set(axt1, 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
 
+% ax3=subplot(2,1,2);
+% area(recon_uniq, rf_mean_plot)
+% xlim([0, max(recon_uniq)+1.55])
+% xlabel('Reconciliation cost');
+% ylabel('mean RF');
+% colormap jet;
+% l2=legend(order);
+% set(l2,'FontSize',fsize);
+% axt2=title('mean RF distance between true tree and RAxML, ProfileNJ, TreeFix for increasing number of evolutionary event');
+% 
+% set(ax3,'box', 'off', 'FontSize', fsize,'LineWidth', 1.2, 'FontName', 'Helvetica', 'TickDir', 'out')
+% set(axt2, 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
 
 set_figures(h, fsize)
-
-set(ax2,'box', 'off', 'FontSize', fsize, 'LineWidth', 1.2,'FontName', 'Helvetica', 'TickDir', 'out')
-set(ax3,'box', 'off', 'FontSize', fsize,'LineWidth', 1.2, 'FontName', 'Helvetica', 'TickDir', 'out')
-set(axt1, 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
-set(axt2, 'FontWeight', 'bold','FontSize',fsize+1, 'FontName', 'Helvetica');
-
 
 % set(gcf,'NextPlot','add');
 % axes;
