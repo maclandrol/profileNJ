@@ -39,7 +39,7 @@ class TreeClass(TreeNode):
 			raise IndexError("Index out of bound, Can't access the child at index: %i"%i)
 
 
-	def copy(self, method="cpickle", nw_features=[], nw_format_root_node=True, binary_correct=False):
+	def copy(self, method="simplecopy", nw_features=[], nw_format_root_node=True, binary_correct=False):
 		""" .. override of ete TreeNode original copy
 
 		Returns a copy of the current node.
@@ -61,14 +61,16 @@ class TreeClass(TreeNode):
 			- "cpickle": The whole node structure and its content is
 			cloned based on cPickle object serialisation (slower, but
 			recommended for full tree copying)
-	
+
 			- "deepcopy": The whole node structure and its content is
 			copied based on the standard "copy" Python functionality
 			(this is the slowest method but it allows to copy complex
 			objects even if attributes point to lambda functions,
 			etc.)
+			- "simplecopy" : Simple recursive tree topology and feature copy
 
 		"""
+		#nw_features = ["name", "species"]
 		if method=="newick":
 			new_node = self.__class__(self.write(features=["name"], format_root_node=True))
 		elif method=="newick-extended":
@@ -249,7 +251,7 @@ class TreeClass(TreeNode):
 				else:
 					leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=pos, cap=capitalize))
 
-	
+
 	def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
 		"""Set gene feature for each leaf in the tree.
 
@@ -273,7 +275,7 @@ class TreeClass(TreeNode):
 
 
 	def get_species(self, sep=","):
-		"""Return the list of species for the current node 
+		"""Return the list of species for the current node
 		(under the current node after reconciliation)"""
 		return self.species.split(sep)
 
@@ -299,12 +301,12 @@ class TreeClass(TreeNode):
 
 
 	def contract_tree(self, seuil=0, feature='support', break_tree_topo=False):
-		"""Contract tree based on the dist between node, using a threshold. `contract_tree` proceed bottom-up. Any branches with a support less than "seuil" will be removed 
+		"""Contract tree based on the dist between node, using a threshold. `contract_tree` proceed bottom-up. Any branches with a support less than "seuil" will be removed
 		if `break_tree_topo` is set to True, all the branch under this node will be recursively removed"""
 		for node in self.traverse("postorder"):
 			if(node.has_feature(feature) and node.is_internal() and getattr(node,feature)<seuil):
 				node.toPolytomy(break_tree_topo)
-		
+
 
 	def restrictToSpecies(self, species=[]):
 		"""Restrict the current genetree to the list of species passed in argument"""
@@ -358,6 +360,25 @@ class TreeClass(TreeNode):
     	"""
 		return not (self.is_root() or self.is_leaf())
 
+	def get_internal_node(self, strategy="levelorder", enable_root=False):
+		"""
+		Return the list of all internal nodes under the current node
+		"""
+		internal_nodes=[]
+		for n in self.traverse(strategy=strategy):
+			if n.is_internal() or (enable_root and n.is_root()):
+				internal_nodes.append(n)
+		return internal_nodes
+
+
+	def iter_internal_node(self, strategy="postorder", enable_root=False):
+		"""
+		Returns an iterator over the list of internal node under the current node
+		"""
+		for n in self.traverse(strategy=strategy):
+			if n.is_internal() or (enable_root and n.is_root()):
+				yield n
+
 
 	def get_all_features(self):
 		"""Return all the features of all nodes under self in a set"""
@@ -380,7 +401,7 @@ class TreeClass(TreeNode):
 		"""reroot tree at each node"""
 		#self.label_internal_node()
 		for node in self.iter_descendants():
-			c_tree= self.copy("newick-extended", nw_format_root_node=True)
+			c_tree= self.copy("simplecopy", nw_format_root_node=True)
 			#c_node =c_tree&node.name
 			c_node = c_tree.get_common_ancestor(node.get_leaf_name()) if node.is_internal() else c_tree&node.name
 			c_tree.set_outgroup(c_node)
@@ -399,7 +420,6 @@ class TreeClass(TreeNode):
 
 			elif not root_node:
 				yield c_tree
-
 
 
 	def get_my_evol_events(self, sos_thr=0.0):
@@ -429,7 +449,7 @@ class TreeClass(TreeNode):
 		T. Genome Biol. 2007;8(6):R109.
 		"""
 		return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
-	
+
 
 	def is_monophyletic(self, specieSet):
 		""" Returns True if species names under this node are all
@@ -539,7 +559,7 @@ class TreeClass(TreeNode):
 		else:
 			return polytomies
 
-	
+
 	def label_internal_node(self):
 		"""Label the internal node of a specietree for the polysolver algorithm"""
 		count=1
@@ -550,7 +570,7 @@ class TreeClass(TreeNode):
 		return self
 
 	def get_feature_sum(self, feature):
- 		cost=0
+		cost=0
 		for node in self.traverse("levelorder"):
 			if(node.has_feature(feature) and getattr(node,feature) is int):
 				cost+=getattr(node,feature)
