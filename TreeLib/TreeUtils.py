@@ -287,8 +287,7 @@ def binary_recon_score(node, lcamap):
 					child_lost+=1
 					c = c.up
 
-	score = dup*params.dupcost + lost*params.losscost
-	return score, dup, lost
+	return dup*params.dupcost + lost*params.losscost, dup, lost
 
 def totalDuplicationConsistency(tree):
 	"""Compute the total duplication consistency score for a tree"""
