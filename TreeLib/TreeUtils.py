@@ -19,13 +19,11 @@ import params
 
 def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output="nh", nh_format="full"):
 	"""Fetch genetree from ensembl tree ID
-
 	:argument treeID: the ensembl tree ID, this is mandatory
 	:argument aligned: boolean (0/1), used with sequence to retrieve aligned sequence
 	:argument sequence: none / protein /cdna /gene, should we retrieve sequence also?, work only with phyloxml nh_format
 	:argument output: nh / phyloxml, type of output we are looking for!
 	:argument nh_format: full / display_label_composite / simple / species / species_short_name / ncbi_taxon / ncbi_name / njtree / phylip, The format of the nh output, only useful when the output is set to nh
-
 	"""
 	if not treeID:
 		raise valueError('Please provide a genetree id')
@@ -53,13 +51,11 @@ def fetch_ensembl_genetree_by_id(treeID=None,aligned=0, sequence="none", output=
 def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, output="nh", nh_format="full"):
 
 	"""Fetch genetree from a member ID
-
 	:argument memberID: the ensembl gene ID member of the tree to fetch, this is mandatory! EX: ENSG00000157764
 	:argument species: Registry name/aliases used to restrict searches by. Only required if a stable ID is not unique to a species (not the case with Ensembl databases) EX: human, homo_sapiens
 	:argument id_type: Object type to restrict searches to. Used when a stable ID is not unique to a single class. EX: gene, transcript
 	:argument output: nh / phyloxml, type of output we are looking for!
 	:argument nh_format: full / display_label_composite / simple / species / species_short_name / ncbi_taxon / ncbi_name / njtree / phylip, The format of the nh output, only useful when the output is set to nh
-
 	"""
 	if not memberID:
 		raise valueError('Please provide a genetree id')
@@ -84,8 +80,10 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 			return getTreeFromPhyloxml(content)
 
 
-def lcaMapping(geneTree, specieTree):
-	"""Map the geneTree to a specieTree"""
+def lcaMapping_old(geneTree, specieTree, multspeciename=True):
+
+        return lcaMapping(geneTree, specieTree, multspeciename)
+
 	mapping ={}
 	try:
 		for node in geneTree.traverse(strategy="postorder"):
@@ -97,13 +95,58 @@ def lcaMapping(geneTree, specieTree):
 				else:
 					mapping[node]=specieTree.get_leaves_by_name(list(species)[0])[0]
 				#node.add_features(species=mapping[node].name.replace("/",",")) ######Change will depends
-				node.add_features(species=",".join(species))
+
+				if(multspeciename):
+					node.add_features(species=",".join(species))
+				else:
+					node.add_features(species=mapping[node].name)
+
 			else:
 				mapping[node]=specieTree.search_nodes(name=node.species)[0]
+
 	except Exception as e:
 		print type(e)
 		print("Leaves without species")
 	else :
+		return mapping
+
+
+def lcaMapping(geneTree, specieTree, multspeciename=True):
+
+		smap = {}
+		mapping ={}
+		#try:
+		for node in geneTree.traverse(strategy="postorder"):
+			if not node.is_leaf():
+				#leaf_under_node= node.get_leaves()
+				#species = set([i.species for i in leaf_under_node])
+				#ML ADDED THIS
+				species = set([mapping[n] for n in node.get_children()])
+
+				if(len(species)>1):
+					mapping[node]= specieTree.get_common_ancestor(species)
+				else:
+					mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
+				#node.add_features(species=",".join([x.name for x in species]))
+				
+				if(multspeciename):
+                                        node.add_features(species=",".join([x.name for x in species]))
+                                else:
+                                        node.add_features(species=mapping[node].name)
+				
+				
+			else:
+				sname=node.species
+				if not sname in smap:
+					s = specieTree.search_nodes(name=node.species)[0]
+					smap[sname] = s
+				else:
+					s = smap[sname]
+				mapping[node]=s
+		#except Exception as e:
+		#        print type(e)
+		#        print("Leaves without species")
+		#else :
 		return mapping
 
 
@@ -126,8 +169,9 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 		if(lost.upper()=="YES"):
 			for node in geneTree.traverse("postorder"):
 				children_list=node.get_children()
+				node_is_dup=(node.type==TreeClass.NAD or node.type==TreeClass.AD)
 				for child_c in children_list:
-					if((lcaMap[child_c].up != lcaMap[node] and lcaMap[child_c] != lcaMap[node]) or (node.type==TreeClass.AD and lcaMap[node]!=lcaMap[child_c])):
+					if( (node_is_dup and lcaMap[child_c] != lcaMap[node]) or (not node_is_dup and (lcaMap[child_c].up != lcaMap[node]))):
 
 						while((lcaMap[child_c].up!=lcaMap[node] and node.type==TreeClass.SPEC) or (lcaMap[child_c]!=lcaMap[node] and node.type!=TreeClass.SPEC)):
 							lostnode=TreeClass()
@@ -168,6 +212,7 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 						lostnode.species=",".join(unadded_specie)
 						node.add_child(lostnode)
 
+
 def ComputeDupLostScore(genetree=None):
 	"""
 	Compute the reconciliation cost
@@ -185,7 +230,7 @@ def detComputeDupLostScore(genetree):
 	if(genetree is None or 'type' not in genetree.get_all_features()):
 		raise Exception("Your Genetree didn't undergoes reconciliation yet")
 	nad=0
-	ad=0 
+	ad=0
 	loss=0
 	for node in genetree.traverse():
 		if node.has_feature('type'):
@@ -209,6 +254,44 @@ def CleanFeatures(tree=None, features=[]):
 	return cleaned
 
 
+def binary_recon_score(node, lcamap):
+	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
+	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
+	"""
+	score = 0
+	dup = 0
+	lost = 0
+	if(lcamap is None or node is None):
+		raise Exception("lcaMapping or geneTree not found")
+	else :
+		#print node.name , node.species, " and children name ", node.get_children_name()," and children species ", node.get_children_species()
+		if(not node.is_leaf() and (lcamap[node].name == lcamap[node.get_child_at(0)].name or lcamap[node].name==lcamap[node.get_child_at(1)].name)):
+			score += 1
+			dup += 1
+
+		children_list = node.get_children()
+		supposed_children_species = lcamap[node].get_children_name()
+		child_number=0
+		for child in children_list:
+			c = lcamap[child]
+			child_number+=1
+			child_lost=0
+
+			if(dup==0):
+				while(c is not None and (c.name not in supposed_children_species)):
+					score += 1
+					lost += 1
+					child_lost+=1
+					c = c.up
+
+			if(dup>0):
+				while(c is not None and c.name!=node.species):
+					score += 1
+					lost += 1
+					child_lost+=1
+					c = c.up
+
+	return dup*params.dupcost + lost*params.losscost, dup, lost
 
 def totalDuplicationConsistency(tree):
 	"""Compute the total duplication consistency score for a tree"""
@@ -312,15 +395,9 @@ def newick_preprocessing(newick, gene_sep=None):
 		"'newick' argument must be either a filename or a newick string."
 
 
-def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", dist_diagonal=1e305, nFlag=False, smap=None):
-	#################################################################
-	#TODO :
-	#	1) Correct newick
-	#	2) Sequence retrieve
-	#	3) PhyML to align sequence and make a distance matrice
-	#
-	#################################################################
-
+def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep = None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None):
+	"""Preprocess genetree for polytomysolver
+	"""
 	#genetree input
 	speciemap =None
 	if isinstance(genetree, basestring) and not smap:
@@ -336,7 +413,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 				g,s = line.strip().split()
 				g_regex=re.compile(g.replace('*', '.*'))
 				regexmap[g_regex]=s
-		
+
 		for leaf in genetree:
 			for key,value in regexmap.iteritems():
 				if key.match(leaf.name):
@@ -352,7 +429,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 
 	#distance matrice input
 	if(distance_file):
-		gene_matrix, node_order= clu.distMatProcessor(distance_file, dist_diagonal, nFlag)
+		gene_matrix, node_order= clu.distMatProcessor(distance_file, nFlagVal, nFlag)
 		#Difference check 1
 		if set(node_order).difference(set(genetree.get_leaf_names())):
 			reset_node_name(genetree, gene_sep)
@@ -360,7 +437,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 		#This is for debug, will never happen
 		print "error: dist file not found"
 		node_order= genetree.get_leaf_names()
-		gene_matrix= clu.makeFakeDstMatrice(len(node_order), 0, 1, dist_diagonal) #Alternative, retrieve aligned sequence and run phyML
+		gene_matrix= clu.makeFakeDstMatrice(len(node_order), 0, 1) #Alternative, retrieve aligned sequence and run phyML
 
 	#Find list of species not in genetree
 	specieGeneList= set(genetree.get_leaf_species())
@@ -405,7 +482,7 @@ def customTreeCompare(original_t, corrected_t, t):
 	if(len(ct_success)==len(ct_leaves)):
 		print "**Leave remaining success for corrected tree"
 		print "\n".join([str(h) for h in t_success])
-		
+
 	else:
 		print "**Corrected tree doesn't follow patern"
 		print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))

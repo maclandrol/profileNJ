@@ -8,6 +8,7 @@ import numpy
 import random
 from pprint import pprint
 import copy
+
 from TreeLib import *
 """
 Gene matrix are represented by a numpy array
@@ -20,7 +21,7 @@ PARTIAL_RESOLUTION_ITERATOR=1
 numpy.set_printoptions(threshold='nan', precision=10)
 
 @memorize
-def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=False, cluster_method='upgma'):
+def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_method='upgma', verbose=False, mode="solve"):
 	"""This assume we that we are using the correct specietree for this genetree
 	the specie tree root is the latest common ancestor of all the specie in genetree"""
 	count=TreeUtils.getSpecieCount(genetree) # number of specie in the genetree
@@ -37,7 +38,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 	# fill the cost_table and the path_table
 	for n in xrange(0,max_x):
 		node=row_node_corr[n]
-		zeropos=count[node.name]-1  
+		zeropos=count[node.name]-1
 		# We have zeropos when the number of node from a specie is the same as the column number
 		# Fill the table, using the next/previous case cost
 		# The node is a leaf, just fill with dupcost and losscost
@@ -75,7 +76,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 				i=pos-1
 				while(i>=0):
 					if(cost_table[n,i]==cost_table[n,i+1]+params.dupcost):
-						if DUP not in path_table[n,i]: path_table[n,i]+=DUP 
+						if DUP not in path_table[n,i]: path_table[n,i]+=DUP
 					elif (cost_table[n,i]>cost_table[n,i+1]+params.dupcost):
 						cost_table[n,i]=min(cost_table[n,i+1]+params.dupcost, cost_table[n,i])
 						path_table[n,i]=DUP
@@ -84,7 +85,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 				i=pos+1
 				while(i<max_y):
 					if(cost_table[n,i]==cost_table[n,i-1]+params.losscost):
-						if LOST not in path_table[n,i]: path_table[n,i]+=LOST 
+						if LOST not in path_table[n,i]: path_table[n,i]+=LOST
 					elif (cost_table[n,i]>cost_table[n,i-1]+params.losscost):
 						cost_table[n,i]=min(cost_table[n,i-1]+params.losscost, cost_table[n,i])
 						path_table[n,i]=LOST
@@ -95,39 +96,41 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, verbose=
 
 	# find the shape of the cost_table
 	xsize,ysize=cost_table.shape
+	if(mode is not "solve"):
+		return cost_table
+	else:
+		paths= findPathFromTable(path_table, row_node_corr, count, xsize-1, 0);
+		solution=[]
 
-	paths= findPathFromTable(path_table, row_node_corr, count, xsize-1, 0);
-	solution=[]
+		if(verbose):
+			print "Matrix M: \n"
+			print cost_table
+			print
+			print "Path table for tree construction: \n"
+			print path_table
+			print
+			print "Correspondance: \n"
+			pprint(row_node_corr)
+			print
+			print "Gene Tree:\n"
+			print genetree.get_ascii(attributes=['species', 'name'])
+			print
+			print "Specie Tree:\n"
+			print specietree.get_ascii()
+			print "\nNumber of Tree found : ", len(paths), "\n"
+			print "List of possible path: "
+			for path in paths:
+				print path
+			print
 
-	if(verbose):
-		print "Matrix M: \n"
-		print cost_table
-		print
-		print "Path table for tree construction: \n"
-		print path_table
-		print
-		print "Correspondance: \n"
-		pprint(row_node_corr)
-		print 
-		print "Gene Tree:\n"
-		print genetree.get_ascii(attributes=['species', 'name'])
-		print 
-		print "Specie Tree:\n"
-		print specietree.get_ascii()
-		print "\nNumber of Tree found : ", len(paths), "\n"
-		print "List of possible path: "
+		i=1
 		for path in paths:
-			print path
-		print 
+			if(limit>0 and i>limit):
+				break
+			solution.append(constructFromPath(path, genetree, specietree, numpy.copy(gene_matrix), node_order[:], verbose=verbose, method=cluster_method, cost=cost_table[xsize-1,0]))
+			i+=1
 
-	i=1
-	for path in paths:
-		if(limit>0 and i>limit):
-			break
-		solution.append(constructFromPath(path, genetree, specietree, numpy.copy(gene_matrix), node_order[:], 1e305, method=cluster_method, cost=cost_table[xsize-1,0]))
-		i+=1
-
-	return solution
+		return solution
 
 
 def findSpeciationPathFromTable(path_table, row_node_corr,count, xpos, ypos):
@@ -162,7 +165,7 @@ def findSpeciationPathFromTable(path_table, row_node_corr,count, xpos, ypos):
 				lost=findSpeciationPathFromTable(path_table, row_node_corr, count, xpos, ypos-1)
 				# add possible path of the case that lead to this lost
 				chemin.extend([",".join([row_node_corr[xpos].name+':%i'%(ypos+1), path1]) for path1 in lost])
-				
+
 	# return a list of path, the path are specially formated string
 	return chemin
 
@@ -176,7 +179,7 @@ def findPathFromTable(path_table, row_node_corr, count, xpos, ypos):
 	if(row_node_corr[xpos].is_leaf() and (ypos<0 or path_table[xpos, ypos] is None)):
 		case=row_node_corr[xpos].name+':%i'%(ypos+1)
 		chemin.append(case)
-	
+
 	#Case 2 : this a internal node
 	else:
 		#each case can have multiple path
@@ -195,7 +198,7 @@ def findPathFromTable(path_table, row_node_corr, count, xpos, ypos):
 				for path1 in spec_1:
 					for path2 in spec_2:
 						chemin.append(",".join([row_node_corr[xpos].name+':%i'%(ypos+1),path1, path2]))
-			
+
 			# we found a duplication
 			elif c=='d':
 				dup=findPathFromTable(path_table, row_node_corr,count, xpos, ypos+1)
@@ -214,10 +217,10 @@ def findPathFromTable(path_table, row_node_corr, count, xpos, ypos):
 	return chemin
 
 
-def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, maxVal, verbose=False, method='upgma', cost=0):
+def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, verbose=False, method='upgma', cost=0):
 	"""Construct tree from a path using the clustering method"""
 	# get the node order in the path
-	node_list= list(reversed(chemin.split(','))) 
+	node_list= list(reversed(chemin.split(',')))
 	# find the node to show in the tree construction
 	node_in_tree = genetree.get_children()
 	leaf_list = [x.name for x in specietree.get_leaves()]
@@ -232,7 +235,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 	deja_vu=[]
 	# traverse the list of node in the path and construct the tree
 	for indice in xrange(tot_node): #0 - len(node_list)-1
-		
+
 		#find the current node and its position
 		[node, pos]= node_list[indice].split(":")
 		# find the next node and its position
@@ -241,7 +244,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 			[n_node, n_pos]= node_list[indice+1].split(":")
 		pos=int(pos)
 		n_pos=int(n_pos)
-		
+
 		#list of node which specie is the same as the current node
 		node_structs=[n for n in node_in_tree if n.species==node]
 		#index to keep in node_order for the join
@@ -250,10 +253,10 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 		# simple case, the node is a leaf
 		if(node in leaf_list):
 			# we have a duplication here,
-			if(n_node==node and n_pos<pos): 
+			if(n_node==node and n_pos<pos):
 				# ind to keep is empty on purpose, we have to find the good index
 				# and remove the row we don't want the clustering algorithm to work with
-				cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, maxVal, 1, method=method)
+				cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, 1, method=method)
 				# find the resulting duplication tree
 				dup_tree= cluster[0]
 				# set the name of the duplication, i'll try noName next time
@@ -261,12 +264,12 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 				dup_tree.add_features(type="DUP")
 				#find the merged index and remove them from the distance matrice
 				merged_index=map(lambda x: ind_to_keep[x], cluster[2])
-				dup_tree.add_features(score=gene_matrix[merged_index[1], merged_index[0]])
+				merged_index.sort(reverse=True)
 				dup_tree.add_features(species=node)
 				# Update the gene matrix and the node order
-				gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
-				node_order[merged_index[0]]=dup_tree.name
-				node_order.pop(merged_index[1])
+				gene_matrix=ClusterUtils.condense_matrix(gene_matrix,merged_index, method=method)
+				node_order[merged_index[1]]=dup_tree.name
+				node_order.pop(merged_index[0])
 
 				for n in dup_tree.get_children():
 					node_in_tree.remove(n)
@@ -308,27 +311,28 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 						r_child_not_there=True
 
 					elif(left_child.name not in gene_root_species.get_descendant_name()):
-							l_child_not_there=True	
+							l_child_not_there=True
 
 					s_node.add_features(species=node)
 					child_name = s_node.get_children_name()
 					#Now we should find the index in the matrix of the best node to join
-					ind_to_keep=findSpeciationBestJoint(gene_matrix, node_order, s_node, node_in_tree, maxVal)
+					ind_to_keep=findSpeciationBestJoin(gene_matrix, node_order, s_node, node_in_tree, method=method, verbose=verbose)
 					# the two nodes to join are found
 					if(ind_to_keep and len(ind_to_keep)==2):
 						#node_structs= [ node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[x],ind_to_keep ) and ((node_s.is_leaf() and node_s.species == genetree.search_nodes(name=node_s.name)[0].species) or not(node_s.is_leaf())))]
 						# carefully choose the true node, not the added(in case of lost)
 						node_structs= [ node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[x],ind_to_keep ) and (not node_s.has_feature('lostnode') or not node_s.lostnode==1))]
-						cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep, got_ind=True), node_structs, maxVal, method=method)
+						cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep, got_ind=True), node_structs, method=method)
 						spec_tree= cluster[0]
 						spec_tree.name="-".join([spec_tree.get_child_at(0).name, spec_tree.get_child_at(1).name])
 						spec_tree.add_features(type="SPEC")
 						merged_index=map(lambda x: ind_to_keep[x], cluster[2])
+						merged_index.sort(reverse=True)
+
 						spec_tree.add_features(species=node)
-						spec_tree.add_features(score=gene_matrix[merged_index[0], merged_index[1]])
-						gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
-						node_order[merged_index[0]]=spec_tree.name
-						node_order.pop(merged_index[1])
+						gene_matrix=ClusterUtils.condense_matrix(gene_matrix,merged_index, method=method)
+						node_order[merged_index[1]]=spec_tree.name
+						node_order.pop(merged_index[0])
 						#Remove child from path_table and add parent
 						possible_path_name= [x.name for x in node_in_tree]
 						for n in spec_tree.get_children_name():
@@ -344,10 +348,10 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 						#retrieve list of child and list of lost child
 						r_child_list = [x for x in node_in_tree if x.species==right_child.name]
 						r_child_lst_list = [x for x in lost_nodes if x.species==right_child.name]
-						
+
 						l_child_list = [x for x in node_in_tree if x.species==left_child.name]
 						l_child_lst_list = [x for x in lost_nodes if x.species==left_child.name]
-						
+
 
 						# Control 2, list of children not present in genetree
 						# check which node is lost and make the correct choice
@@ -390,17 +394,17 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 				node_structs.extend([x for x in node_in_tree if(x.name in node_struct_name and not x in node_structs)])
 				node_structs= [ node_s for node_s in node_structs if (not node_s.has_feature('lostnode') or not node_s.lostnode==1)]
 				ind_to_keep=[]
-				cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, maxVal, 1, method=method)
+				cluster=ClusterUtils.treeCluster(getMatrix(node_structs, gene_matrix, node_order, ind_to_keep), node_structs, 1, method=method)
 				dup_tree= cluster[0]
 				dup_tree.name="-".join([dup_tree.get_child_at(0).name, dup_tree.get_child_at(1).name])
 				dup_tree.add_features(type="DUP")
 
 				merged_index=map(lambda x: ind_to_keep[x], cluster[2])
+				merged_index.sort(reverse=True)
 				dup_tree.add_features(species=node)
-				dup_tree.add_features(score=gene_matrix[merged_index[0], merged_index[1]])
-				gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
-				node_order[merged_index[0]]=dup_tree.name
-				node_order.pop(merged_index[1])
+				gene_matrix=ClusterUtils.condense_matrix(gene_matrix,merged_index, method=method)
+				node_order[merged_index[1]]=dup_tree.name
+				del node_order[merged_index[0]]
 
 				possible_path_name= [x.name for x in node_in_tree]
 				for n in dup_tree.get_children_name():
@@ -413,7 +417,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 	# the tree is constructed, we should only have one tree in the node_in_tree list
 	if(node_in_tree and len(node_in_tree)==1):
 		if(verbose):
-			print "Total number of node = ", len(node_in_tree[0]), " root specie = ", node_in_tree[0].species, " and score = ",node_in_tree[0].score, "\n\n"
+			print "Total number of node = ", len(node_in_tree[0]), " root specie = ", node_in_tree[0].species, "\n\n"
 		node_in_tree[0].add_features(cost=cost)
 		return node_in_tree[0]
 	else:
@@ -426,12 +430,12 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, max
 		raise ValueError("Cannot construct your tree, %i node still not used !\n" %len(node_in_tree))
 
 
-def findSpeciationBestJoint(matrice, node_order, parent_node, node_in_tree, maxVal, method='upgma'):
-	""" findSpeciationBestJoint find the best node to joint in case of speciation"""
-	
+def findSpeciationBestJoin(matrice, node_order, parent_node, node_in_tree, method='upgma', verbose=False):
+	""" findSpeciationBestJoin find the best node to joint in case of speciation"""
+
 	child_0 = parent_node.get_child_at(0).name # find the left child specie
 	child_1 = parent_node.get_child_at(1).name
-	
+
 	# list of node with the same specie as child_0/child_1
 	child_1_list= []
 	child_0_list= []
@@ -447,23 +451,39 @@ def findSpeciationBestJoint(matrice, node_order, parent_node, node_in_tree, maxV
 
 			if(x.name in node_order):
 				child_0_list.append(node_order.index(x.name))
-			else: 
+			else:
 				child_0_list.append(-1)
 
 	# find the best node to join (minimal cost)
-	min_val = maxVal
+	min_val = numpy.inf
 	join_index=[]
-	if(method=='upgma'):
-		val_matrix = matrice
-	else:
-		val_matrix= ClusterUtils.calculate_Q_matrix(matrice, maxVal)
 
-	for x_0 in child_0_list:
-		for x_1 in child_1_list:
-			if(x_0>=0 and x_1>=0 and val_matrix[x_0, x_1]<min_val):
-					min_val=val_matrix[x_0, x_1]
-					join_index=[x_0, x_1]
-	
+	if(verbose):
+		print "Using %s as clustering method"%(method)
+
+	if(method=='upgma'):
+		for x_0 in child_0_list:
+			for x_1 in child_1_list:
+				if(x_0>=0 and x_1>=0 and matrice[x_0, x_1]<min_val):
+						min_val=matrice[x_0, x_1]
+						join_index=[x_0, x_1]
+
+	elif(method=="nj"):
+		mat_size=matrice.shape[0]
+		for x_0 in child_0_list:
+			for x_1 in child_1_list:
+				if(x_0>=0 and x_1>=0):
+					val= ClusterUtils.calculate_Q_ij(matrice, (x_0, x_1), mat_size)
+					if val < min_val:
+						min_val = val
+						join_index=[x_0, x_1]
+
+	# this is the case we have rand as method
+	else:
+		list_0= [x for x in child_0_list if x>-1]
+		list_1= [x for x in child_1_list if x>-1]
+		join_index = [list_0[0], list_1[0]] if (len(list_0)>0 and len(list_1)>0) else []
+
 	return join_index
 
 
@@ -473,13 +493,16 @@ def getMatrix(node_struct, gene_matrix, node_order, ind_to_keep, got_ind=False):
 
 	if(not got_ind):
 		for node in node_struct:
-			ind_to_keep.append(node_order.index(node.name))
+			ind_to_keep.append(getIndex(node_order,node))
 	matrix= gene_matrix #same reference here
 	return numpy.take(numpy.take(matrix, ind_to_keep, axis=0), ind_to_keep, axis=1)
 
 
+def getIndex(node_order, node):
+	"""Get the index of a node in a node list"""
+	return node_order.index(node.name)
 
-def polytomy_preprocessing(polytomy, specietree, gene_matrix, node_order, maxVal, method='upgma'):
+def polytomyPreprocess(polytomy, specietree, gene_matrix, node_order, method='upgma'):
 	"""Preprocessing of a polytomy """
 
 	for node in polytomy.traverse("postorder"):
@@ -501,12 +524,13 @@ def polytomy_preprocessing(polytomy, specietree, gene_matrix, node_order, maxVal
 					node.name="%s_I_%i"%(node.species, PARTIAL_RESOLUTION_ITERATOR)
 				PARTIAL_RESOLUTION_ITERATOR+=1
 
-			cluster=ClusterUtils.treeCluster(getMatrix(children_list, gene_matrix, node_order, ind_order, got_ind=False), children_list, maxVal, method=method)
-			merged_index=map(lambda x: ind_order[x], cluster[2])
-			node.add_features(score=gene_matrix[merged_index[0], merged_index[1]])
-			gene_matrix=ClusterUtils.del_row_column(gene_matrix,merged_index, maxVal, method=method)
-			node_order[merged_index[0]]=node.name
-			node_order.pop(merged_index[1])
+			for child_node in children_list:
+				ind_order.append(getIndex(node_order, child_node))
+
+			ind_order.sort(reverse=True)
+			gene_matrix=ClusterUtils.condense_matrix(gene_matrix, ind_order, method=method)
+			node_order[ind_order[1]]=node.name
+			del node_order[ind_order[0]]
 	return gene_matrix, node_order
 
 
@@ -534,7 +558,7 @@ def findMaxX(polytomy, specietree):
 				parent.remove_child(leaf)
 			else:
 				polytomy_name_set.add(leaf.name)
-	
+
 
 	row_node_corr={}
 	n_row=len(polytomy_name_set)-1
@@ -547,9 +571,10 @@ def findMaxX(polytomy, specietree):
 	return polytomy_name_set, row_node_corr
 
 
-def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, path_limit=-1, method='upgma', maxVal=1e305, sol_limit=-1):
-	
+def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, path_limit=-1, method='upgma', sol_limit=-1):
+
 	#Start with only one polytomy
+
 	nb_polytomy=0
 	polysolution = [genetree]
 	while True:
@@ -559,13 +584,13 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
 				nb_polytomy+=1
 				#copying the input for each step, necessary in order to not modify by reference
 				matrice = numpy.copy(gene_matrix)
-				sptree= specietree.copy("newick") 
+				sptree= specietree.copy("newick")
 				ptree= polytomy.copy()
 				order= node_order[:]
 				poly_parent= polytomy.up
 				node_to_replace=polytomy
-				matrice, order=polytomy_preprocessing(ptree, sptree, matrice, order, maxVal, method=method)
-				solution=polySolver(TreeUtils.treeHash(ptree, addinfos=str(path_limit)), ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
+				matrice, order=polytomyPreprocess(ptree, sptree, matrice, order, method=method)
+				solution=polySolver(TreeUtils.treeHash(ptree, addinfos=str(path_limit) + method), ptree,sptree, matrice, order, path_limit, cluster_method=method, verbose=verbose)
 				#solution=polySolver(ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
 				if(poly_parent== None):
 					#Here we have the root. Complete solution are here
@@ -577,9 +602,9 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
 						poly_parent.replace_child(node_to_replace, sol)
 						node_to_replace=sol
 						next_tree_solution.append(tree.copy())
-				
-				break # only solve one polytomy per iteration		
-		
+
+				break # only solve one polytomy per iteration
+
 		if not next_tree_solution:
 			break
 		polysolution = next_tree_solution
@@ -592,3 +617,38 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
 	#deepcopy is not working, neither is newick-copy
 	f_sol= polysolution[0:sol_limit] if sol_limit>0 else polysolution
 	return [t.copy("simplecopy") for t in f_sol]
+
+
+def computePolytomyReconCost(genetree, specietree, verbose=False):
+	"""This is a copy pasta from the solvePolytomy function that return only the cost of a node
+	"""
+	recon_cost= 0
+	#genetree = origene.copy(method="simplecopy")
+	lcamap = TreeUtils.lcaMapping_old(genetree, specietree, multspeciename=False)
+
+	for node in genetree.iter_internal_node(strategy="postorder", enable_root=True):
+
+		if (node.is_binary()):
+
+			# if node is binary, we just compute the recon cost
+			try:
+				cost = TreeUtils.binary_recon_score(node, lcamap)
+				recon_cost += cost[0]
+
+			except Exception as e:
+				print e
+
+		elif(node.is_polytomy()):
+			sptree=specietree.copy(method="simplecopy")
+			# here, the node is a polytomy, so we compute the table and
+			# find the solution cost at [-1, 0]
+			mat_table = polySolver(TreeUtils.treeHash(node), node, sptree, None, [], 1, verbose=verbose, mode="none")
+			if(verbose):
+				print node
+				pprint(mat_table)
+				print "%s : -------------------------------------------------------\n"%(recon_cost)
+			recon_cost += mat_table[-1,0]
+
+		else:
+			raise Exception("Internal node with only one child in your tree")
+	return recon_cost

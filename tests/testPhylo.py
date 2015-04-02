@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	specie_list=[]
 	for leaf in ensemblTree:
 		specie_list.extend(leaf.get_species())
-	
+
 	specie_list=list(set(specie_list))
 	specieTree= TreeClass()
 	specieTree.populate(len(specie_list),names_library=specie_list)
