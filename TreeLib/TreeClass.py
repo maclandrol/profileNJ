@@ -360,6 +360,13 @@ class TreeClass(TreeNode):
     	"""
 		return not (self.is_root() or self.is_leaf())
 
+	def is_reconcilied(self):
+		"""
+		Return whether or not, this genetree is reconcilied
+		"""
+		return self.root.has_feature('reconciled') and self.root.reconciled
+
+
 	def get_internal_node(self, strategy="levelorder", enable_root=False):
 		"""
 		Return the list of all internal nodes under the current node
@@ -648,6 +655,7 @@ class TreeClass(TreeNode):
 
 		return TreeClass(phyloxml.write(features=[],format_root_node=True))
 
+	
 
 	def replace_child(self, child_to_replace, new_child):
 		if (self is None) or (child_to_replace not in self.get_children()):
