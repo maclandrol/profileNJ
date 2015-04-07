@@ -5,7 +5,7 @@ TreeClass is a python class derived from TreeNode class from the ete2 package.
 TreeClass add additional specific function
 """
 from ete2 import TreeNode
-from ete2.phylo import spoverlap
+from ete2.phylo import EvolEvent
 import types
 from collections import defaultdict as ddict
 import copy
@@ -20,14 +20,19 @@ class TreeClass(TreeNode):
 	DEFAULT_SPECIE="Unknown"
 	DEFAULT_NAME= "NoName"
 	DEFAULT_GENE="Unknown"
-	AD=1
-	LOST=-1
-	SPEC=0
-	NAD=2
+	AD = 1
+	LOST = -1
+	SPEC = 0
+	NAD = 2
+	DUP = [AD, NAD] 
 
 	def __init__(self, newick=None, format=0, dist=None, support=None,name=None):
 		"""	Default init for the TreeClass. This works better than wrapping the entire class"""
 		TreeNode.__init__(self, newick=newick, format=format, dist=dist, support=support, name=name)
+
+
+	def __repr__(self):
+		return "Tree Class '%s' (%s)" %(self.name, hex(self.__hash__()))
 
 
 	def get_child_at(self, i=0):
@@ -156,14 +161,14 @@ class TreeClass(TreeNode):
 	def has_ancestor(self, ancestor):
 		"""Check if "ancestor" is an ancestor of the current Node"""
 		ancestor = self.translate_nodes(ancestor)
-		ancestors=self.get_ancestors()
+		ancestors = self.get_ancestors()
 		return True if len(list(filter(lambda x : x in ancestors, ancestor)))==len(ancestor) else False
 
 
 	def has_descendant(self, descendant):
 		"""Check if "descendant" is a descendant of the current Node"""
-		descendant=self.translate_nodes(descendant)
-		descendants=self.get_descendants()
+		descendant = self.translate_nodes(descendant)
+		descendants = self.get_descendants()
 		return True if len(list(filter(lambda x : x in descendants, descendant)))==len(descendant) else False
 
 
@@ -228,7 +233,7 @@ class TreeClass(TreeNode):
 		return child_number +1 if self.is_leaf() else child_number
 
 
-	def set_species(self, speciesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
+	def set_species(self, speciesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None, **kwargs):
 
 		"""Set species feature for each leaf in the tree.
 
@@ -247,12 +252,12 @@ class TreeClass(TreeNode):
 		else:
 			for leaf in self:
 				if use_fn is not None :
-					leaf.add_features(species=use_fn(leaf))
+					leaf.add_features(species=use_fn(leaf, **kwargs))
 				else:
 					leaf.add_features(species=leaf._extractFeatureName(separator=sep, order=pos, cap=capitalize))
 
 
-	def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None):
+	def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None, **kwargs):
 		"""Set gene feature for each leaf in the tree.
 
 		:argument genesMap: Default=None. genesMap is a Map of genes for the geneTree. Each key is a leaf name from the genetree and the value is the corresponding genes name
@@ -269,7 +274,7 @@ class TreeClass(TreeNode):
 				node.add_features(genes=node_gene)
 
 			elif use_fn is not None :
-				leaf.add_features(genes=use_fn(leaf))
+				leaf.add_features(genes=use_fn(leaf, **kwargs))
 			else:
 				leaf.add_features(genes=leaf._extractFeatureName(separator=sep, order=pos,cap=capitalize))
 
@@ -310,7 +315,7 @@ class TreeClass(TreeNode):
 
 	def restrictToSpecies(self, species=[]):
 		"""Restrict the current genetree to the list of species passed in argument"""
-		hits=[]
+		hits = []
 		try:
 			for value in species:
 				hits.extend(self.get_leaves_by_feature(species=value))
@@ -318,6 +323,29 @@ class TreeClass(TreeNode):
 		except Exception as e:
 			print e
 			print "Check if this tree have species as feature"
+
+	@classmethod
+	def get_path_to_ancestor(cls, node, ancestor):
+		""" Get pathway to ancestor."""
+		assert node.has_ancestor(ancestor), "ancestor is not an actual ancestor in your tree"
+		nodes_between = []
+		current = node
+		while current != ancestor:
+			nodes_between.append(current)
+			current = current.up
+		nodes_between.append(ancestor)
+		return nodes_between
+
+
+	def get_nodes_between(self, node):
+		"""Get the list of nodes between two nodes"""
+		assert isinstance(node, TreeNode), "Node should be an instance of Tree"
+		com_anc = self.get_common_ancestor(node)
+		path1 = self.get_path_to_ancestor(self, com_anc)
+		path2 = self.get_path_to_ancestor(node, com_anc)[::-1]
+		print path1
+		print path2
+		return path1[1:]+path2[1:-1]
 
 
 	def toPolytomy(self, break_tree_topo=False):
@@ -360,6 +388,13 @@ class TreeClass(TreeNode):
     	"""
 		return not (self.is_root() or self.is_leaf())
 
+	def is_reconcilied(self):
+		"""
+		Return whether or not, this genetree is reconcilied
+		"""
+		return self.get_tree_root().has_feature('reconciled', True)
+
+
 	def get_internal_node(self, strategy="levelorder", enable_root=False):
 		"""
 		Return the list of all internal nodes under the current node
@@ -388,13 +423,9 @@ class TreeClass(TreeNode):
 		return set(features_list)
 
 
-	def has_feature(self, feature):
+	def has_feature(self, feature, name=None):
 		"""Return weither or not this node has feature in its list of features"""
-		return (feature in self.features)
-
-
-	def __repr__(self):
-		return "Tree Class '%s' (%s)" %(self.name, hex(self.__hash__()))
+		return (feature in self.features and (name in [None, self.__getattribute__(feature)]) )
 
 
 	def reroot(self, root_node=True):
@@ -422,33 +453,75 @@ class TreeClass(TreeNode):
 				yield c_tree
 
 
-	def get_my_evol_events(self, sos_thr=0.0):
-		""" Returns a list of duplication and speciation events in
-		which the current node has been involved. Scanned nodes are
-		also labeled internally as dup=True|False. You can access this
-		labels using the 'node.dup' sintaxis.
-
-		Method: the algorithm scans all nodes from the given leafName to
-		the root. Nodes are assumed to be duplications when a species
-		overlap is found between its child linages. Method is described
-		more detail in:
-
-		"The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
-		T. Genome Biol. 2007;8(6):R109.
+	def get_events(self, include_lost=True):
+		"""Returns a list of **all** duplication and speciation
+		events detected after this node.
 		"""
-		return spoverlap.get_evol_events_from_leaf(self, sos_thr=sos_thr)
+		all_events = []
+		root = self.copy()
+		assert self.is_reconcilied(), "Your tree is not reconciled!"
+		for node in self.traverse("levelorder"):
+			e = EvolEvent()
+			e.node = node
+
+			if not node.is_leaf():
+				assert node.is_binary(), "Polytomy found in your tree"
+				species_include = [set([n.name for n in node.get_child_at(0).get_leaves() if n.type!=TreeClass.LOST]), \
+									set([n.name for n in node.get_child_at(1).get_leaves() if n.type!=TreeClass.LOST ])]
+
+				if(len(species_include[0])>0 and  len(species_include[1])>0):
+					if node.type > 0 : 
+						e.etype = 'D'
+						e.dup_score = node.compute_dup_cons()
+						e.paralogs = species_include
+					else :
+						e.etype = 'S'
+						e.orthologs = species_include
+			
+			elif(node.has_feature('type', TreeClass.LOST) and include_lost):
+				e.etype = 'L'
+				e.losses = node.species
+
+			if(e.etype):
+				all_events.append(e)
+
+		return all_events
 
 
-	def get_descendant_evol_events(self, sos_thr=0.0):
-		""" Returns a list of **all** duplication and speciation
-		events detected after this node. Nodes are assumed to be
-		duplications when a species overlap is found between its child
-		linages. Method is described more detail in:
+	def _find_closest_descendant_having_feature(self, name, value, descendant=[]):
+		"""Find the first closest descendant in right and left child 
+		having a particular feature """
 
-		"The Human Phylome." Huerta-Cepas J, Dopazo H, Dopazo J, Gabaldon
-		T. Genome Biol. 2007;8(6):R109.
+		for node in self.get_children():
+			if(node.has_feature(name, value)):
+				descendant.append(node)
+			else :
+				descendant = node._find_closest_descendant_having_feature(name, value, descendant)
+
+		return descendant
+
+
+	def are_paralogous(self, genelist):
+		"""Return true if the gene in genelist descend from are paralogous
 		"""
-		return spoverlap.get_evol_events_from_root(self, sos_thr=sos_thr)
+		if isinstance(genelist, TreeNode):
+			genelist = genelist.get_leaf_name()
+			genelist.extend(self.get_leaf_name())
+			genelist = set(genelist)
+		elif len(genelist) == 1 and self.is_leaf():
+			genelist.append(self.name)
+
+		if len(genelist) < 2:
+			raise TypeError("GeneList incorrect, should be a list of gene name or a node")
+
+		root = self.get_tree_root()
+		com_anc = self.get_common_ancestor(genelist)
+		paralogous = com_anc.has_feature('dup', True)
+		if paralogous:
+			return paralogous, [set(genelist)]
+		else :
+			duplicated_descendants = root._find_closest_descendant_having_feature('dup', True)
+			return paralogous, [set(node.get_leaf_names()) for node in duplicated_descendants ]
 
 
 	def is_monophyletic(self, specieSet):
@@ -576,14 +649,17 @@ class TreeClass(TreeNode):
 				cost+=getattr(node,feature)
 		return cost
 
+
 	def compute_dup_cons(self):
-		"""Compute duplication consitency score at the node, this function will raise an error if the node is a polytomy or a speciation node"""
-		assert(not self.is_leaf() and self.is_binary() and self.type>0) #self should be a duplication node
+		"""Compute duplication consitency score at the node, 
+		this function will raise an error if the node is a polytomy or a speciation node
+		"""
+		assert(not self.is_leaf() and self.is_binary() and (self.type>0 or self.has_feature('dup', True)) ) #self should be a duplication node
 		r_child_spec_set = self.get_child_at(0).get_leaf_species()
 		l_child_spec_set = self.get_child_at(1).get_leaf_species()
 		inter_set= r_child_spec_set.intersection(l_child_spec_set)
 		union_set = r_child_spec_set.union(l_child_spec_set)
-		self.add_feature('dupcons', inter_set/union_set)
+		self.add_feature('dupcons', len(inter_set)/len(union_set))
 		return self.dupcons
 
 
@@ -648,6 +724,7 @@ class TreeClass(TreeNode):
 
 		return TreeClass(phyloxml.write(features=[],format_root_node=True))
 
+	
 
 	def replace_child(self, child_to_replace, new_child):
 		if (self is None) or (child_to_replace not in self.get_children()):

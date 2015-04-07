@@ -48,8 +48,8 @@ class SmartFormatter(argparse.ArgumentDefaultsHelpFormatter):
 class Output(object):
 	def __init__(self, file=None):
 		if(file):
-			out= open(file,'w')
-			self.out=out
+			out = open(file,'w')
+			self.out = out
 		else:
 			self.out= sys.stdout
 
