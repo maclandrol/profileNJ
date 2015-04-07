@@ -83,7 +83,7 @@ set(gca, 'YTickLabel', {'0','a=0.05', '0.2', '0.4', '0.6', '0.8', '1'});
 hold on
 plotp=plot(0:1000, 0.05*ones(1001,1), '--');
 set(plotp, 'color', [0.5,0.5,0.5]);
-set(findall(h4,'type','text'),'FontSize',14);
+set(findall(h4,'type','text'),'FontSize',12);
 set(h4, 'PaperPositionMode', 'auto');
 set(h4,'InvertHardcopy','on');
 set(gca,'TickDir', 'out', 'FontSize', 14, 'Box', 'off','TickLength'  , [.01 .01]);

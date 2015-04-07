@@ -3,16 +3,18 @@ Author: Emmanuel Noutahi
 Date: 02/2014
 TreeUtils is a python class that offer function related to phylogeny tree, using TreeClass
 """
-from TreeClass import TreeClass
 import ClusterUtils as clu
-from ete2 import Phyloxml
-from ete2.parser.newick import NewickError
-import urllib2
 import hashlib, re
-import os
-from collections import defaultdict as ddict
-import string
+import os, sys
 import params
+import string
+import urllib2
+
+from TreeClass import TreeClass
+from collections import defaultdict as ddict
+from ete2 import Phyloxml
+from ete2 import orthoxml
+from ete2.parser.newick import NewickError
 
 
 #TreeUtils:
@@ -80,93 +82,69 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 			return getTreeFromPhyloxml(content)
 
 
-def lcaMapping_old(geneTree, specieTree, multspeciename=True):
-
-        return lcaMapping(geneTree, specieTree, multspeciename)
-
-	mapping ={}
-	try:
-		for node in geneTree.traverse(strategy="postorder"):
-			if not node.is_leaf():
-				leaf_under_node= node.get_leaves()
-				species = set([i.species for i in leaf_under_node])
-				if(len(species)>1):
-					mapping[node]= specieTree.get_common_ancestor(species)
-				else:
-					mapping[node]=specieTree.get_leaves_by_name(list(species)[0])[0]
-				#node.add_features(species=mapping[node].name.replace("/",",")) ######Change will depends
-
-				if(multspeciename):
-					node.add_features(species=",".join(species))
-				else:
-					node.add_features(species=mapping[node].name)
-
-			else:
-				mapping[node]=specieTree.search_nodes(name=node.species)[0]
-
-	except Exception as e:
-		print type(e)
-		print("Leaves without species")
-	else :
-		return mapping
-
-
 def lcaMapping(geneTree, specieTree, multspeciename=True):
 
-		smap = {}
-		mapping ={}
-		#try:
+	smap = {}
+	mapping = {}
+	try:
+		# Children are always visited before parent
+		# So for an internal node, we see leaves 
+		# under an internal node before visiting that node
+
 		for node in geneTree.traverse(strategy="postorder"):
 			if not node.is_leaf():
-				#leaf_under_node= node.get_leaves()
-				#species = set([i.species for i in leaf_under_node])
+
 				#ML ADDED THIS
 				species = set([mapping[n] for n in node.get_children()])
 
 				if(len(species)>1):
-					mapping[node]= specieTree.get_common_ancestor(species)
+					mapping[node] = specieTree.get_common_ancestor(species)
 				else:
-					mapping[node]=list(species)[0]  #specieTree.get_leaves_by_name(list(species)[0])[0]
-				#node.add_features(species=",".join([x.name for x in species]))
+					mapping[node] = list(species)[0]  
 				
 				if(multspeciename):
-                                        node.add_features(species=",".join([x.name for x in species]))
-                                else:
-                                        node.add_features(species=mapping[node].name)
-				
+					node.add_features(species=",".join([x.name for x in species]))
+				else:
+					node.add_features(species=mapping[node].name)
 				
 			else:
-				sname=node.species
+				sname = node.species
 				if not sname in smap:
-					s = specieTree.search_nodes(name=node.species)[0]
+					s = specieTree&node.species
 					smap[sname] = s
 				else:
 					s = smap[sname]
-				mapping[node]=s
-		#except Exception as e:
-		#        print type(e)
-		#        print("Leaves without species")
-		#else :
-		return mapping
+				mapping[node] = s
+		
+	except Exception as e:
+			print type(e)
+			print("Leaves without species")
+
+	return mapping
 
 
-def reconcile(geneTree=None, lcaMap=None, lost="no"):
+def reconcile(geneTree=None, lcaMap=None, lost=False):
 	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
 	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
 	"""
+	
 	if(lcaMap is None or geneTree is None):
 		raise Exception("lcaMapping or geneTree not found")
 	else :
+		lost_count = 1
 		for node in geneTree.traverse("levelorder"):
 			node.add_features(type=TreeClass.SPEC)
+			node.add_features(dup=False)
+
 			#print node.name , node.species, " and children name ", node.get_children_name()," and children species ", node.get_children_species()
 			if(not node.is_leaf() and (lcaMap[node]==lcaMap[node.get_child_at(0)] or lcaMap[node]==lcaMap[node.get_child_at(1)])):
-				node.type=TreeClass.AD
+				node.dup = True
+				node.type = TreeClass.AD
 				#print "\n\nnode = ", node, "\n\nand children : ", node.children
 				if not (set(node.get_child_at(0).get_species()).intersection(set(node.get_child_at(1).get_species()))):
-					node.type=TreeClass.NAD
+					node.type = TreeClass.NAD
 
-		if(lost.upper()=="YES"):
+		if (isinstance(lost, basestring) and lost.upper()=="YES") or lost :
 			for node in geneTree.traverse("postorder"):
 				children_list=node.get_children()
 				node_is_dup=(node.type==TreeClass.NAD or node.type==TreeClass.AD)
@@ -177,6 +155,8 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 							lostnode=TreeClass()
 							intern_lost=TreeClass()
 							intern_lost.add_features(type=TreeClass.SPEC)
+							intern_lost.add_features(dup=False)
+
 							if lcaMap[child_c].is_root():
 								intern_lost.species=",".join(lcaMap[child_c].get_leaf_names())
 								lcaMap.update({intern_lost:lcaMap[child_c]})
@@ -187,8 +167,18 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 
 
 							#change here to display a subtree and not a leaf with a lot of specie
-							lostnode.species=",".join(set(lcaMap[intern_lost].get_leaf_names())-set(child_c.species.split(",")))
+							lostnode.species = ",".join(set(lcaMap[intern_lost].get_leaf_names())-set(child_c.species.split(",")))
+							splist = lostnode.species.split(',')
+							if(len(splist)>1):
+								lostnode.name = "n"+ str(lost_count) + "_" + "".join([s[0] for s in splist]) 
+								
+							else: 
+								lostnode.name = lostnode.species
+
 							lostnode.add_features(type=TreeClass.LOST)
+							lostnode.add_features(dup=False)
+
+							lost_count+=1
 							child_c.detach()
 							#print "***********************\n\n** node : ", node, "\n\n** child_c: ", child_c, "\n\n** child parent", child_c.up
 							#node.remove_child(child_c)
@@ -209,9 +199,17 @@ def reconcile(geneTree=None, lcaMap=None, lost="no"):
 					if(unadded_specie):
 						lostnode=TreeClass()
 						lostnode.add_features(type=TreeClass.LOST)
+						lostnode.add_features(dup=False)
 						lostnode.species=",".join(unadded_specie)
-						node.add_child(lostnode)
+						
+						if(len(unadded_specie)>1):
+							lostnode.name = "node_" + "-".join([s[0] for s in unadded_specie]) +"_" + str(lost_count)
+						else: 
+							lostnode.name = lostnode.species
 
+						lost_count+=1
+						node.add_child(lostnode)
+	geneTree.add_features(reconciled=True)
 
 def ComputeDupLostScore(genetree=None):
 	"""
@@ -229,9 +227,10 @@ def detComputeDupLostScore(genetree):
 	"""
 	if(genetree is None or 'type' not in genetree.get_all_features()):
 		raise Exception("Your Genetree didn't undergoes reconciliation yet")
-	nad=0
-	ad=0
-	loss=0
+	nad = 0
+	ad = 0
+	loss = 0
+	dup = 0
 	for node in genetree.traverse():
 		if node.has_feature('type'):
 			if(node.type==TreeClass.NAD):
@@ -240,6 +239,11 @@ def detComputeDupLostScore(genetree):
 				ad+=1
 			elif node.type==TreeClass.LOST :
 				loss+=1
+		if(node.has_feature(dup, name=True)):
+			dup+=1
+
+	if (dup>0 and (ad+nad)<0):
+		ad = dup
 	return (nad, ad, loss)
 
 
@@ -258,7 +262,6 @@ def binary_recon_score(node, lcamap):
 	"""Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
 	'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
 	"""
-	score = 0
 	dup = 0
 	lost = 0
 	if(lcamap is None or node is None):
@@ -266,7 +269,6 @@ def binary_recon_score(node, lcamap):
 	else :
 		#print node.name , node.species, " and children name ", node.get_children_name()," and children species ", node.get_children_species()
 		if(not node.is_leaf() and (lcamap[node].name == lcamap[node.get_child_at(0)].name or lcamap[node].name==lcamap[node.get_child_at(1)].name)):
-			score += 1
 			dup += 1
 
 		children_list = node.get_children()
@@ -279,14 +281,12 @@ def binary_recon_score(node, lcamap):
 
 			if(dup==0):
 				while(c is not None and (c.name not in supposed_children_species)):
-					score += 1
 					lost += 1
 					child_lost+=1
 					c = c.up
 
 			if(dup>0):
 				while(c is not None and c.name!=node.species):
-					score += 1
 					lost += 1
 					child_lost+=1
 					c = c.up
@@ -326,7 +326,7 @@ def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
 	return treeList
 
 
-def reset_node_name(tree,sep):
+def reset_node_name(tree, sep):
 	for x in tree.traverse():
 		x.name=x.name.split(sep)[0]
 	return tree
@@ -447,6 +447,79 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
 
 	return genetree, specietree, gene_matrix, node_order
 
+
+
+def export_to_orthoXML(t, database='customdb', handle=sys.stdout):
+	""" This function takes a TreeClass instance and export all
+	its speciation and duplication events to the OrthoXML format.
+
+	"""
+	
+	# Creates an empty orthoXML object
+	O = orthoxml.orthoXML()
+
+	#Generate the structure containing sequence information
+	leaf2id= {}
+	sp2genes = {}
+	for genid, leaf in enumerate(t.iter_leaves()):
+		spname = leaf.species
+		if spname not in sp2genes:
+			sp = orthoxml.species(spname)
+			db = orthoxml.database(name=database)
+			genes = orthoxml.genes()
+			sp.add_database(db)
+			db.set_genes(genes)
+			sp2genes[spname] = genes
+			# add info to the orthoXML document
+			O.add_species(sp)
+		else:
+			genes = sp2genes[spname]
+
+		gn = orthoxml.gene(protId=leaf.name, id=genid)
+		leaf2id[leaf] = genid
+		genes.add_gene(gn)
+		
+	# Add an ortho group container to the orthoXML document
+	ortho_groups = orthoxml.groups()
+	O.set_groups(ortho_groups)
+	
+	# OrthoXML does not support duplication events to be at the root
+	# of the tree, so we search for the top most speciation events in
+	# the tree and export them as separate ortholog groups
+	is_speciation = lambda n: getattr(n, 'type', "") == "S" or not n.children
+	for speciation_root in t.iter_leaves(is_leaf_fn=is_speciation):
+		# Creates an orthogroup in which all events will be added
+		node2event = {}
+		node2event[speciation_root] = orthoxml.group()
+		ortho_groups.add_orthologGroup(node2event[speciation_root])
+
+		# if root node is a leaf, just export an orphan sequence within the group
+		if speciation_root.is_leaf():
+			node2event[speciation_root].add_geneRef(orthoxml.geneRef(leaf2id[speciation_root]))
+
+		# otherwise, descend the tree and export orthology structure
+		for node in speciation_root.traverse("preorder"):
+			if node.is_leaf():
+				continue
+			parent_event = node2event[node]
+			for ch in node.children:
+				if ch.is_leaf():
+					parent_event.add_geneRef(orthoxml.geneRef(leaf2id[ch]))
+				else:
+					node2event[ch] = orthoxml.group()
+					
+					if not (ch.has_feature('type') or ch.has_feature('dup')):
+						raise AttributeError("\n\nUnknown evolutionary event. %s" %ch.get_ascii()) 
+
+					if(ch.type == TreeClass.SPEC):
+						parent_event.add_paralogGroup(node2event[ch])
+					elif ch.type > 0:
+						parent_event.add_orthologGroup(node2event[ch])
+					else :
+						raise AttributeError("\n\Internals nodes labeled by losses are not expected in the orthoXML format")
+
+	O.export(handle, 0, namespace_="")
+	 
 
 def customTreeCompare(original_t, corrected_t, t):
 

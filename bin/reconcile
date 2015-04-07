@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+
+from PolytomySolver import *
+from ete2 import PhyloTree, TreeStyle, NodeStyle
+from TreeLib import TreeUtils, TreeClass, params
+import argparse
+import sys, time
+
+def prefix_specie_parser(node, speclist):
+	matches = [sp for sp in speclist if node.name.lower().startswith(sp.lower())]
+	return max(matches, key=len)
+
+def suffix_specie_parser(node, speclist):
+	matches = [sp for sp in speclist if node.name.lower().endswith(sp.lower())]
+	return max(matches, key=len)
+
+def get_specie_parser(spos):
+	return prefix_specie_parser if spos=="prefix" else suffix_specie_parser
+
+
+parser = argparse.ArgumentParser(description='Tree reconciliation by lcamapping.')
+
+parser.add_argument('-s', '--sFile',  dest='specietree', help="Specie tree in newick format",required=True)
+parser.add_argument('-S', '--sMap', type=argparse.FileType('r'),  dest='smap', help="Gene to species map. Use the standard format.")
+parser.add_argument('-g', '--gFile',  dest='genetree', help="Gene tree in newick format.",required=True)
+parser.add_argument('--sep', dest='gene_sep', help="Gene-Specie separator for each leaf name in the genetree. The program will guess by default. But you should provide it")
+parser.add_argument('--spos', dest='spos',default="prefix", help="The position of the specie name according to the separator.")
+parser.add_argument('--cap', dest='cap',  action='store_true', help="Capitalize the species name of the genetree leaves to match each species. Almost all functions are case sensitive.")
+parser.add_argument('--display_losses', dest='losses',  action='store_true', help="Display losses in the reconciliation")
+parser.add_argument('--output', '--out', dest='output', default="tree.pdf", help="Output image the reconciliated tree. Should end by .SVG|.PDF|.PNG")
+parser.add_argument('--export_orthoxml', dest='orthoxml', action='store_true', help="Export reconciliated tree to export_orthoxml. Losses are not expected")
+parser.add_argument('--show_branch_tag', dest='branch_tag', action='store_true', help="Show branch length and support")
+parser.add_argument('--verbose', '-v', action='store_true', help="Verbosity")
+parser.add_argument('--debug', action='store_true', help="Debugging ( test, will be removed )")
+
+args = parser.parse_args()
+
+genewick = args.genetree
+genetree = TreeClass(genewick)
+specietree = TreeClass(args.specietree)
+
+speciemap={}
+
+rec_output = args.genetree+"_reconcilied"
+events_output = args.genetree+"_events"
+
+if(args.smap):
+	regexmap={}
+	with (open(smap, 'rU') if isinstance(smap, basestring) else smap) as INPUT:
+			for line in INPUT:
+				g,s = line.strip().split()
+				g_regex = re.compile(g.replace('*', '.*'))
+				regexmap[g_regex] = s
+	for leaf in genetree:
+			for key,value in regexmap.iteritems():
+				if key.match(leaf.name):
+					speciemap[leaf.name] = value
+
+if args.gene_sep:
+	genetree.set_species(speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap, pos=args.spos,)
+else:
+	# use a function instead
+	genetree.set_species(speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap, pos=args.spos, use_fn=get_specie_parser(args.spos), speclist=specietree.get_leaf_name())
+
+mapping = TreeUtils.lcaMapping(genetree, specietree)
+TreeUtils.reconcile(genetree, mapping, args.losses)
+
+# display tree if verbose
+if(args.verbose):
+	print genetree.get_ascii(attributes=['species','name'], show_internal=False)
+
+## Export tree to extended newick format
+genetree.write(outfile=rec_output, features=[], format_root_node=True)
+
+## Rendering settings
+ts = TreeStyle()
+ts.show_leaf_name = True
+
+if(args.branch_tag):
+	ts.show_branch_length = True
+	ts.show_branch_support = True
+
+spec_style = NodeStyle()
+spec_style["shape"] = "sphere"
+spec_style["size"] = 8
+spec_style["fgcolor"] = "forestgreen"
+
+dup_style = NodeStyle()
+dup_style["shape"] = "square"
+dup_style["size"] = 10
+dup_style["fgcolor"] = "darkred"
+
+loss_style = NodeStyle()
+# Gray dashed branch lines
+loss_style["hz_line_type"] = 1
+loss_style["hz_line_color"] = "#cccccc"
+loss_style["shape"] = "circle"
+loss_style["fgcolor"] = "#cccccc"
+spec_style["size"] = 6
+
+
+# Apply node style
+for n in genetree.traverse():
+	if not n.is_leaf():
+		n.set_style(spec_style)
+	if(n.type > 0):
+		n.set_style(dup_style)
+	elif(n.type == TreeClass.LOST):
+		n.set_style(loss_style)
+
+# Save tree as figure
+genetree.render(args.output, dpi=400, tree_style=ts)
+
+all_events = genetree.get_events(include_lost=args.losses)
+
+with open(events_output, 'w') as OUT : 
+	for ev in all_events:
+		if(ev.etype == 'S'):
+			OUT.write('    ORTHOLOGY RELATIONSHIP: ' + ', '.join(ev.orthologs[0])+ "    <====>    " + ', '.join(ev.orthologs[1]) + "\n")
+		elif(ev.etype == 'D'):
+			OUT.write('    PARALOGY RELATIONSHIP: ' + ', '.join(ev.paralogs[0])+"    <====>    " + ', '.join(ev.paralogs[1]) + "\n")
+		elif(ev.etype == 'L'):
+			OUT.write('    LOSSES: '+ ev.losses + "\n")
+
+## export tree to orthoXML format
+if(args.orthoxml):
+	TreeUtils.export_to_orthoXML(genetree, handle=open(args.genetree+"_orthoxml", 'w'))
+
+
+
+################### TEST  purposes #######################
+
+
+if(args.debug):
+	def spnaming(node):
+		return node.name[:3].lower()
+
+	gtree = PhyloTree(genewick, sp_naming_function=spnaming )
+
+	sptree = PhyloTree(args.specietree)
+	for node in sptree.iter_leaves():
+		node.name = node.name[:3].lower()
+
+	recon_tree, events = gtree.reconcile(sptree)
+	dup2cost = 0
+	print recon_tree
+	print "Orthology and Paralogy relationships:"
+	for ev in events:
+	    if ev.etype == "S":
+	        print 'ORTHOLOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.orthologs)
+	    elif ev.etype == "D":
+	    	dup2cost+=1
+	        print 'PARALOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.outparalogs)
+
+	dupcost, lostcost = 0,0
+
+	for node in genetree.traverse():
+		if node.type > 0: 
+			dupcost+=1
+		elif node.type == TreeClass.LOST:
+			lostcost+=1
+
+	print "Phylonode dup : ", dup2cost,  "Reconcile dup: ",  dupcost,  "Reconcile losses: ", lostcost

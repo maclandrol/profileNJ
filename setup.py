@@ -26,7 +26,7 @@ setuptools.setup(
 	url='https://github.com/UdeM-LBIT/python-tree-processing',
 	author='Emmanuel Noutahi',
 	author_email='emmanuel.noutahi@hotmail.ca',
-	scripts = ['bin/profileNJ'],
+	scripts = ['bin/profileNJ', 'bin/reconcile'],
 
 	packages=setuptools.find_packages(),
 

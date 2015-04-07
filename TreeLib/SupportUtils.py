@@ -16,9 +16,9 @@ SEQUENCE_ALPHABET = {'dna':IUPAC.unambiguous_dna, 'rna':IUPAC.unambiguous_rna, '
 def timeit(func):
 
 	def timed(*args, **kw):
-		tstart = time.clock()
+		tstart = time.time()
 		result = func(*args, **kw)
-		tend = time.clock()
+		tend = time.time()
 		ttime= tend-tstart
 
 		print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
@@ -26,7 +26,7 @@ def timeit(func):
 
 	return timed
 
-
+@timeit
 def getDistMatrix(alignfile, outfile):
 	cmd="fastdist -I fasta -O phylip -e -o %s %s"%(outfile, alignfile)
 	executeCMD(cmd)
@@ -65,7 +65,7 @@ def selectBestTree(values):
 
 @timeit
 def runPolytomySolver(mltree, smap, spectree, outfile, distmat, r_option, slimit, plimit, algo):
-	cmd="profileNJ -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s -c %s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit, algo)
+	cmd="python profileNJ -s %s -S %s -g %s -d %s -o %s -n -r %s --slimit=%s --plimit=%s -c %s"%(spectree, smap, mltree, distmat, outfile, r_option, slimit, plimit, algo)
 	executeCMD(cmd)
 
 
