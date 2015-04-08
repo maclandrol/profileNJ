@@ -113,7 +113,7 @@ for gtree in gtrees:
 	outlog= Output("%s%s"%(args.outfile, (gtree_number+1 if len(gtrees)>1 else ""))) if args.outfile is not None else Output()
 	start_time=time.time()
 
-	oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, dists[0], capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap))
+	oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, dists[gtree_number], capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap))
 	tree_list=[oritree]
 
 	bestroot_para = parallelize(args.parallele, len(tree_list))

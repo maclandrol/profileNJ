@@ -4,6 +4,10 @@ __pycache__/
 *.py[cod]
 TreeLib/*pyc
 
+# Binary script in home folder
+profileNJ
+reconcile.py
+
 # Simulation data
 tests/*.mat
 tests/Simulation

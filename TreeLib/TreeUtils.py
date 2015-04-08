@@ -519,7 +519,20 @@ def export_to_orthoXML(t, database='customdb', handle=sys.stdout):
 						raise AttributeError("\n\Internals nodes labeled by losses are not expected in the orthoXML format")
 
 	O.export(handle, 0, namespace_="")
-	 
+
+
+def generate_smap(specietree, output="smap"):
+	"""
+	Generate a specie map from genetree and specietree
+	"""
+	gene_to_spec_map = []
+	specie_names = specietree.get_leaf_names()
+	for name in specie_names:
+		genes = re.compile(".*"+name+".*", re.IGNORECASE)
+		gene_to_spec_map.append([genes.pattern, name])
+	with open(output, "w") as f:
+		f.writelines('\t'.join(line)+"\n" for line in gene_to_spec_map)
+	
 
 def customTreeCompare(original_t, corrected_t, t):
 
