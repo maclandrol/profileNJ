@@ -1,6 +1,8 @@
 from TreeClass import TreeClass
+from SupportUtils import parseFastPhyloXml
 import os
 import numpy
+from StringIO import StringIO
 import random
 
 numpy.set_printoptions(precision=3)
@@ -15,7 +17,7 @@ def find_smallest_index(matrice):
     """
 
     index = numpy.tril_indices_from(matrice, -1)
-    return numpy.vstack(index)[:,matrice[index].argmin()]
+    return numpy.vstack(index)[:, matrice[index].argmin()]
 
 
 def condense_matrix(matrice, smallest_index, method='upgma'):
@@ -30,29 +32,30 @@ def condense_matrix(matrice, smallest_index, method='upgma'):
     Now the new regroupement distance value is at the first position! (on row and column)
     """
     first_index, second_index = smallest_index
-    #get the rows and make a new vector by updating distance
+    # get the rows and make a new vector by updating distance
     rows = numpy.take(matrice, smallest_index, 1)
-    #default we use upgma
-    if(method.lower()=='nj'):
-        new_vector = (numpy.sum(rows, 1)-matrice[first_index,second_index])*0.5
+    # default we use upgma
+    if(method.lower() == 'nj'):
+        new_vector = (
+            numpy.sum(rows, 1) - matrice[first_index, second_index]) * 0.5
 
     else:
         new_vector = numpy.average(rows, 1)
 
-    #replace info in the row and column for first index with new_vector
+    # replace info in the row and column for first index with new_vector
     matrice[second_index] = new_vector
-    matrice[:, second_index ] = new_vector
-    #replace the info in the row and column for the second index with
-    #high numbers so that it is ignored
+    matrice[:, second_index] = new_vector
+    # replace the info in the row and column for the second index with
+    # high numbers so that it is ignored
     return remove_ij(matrice, first_index, first_index)
 
 
 def remove_ij(x, i, j):
     # Row i and column j divide the array into 4 quadrants
-    y = x[:-1,:-1]
-    y[:i,j:] = x[:i,j+1:]
-    y[i:,:j] = x[i+1:,:j]
-    y[i:,j:] = x[i+1:,j+1:]
+    y = x[:-1, :-1]
+    y[:i, j:] = x[:i, j + 1:]
+    y[i:, :j] = x[i + 1:, :j]
+    y[i:, j:] = x[i + 1:, j + 1:]
     return y
 
 
@@ -60,19 +63,19 @@ def calculate_Q_ij(matrice, ind, n):
     """Calcutates Q_matrix for two taxa
 
     """
-    return (n -2)*matrice[ind] - numpy.sum(matrice[ind[0]]) - numpy.sum(matrice[ind[1]])
+    return (n - 2) * matrice[ind] - numpy.sum(matrice[ind[0]]) - numpy.sum(matrice[ind[1]])
 
 
 def calculate_Q_matrix(matrice):
     """Calculate Q_matrix for nj algorithm
 
     """
-    n= matrice.shape[0]
-    Q_matrix=numpy.zeros(shape=matrice.shape)
+    n = matrice.shape[0]
+    Q_matrix = numpy.zeros(shape=matrice.shape)
     it = numpy.nditer(matrice, flags=['multi_index'])
     while not it.finished:
-        ind=it.multi_index
-        Q_matrix[ind]= calculate_Q_ij(matrice, ind, n)
+        ind = it.multi_index
+        Q_matrix[ind] = calculate_Q_ij(matrice, ind, n)
         it.iternext()
 
     return Q_matrix
@@ -80,25 +83,25 @@ def calculate_Q_matrix(matrice):
 
 def paired_node_distance(matrice, smallest_index):
     i, j = smallest_index
-    #i, j are the index of the recently joined node
-    n= matrice.shape[0]
+    # i, j are the index of the recently joined node
+    n = matrice.shape[0]
 
-    #http://en.wikipedia.org/wiki/Neighbor_joining#equation_2
-    #distance from the pair members to the new node second term
-    x=numpy.sum(matrice[i]) - numpy.sum(matrice[:,j])
+    # http://en.wikipedia.org/wiki/Neighbor_joining#equation_2
+    # distance from the pair members to the new node second term
+    x = numpy.sum(matrice[i]) - numpy.sum(matrice[:, j])
 
-    if(n-2>0):
-        dist_i= 0.5*matrice[i, j] +((0.5/(n-2))*(x))
-        dist_j= matrice[i,j]-dist_i
+    if(n - 2 > 0):
+        dist_i = 0.5 * matrice[i, j] + ((0.5 / (n - 2)) * (x))
+        dist_j = matrice[i, j] - dist_i
         return dist_i, dist_j
 
     else:
         # We have only two node to join (final join)
         # Find the index of the node not already joined
 
-        distance = matrice[i,j]
-        #In this case, we split the dist value by two
-        return distance/2.0, distance/2.0
+        distance = matrice[i, j]
+        # In this case, we split the dist value by two
+        return distance / 2.0, distance / 2.0
 
 
 def condense_node_order(matrice, smallest_index, node_order, method='upgma'):
@@ -114,33 +117,33 @@ def condense_node_order(matrice, smallest_index, node_order, method='upgma'):
     index1, index2 = smallest_index
     node1 = node_order[index1]
     node2 = node_order[index2]
-    #get the distance between the nodes and assign 1/2 the distance to the
-    #Length property of each node
+    # get the distance between the nodes and assign 1/2 the distance to the
+    # Length property of each node
 
-    if(method.lower()=='nj'):
-        dist = paired_node_distance(matrice,smallest_index)
+    if(method.lower() == 'nj'):
+        dist = paired_node_distance(matrice, smallest_index)
 
-    elif(method.lower()=='upgma'):
+    elif(method.lower() == 'upgma'):
         distance = matrice[index1, index2]
-        dist= (distance/2.0 , distance/2.0)
+        dist = (distance / 2.0, distance / 2.0)
 
     else:
-        dist=(0,0)
+        dist = (0, 0)
 
-    nodes = [node1,node2]
-    pos = [0,1]
+    nodes = [node1, node2]
+    pos = [0, 1]
 
     for ind in pos:
-        nodes[ind].add_features(length = dist[ind])
-    #combine the two nodes into a new TreeNode object
+        nodes[ind].add_features(length=dist[ind])
+    # combine the two nodes into a new TreeNode object
     new_node = TreeClass()
     new_node.add_child(node1)
     new_node.add_child(node2)
-    new_node.add_features(length = sum(dist))
-    #replace the object at index1 with the combined node
+    new_node.add_features(length=sum(dist))
+    # replace the object at index1 with the combined node
     node_order[index2] = new_node
-    #replace the object at index2 with None
-    del node_order[index1] #distance at i=index2 || j=index2
+    # replace the object at index2 with None
+    del node_order[index1]  # distance at i=index2 || j=index2
     return node_order
 
 
@@ -155,18 +158,19 @@ def NJ_cluster(matrice, node_order, nj_depth=None):
     """
 
     # this is for a test, should made it into one function with upgma
-    num_entries= len(node_order)
-    if not nj_depth or nj_depth>(num_entries-1):
-        nj_depth = num_entries-1 #default, do all, same as upgma
+    num_entries = len(node_order)
+    if not nj_depth or nj_depth > (num_entries - 1):
+        nj_depth = num_entries - 1  # default, do all, same as upgma
 
-    tree=None
-    smallest_index=[]
+    tree = None
+    smallest_index = []
     for i in range(nj_depth):
-        Q_matrix=calculate_Q_matrix(matrice)
+        Q_matrix = calculate_Q_matrix(matrice)
         index_1, index_2 = find_smallest_index(Q_matrix)
         smallest_index = (index_1, index_2)
-        row_order = condense_node_order(matrice, smallest_index, node_order, method='nj')
-        matrice= condense_matrix(matrice, smallest_index, method='nj')
+        row_order = condense_node_order(
+            matrice, smallest_index, node_order, method='nj')
+        matrice = condense_matrix(matrice, smallest_index, method='nj')
         tree = node_order[smallest_index[1]]
     return tree, matrice, smallest_index
 
@@ -180,15 +184,16 @@ def UPGMA_cluster(matrice, node_order, upgma_depth=None):
     before this function is called.
     """
     num_entries = len(node_order)
-    if not upgma_depth or upgma_depth>(num_entries-1):
-        upgma_depth = num_entries-1 #default, do all
+    if not upgma_depth or upgma_depth > (num_entries - 1):
+        upgma_depth = num_entries - 1  # default, do all
     tree = None
-    smallest_index=[]
+    smallest_index = []
     for i in range(upgma_depth):
         index_1, index_2 = find_smallest_index(matrice)
         smallest_index = (index_1, index_2)
         assert(index_1 > index_2)
-        row_order = condense_node_order(matrice, smallest_index, node_order, method='upgma')
+        row_order = condense_node_order(
+            matrice, smallest_index, node_order, method='upgma')
         matrice = condense_matrix(matrice, smallest_index, method='upgma')
         tree = node_order[smallest_index[1]]
     return tree, matrice, smallest_index
@@ -203,16 +208,17 @@ def RAND_cluster(matrice, node_order, rand_depth=None):
     before this function is called.
     """
     num_entries = len(node_order)
-    if not rand_depth or rand_depth>(num_entries-1):
-        rand_depth = num_entries-1 #default, do all
+    if not rand_depth or rand_depth > (num_entries - 1):
+        rand_depth = num_entries - 1  # default, do all
     tree = None
-    smallest_index=[]
+    smallest_index = []
 
     for i in range(rand_depth):
-        tochoose=[i for i, t in enumerate(node_order) if t is not None]
+        tochoose = [i for i, t in enumerate(node_order) if t is not None]
         index1, index2 = random.sample(tochoose, 2)
-        smallest_index= (max(index1, index2), min(index1, index2))
-        node_order = condense_node_order(matrice, smallest_index, node_order, method='rand')
+        smallest_index = (max(index1, index2), min(index1, index2))
+        node_order = condense_node_order(
+            matrice, smallest_index, node_order, method='rand')
         tree = node_order[smallest_index[1]]
 
     return tree, matrice, smallest_index
@@ -220,64 +226,71 @@ def RAND_cluster(matrice, node_order, rand_depth=None):
 
 def treeCluster(matrice, node_order, depth=None, method='upgma'):
 
-    if(len(node_order)==2):
-        smallest_index = (1,0)
-        row_order = condense_node_order(matrice, smallest_index, node_order, method='rand')
+    if(len(node_order) == 2):
+        smallest_index = (1, 0)
+        row_order = condense_node_order(
+            matrice, smallest_index, node_order, method='rand')
         tree = node_order[smallest_index[1]]
         return tree, None, smallest_index
 
-    if(method.lower()=='nj'):
+    if(method.lower() == 'nj'):
         return NJ_cluster(matrice, node_order, nj_depth=depth)
-    elif(method.lower()=='rand'):
+    elif(method.lower() == 'rand'):
         return RAND_cluster(matrice, node_order, rand_depth=depth)
     else:
         return UPGMA_cluster(matrice, node_order, upgma_depth=depth)
 
 
-def distMatProcessor(distances, nFlagVal, nFlag=False):
+def distMatProcessor(distances, nFlagVal=1e305, nFlag=False):
     """Formating distance matrix from a file or string input and node order for
         UPGMA join
     """
 
-    read_fl=False
-    dist_matrix= []
-    node_order=[]
+    read_fl = False
+    dist_matrix = []
+    node_order = []
 
     # Read in matrix if file name is given
     if os.path.exists(distances):
         distances = open(distances, 'rU').read()
 
     distances_lines = distances.splitlines()
-    x_ind=0
-    for line in distances_lines:
-        line = line.strip()
-        if(line):
-            if not read_fl:
-                read_fl=True
-            else:
-                x_ind+=1
-                line_list = [getFloatValue(x.strip(), x_ind, y_ind, nFlagVal, nFlag) for y_ind, x in enumerate(line.split())]
-                dist_matrix.append(line_list[1:])
-                node_order.append(line_list[0])
+    if '<?xml' in distances_lines[0]:
+        # this is an xml file
+        # parse it differently
+        return parseFastPhyloXml(StringIO(distances), nFlagVal, nFlag)
+    else:
+        x_ind = 0
+        for line in distances_lines:
+            line = line.strip()
+            if(line):
+                if not read_fl:
+                    read_fl = True
+                else:
+                    x_ind += 1
+                    line_list = [getFloatValue(
+                        x.strip(), x_ind, y_ind, nFlagVal, nFlag) for y_ind, x in enumerate(line.split())]
+                    dist_matrix.append(line_list[1:])
+                    node_order.append(line_list[0])
 
-    return numpy.array(dist_matrix), node_order
+    return numpy.array(dist_matrix, dtype=numpy.float), node_order
 
 
 def makeFakeDstMatrice(n, dmin, dmax):
     """Create a fake distance matrice"""
-    b = (dmax-dmin)*numpy.random.random_sample(size=(n,n))+dmin
-    b_sym=(b + b.T)/2
+    b = (dmax - dmin) * numpy.random.random_sample(size=(n, n)) + dmin
+    b_sym = (b + b.T) / 2
     numpy.fill_diagonal(b_sym, 0)
     return b_sym
 
 
 def saveMatrix(filename, matrix, node_order):
-    #matrix[numpy.where(matrix==1e305)]=0
+    # matrix[numpy.where(matrix==1e305)]=0
     with open(filename, 'w+') as out:
-        out.write("\t%i\n"%len(node_order))
-        lines=[]
+        out.write("\t%i\n" % len(node_order))
+        lines = []
         for entry in matrix.tolist():
-            line=node_order.pop(0)+"\t"+ " ".join(map(str,entry))+"\n"
+            line = node_order.pop(0) + "\t" + " ".join(map(str, entry)) + "\n"
             lines.append(line)
         out.writelines(lines)
     return True
@@ -286,10 +299,10 @@ def saveMatrix(filename, matrix, node_order):
 def getFloatValue(number, x_ind, y_ind, nFlagVal, nFlag=False):
     """Get a distance matrice validate input from a string"""
     try:
-        n=float(number)
-        if( n<0 and nFlag):
-            n=nFlagVal
-        return 0 if (x_ind==y_ind) else n
+        n = float(number)
+        if(n < 0 and nFlag):
+            n = nFlagVal
+        return 0 if (x_ind == y_ind) else n
 
     except ValueError:
         return number
