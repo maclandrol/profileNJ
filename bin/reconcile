@@ -2,6 +2,7 @@
 
 from PolytomySolver import *
 from ete2 import PhyloTree
+from TreeLib.SupportUtils import read_trees
 from TreeLib import TreeUtils, TreeClass, params
 import argparse
 import sys
@@ -53,8 +54,9 @@ recon_parser.add_argument('--cap', dest='cap',  action='store_true',
 						  help="Capitalize the species name of the genetree leaves to match each species. Almost all functions are case sensitive.")
 recon_parser.add_argument('--display_losses', dest='losses',
 						  action='store_true', help="Display losses in the reconciliation")
-recon_parser.add_argument('--output', '--out', dest='output', default="tree.pdf",
-						  help="Output image the reconciliated tree. Should end by .SVG|.PDF|.PNG")
+recon_parser.add_argument('--output', '--out', dest='output', default="tree",
+						  help="Output image the reconciliated tree.")
+recon_parser.add_argument("--outform", dest="outform", default="pdf", help = "Accepted format are svg|pdf|png")
 recon_parser.add_argument('--export_orthoxml', dest='orthoxml', action='store_true',
 						  help="Export reconciliated tree to export_orthoxml. Losses are not expected")
 recon_parser.add_argument('--show_branch_tag', dest='branch_tag',
@@ -63,6 +65,9 @@ recon_parser.add_argument(
 	'--verbose', '-v', action='store_true', help="Verbosity")
 recon_parser.add_argument(
 	'--debug', action='store_true', help="Debugging ( test, will be removed )")
+
+recon_parser.add_argument(
+	'--batch', action='store_true', help="Batch mode, use profileNJ file output")
 
 # Reconciliation parser
 smap_parser = sub_parser.add_parser('smap', help="Generate smap")
@@ -75,137 +80,143 @@ args = parser.parse_args()
 specietree = TreeClass(args.specietree)
 runmode = 'genetree' in args
 if(runmode):
-	genewick = args.genetree
-	genetree = TreeClass(genewick)
 
-	speciemap = {}
+	gnewicks = [args.genetree]
+	if(args.batch):
+		gnewicks = read_trees(args.genetree)
+	i = 0
 
-	rec_output = args.genetree + "_reconcilied"
-	events_output = args.genetree + "_events"
+	for genewick in gnewicks:
+		i += 1
+		genetree = TreeClass(genewick)
+		speciemap = {}
 
-	if(args.smap):
-		smap = args.smap
-		regexmap = {}
-		with (open(smap, 'rU') if isinstance(smap, basestring) else smap) as INPUT:
-			for line in INPUT:
-				g, s = line.strip().split()
-				g_regex = re.compile(g.replace('*', '.*'), re.IGNORECASE)
-				regexmap[g_regex] = s
-		for leaf in genetree:
-			for key, value in regexmap.iteritems():
-				if key.match(leaf.name):
-					speciemap[leaf.name] = value
+		rec_output = args.genetree + "_%dreconcilied"%i
+		events_output = args.genetree + "_%devents"%i
 
-	if args.gene_sep:
-		genetree.set_species(
-			speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap, pos=args.spos,)
-	else:
-		# use a function instead
-		genetree.set_species(speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap,
-							 pos=args.spos, use_fn=get_specie_parser(args.spos), speclist=specietree.get_leaf_name())
+		if(args.smap):
+			smap = args.smap
+			regexmap = {}
+			with (open(smap, 'rU') if isinstance(smap, basestring) else smap) as INPUT:
+				for line in INPUT:
+					g, s = line.strip().split()
+					g_regex = re.compile(g.replace('*', '.*'), re.IGNORECASE)
+					regexmap[g_regex] = s
+			for leaf in genetree:
+				for key, value in regexmap.iteritems():
+					if key.match(leaf.name):
+						speciemap[leaf.name] = value
 
-	mapping = TreeUtils.lcaMapping(genetree, specietree)
-	TreeUtils.reconcile(genetree, mapping, args.losses)
+		if args.gene_sep:
+			genetree.set_species(
+				speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap, pos=args.spos,)
+		else:
+			# use a function instead
+			genetree.set_species(speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap,
+								 pos=args.spos, use_fn=get_specie_parser(args.spos), speclist=specietree.get_leaf_name())
 
-	# display tree if verbose
-	if(args.verbose):
-		print genetree.get_ascii(attributes=['species', 'name'], show_internal=False)
+		mapping = TreeUtils.lcaMapping(genetree, specietree)
+		TreeUtils.reconcile(genetree, mapping, args.losses)
 
-	# Export tree to extended newick format
-	genetree.write(outfile=rec_output, features=[], format_root_node=True)
+		# display tree if verbose
+		if(args.verbose):
+			print genetree.get_ascii(attributes=['species', 'name'], show_internal=False)
 
-	# Rendering settings
-	if(GRAPHICAL_ACCESS):
-		ts = TreeStyle()
-		ts.show_leaf_name = True
+		# Export tree to extended newick format
+		genetree.write(outfile=rec_output, features=[], format_root_node=True)
 
-		if(args.branch_tag):
-			ts.show_branch_length = True
-			ts.show_branch_support = True
+		# Rendering settings
+		if(GRAPHICAL_ACCESS):
+			ts = TreeStyle()
+			ts.show_leaf_name = True
 
-		spec_style = NodeStyle()
-		spec_style["shape"] = "sphere"
-		spec_style["size"] = 8
-		spec_style["fgcolor"] = "forestgreen"
+			if(args.branch_tag):
+				ts.show_branch_length = True
+				ts.show_branch_support = True
 
-		dup_style = NodeStyle()
-		dup_style["shape"] = "square"
-		dup_style["size"] = 10
-		dup_style["fgcolor"] = "darkred"
+			spec_style = NodeStyle()
+			spec_style["shape"] = "sphere"
+			spec_style["size"] = 8
+			spec_style["fgcolor"] = "forestgreen"
 
-		loss_style = NodeStyle()
-		# Gray dashed branch lines
-		loss_style["hz_line_type"] = 1
-		loss_style["hz_line_color"] = "#cccccc"
-		loss_style["shape"] = "circle"
-		loss_style["fgcolor"] = "#cccccc"
-		spec_style["size"] = 6
+			dup_style = NodeStyle()
+			dup_style["shape"] = "square"
+			dup_style["size"] = 10
+			dup_style["fgcolor"] = "darkred"
 
-		# Apply node style
-		for n in genetree.traverse():
-			if not n.is_leaf():
-				n.set_style(spec_style)
-			if(n.type > 0):
-				n.set_style(dup_style)
-			elif(n.type == TreeClass.LOST):
-				n.set_style(loss_style)
+			loss_style = NodeStyle()
+			# Gray dashed branch lines
+			loss_style["hz_line_type"] = 1
+			loss_style["hz_line_color"] = "#cccccc"
+			loss_style["shape"] = "circle"
+			loss_style["fgcolor"] = "#cccccc"
+			spec_style["size"] = 6
 
-		# Save tree as figure
-		genetree.render(args.output, dpi=400, tree_style=ts)
+			# Apply node style
+			for n in genetree.traverse():
+				if not n.is_leaf():
+					n.set_style(spec_style)
+				if(n.type > 0):
+					n.set_style(dup_style)
+				elif(n.type == TreeClass.LOST):
+					n.set_style(loss_style)
 
-	all_events = genetree.get_events(include_lost=args.losses)
+			# Save tree as figure
+			genetree.render("%s_%d.%s"%(args.output, i, args.outform), dpi=400, tree_style=ts)
 
-	with open(events_output, 'w') as OUT:
-		ad, nad, loss = TreeUtils.detComputeDupLostScore(genetree)
-		OUT.write(
-			'DUPLICATIONS : ' + str(ad + nad) + "\tLOSSES : " + str(loss) + "\n")
-		for ev in all_events:
-			if(ev.etype == 'S'):
-				OUT.write('    ORTHOLOGY RELATIONSHIP: ' + ', '.join(
-					ev.orthologs[0]) + "    <====>    " + ', '.join(ev.orthologs[1]) + "\n")
-			elif(ev.etype == 'D'):
-				OUT.write('    PARALOGY RELATIONSHIP: ' + ', '.join(
-					ev.paralogs[0]) + "    <====>    " + ', '.join(ev.paralogs[1]) + "\n")
-			elif(ev.etype == 'L'):
-				OUT.write('    LOSSES: ' + ev.losses + "\n")
+		all_events = genetree.get_events(include_lost=args.losses)
 
-	# export tree to orthoXML format
-	if(args.orthoxml):
-		TreeUtils.export_to_orthoXML(
-			genetree, handle=open(args.genetree + "_orthoxml", 'w'))
+		with open(events_output, 'w') as OUT:
+			ad, nad, loss = TreeUtils.detComputeDupLostScore(genetree)
+			OUT.write(
+				'DUPLICATIONS : ' + str(ad + nad) + "\tLOSSES : " + str(loss) + "\n")
+			for ev in all_events:
+				if(ev.etype == 'S'):
+					OUT.write('    ORTHOLOGY RELATIONSHIP: ' + ', '.join(
+						ev.orthologs[0]) + "    <====>    " + ', '.join(ev.orthologs[1]) + "\n")
+				elif(ev.etype == 'D'):
+					OUT.write('    PARALOGY RELATIONSHIP: ' + ', '.join(
+						ev.paralogs[0]) + "    <====>    " + ', '.join(ev.paralogs[1]) + "\n")
+				elif(ev.etype == 'L'):
+					OUT.write('    LOSSES: ' + ev.losses + "\n")
 
-	################### TEST  purposes #######################
+		# export tree to orthoXML format
+		if(args.orthoxml):
+			TreeUtils.export_to_orthoXML(
+				genetree, handle=open(args.genetree + "_%dorthoxml"%i, 'w'))
 
-	if(args.debug):
-		def spnaming(node):
-			return node.name[:3].lower()
+		################### TEST  purposes #######################
 
-		gtree = PhyloTree(genewick, sp_naming_function=spnaming)
+		if(args.debug):
+			def spnaming(node):
+				return node.name[:3].lower()
 
-		sptree = PhyloTree(args.specietree)
-		for node in sptree.iter_leaves():
-			node.name = node.name[:3].lower()
+			gtree = PhyloTree(genewick, sp_naming_function=spnaming)
 
-		recon_tree, events = gtree.reconcile(sptree)
-		dup2cost = 0
-		print recon_tree
-		print "Orthology and Paralogy relationships:"
-		for ev in events:
-			if ev.etype == "S":
-				print 'ORTHOLOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.orthologs)
-			elif ev.etype == "D":
-				dup2cost += 1
-				print 'PARALOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.outparalogs)
+			sptree = PhyloTree(args.specietree)
+			for node in sptree.iter_leaves():
+				node.name = node.name[:3].lower()
 
-		dupcost, lostcost = 0, 0
+			recon_tree, events = gtree.reconcile(sptree)
+			dup2cost = 0
+			print recon_tree
+			print "Orthology and Paralogy relationships:"
+			for ev in events:
+				if ev.etype == "S":
+					print 'ORTHOLOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.orthologs)
+				elif ev.etype == "D":
+					dup2cost += 1
+					print 'PARALOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.outparalogs)
 
-		for node in genetree.traverse():
-			if node.type > 0:
-				dupcost += 1
-			elif node.type == TreeClass.LOST:
-				lostcost += 1
+			dupcost, lostcost = 0, 0
 
-		print "Phylonode dup : ", dup2cost,  "Reconcile dup: ",  dupcost,  "Reconcile losses: ", lostcost
+			for node in genetree.traverse():
+				if node.type > 0:
+					dupcost += 1
+				elif node.type == TreeClass.LOST:
+					lostcost += 1
+
+			print "Phylonode dup : ", dup2cost,  "Reconcile dup: ",  dupcost,  "Reconcile losses: ", lostcost
 
 else:
 	TreeUtils.generate_smap(specietree, output=args.smapfile)

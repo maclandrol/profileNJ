@@ -142,6 +142,16 @@ def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
     return nexrepair(outnxs)
 
 
+def read_trees(file):
+    """Read a trees file
+    and yield each line
+    """
+    with open(file, 'r') as infile:
+        for line in infile:
+            if not (line.startswith('>')):
+                yield line
+
+
 def convert_to_phylip(filename, filetype, old_ext, rm=False):
     con_file = filename.replace(old_ext, "phy")
     with open(filename, 'rU') as infile, open(con_file, 'w') as outfile:
