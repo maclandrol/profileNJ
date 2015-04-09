@@ -10,7 +10,18 @@ import numpy as np
 from Bio.Phylo.Applications import _Phyml
 from Bio import AlignIO
 from Bio.Alphabet import IUPAC
-from lxml import etree
+
+try: 
+    from lxml import etree
+except ImportError:
+    try:
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+        except: pass
+
 SEQUENCE_ALPHABET = {'dna': IUPAC.unambiguous_dna,
                      'rna': IUPAC.unambiguous_rna, 'protein': IUPAC.protein}
 
