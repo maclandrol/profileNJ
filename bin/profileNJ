@@ -108,7 +108,7 @@ parser.add_argument(
     '-v',  action='store_true', dest='verbose', help=" Output verbosity")
 parser.add_argument('--batch',  action='store_true', dest='batch',
                     help=" Use this flag to enable batch mode. In batch mode, gLine value is discarded, --dist should be a file whose line link to the distance matrix of the genetree at the same line number in your genetree file")
-parser.add_argument('--seuil',  type=int,  dest="seuil",
+parser.add_argument('--seuil',  type=float,  dest="seuil",
                     help="Branch contraction threshold, when the tree is binary. Use only when the tree is binary.")
 parser.add_argument('--cap', dest='cap',  action='store_true',
                     help="Capitalize the species name of the genetree leaves to match each species. Almost all functions are case sensitive.")
@@ -175,6 +175,7 @@ for gtree in gtrees:
     count = 0
 
     if(args.parallele):
+        # parallelized version
         # The number of process should be a function of the number of tree to
         # solve
         multipoly_para = len(tree_list) if len(
@@ -183,15 +184,11 @@ for gtree in gtrees:
         results = []
         isexecuted = [True] * len(tree_list)
         for genetree in tree_list:
-            if genetree.has_polytomies():
-                # parallelized version
-                arguments = (genetree, specietree, distance_matrix, node_order,
-                             args.verbose, args.path_limit, args.cluster, args.sol_limit)
-                async_result = pool.apply_async(solvePolytomy, arguments)
-                results.append(async_result)
 
-            elif (args.seuil):
-                genetree = genetree.contract_tree(seuil=args.seuil)
+            if (args.seuil):
+                genetree.contract_tree(seuil=args.seuil)
+
+            if genetree.has_polytomies():
                 arguments = (genetree, specietree, distance_matrix, node_order,
                              args.verbose, args.path_limit, args.cluster, args.sol_limit)
                 async_result = pool.apply_async(solvePolytomy, arguments)
@@ -225,15 +222,13 @@ for gtree in gtrees:
         for genetree in tree_list:
             first = True
             count += 1
+
+            if( args.seuil):
+                genetree.contract_tree(seuil=args.seuil)
+
             if genetree.has_polytomies():
                 polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order,
                                              verbose=args.verbose, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit)
-
-            elif (args.seuil):
-                genetree = genetree.contract_tree(seuil=args.seuil)
-                polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order,
-                                             verbose=args.verbose, sol_limit=args.sol_limit, method=args.cluster, path_limit=args.path_limit)
-
             else:
                 polysolution = [genetree]
 

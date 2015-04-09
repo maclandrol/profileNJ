@@ -298,8 +298,10 @@ class TreeClass(TreeNode):
         return feature
 
     def contract_tree(self, seuil=0, feature='support', break_tree_topo=False):
-        """Contract tree based on the dist between node, using a threshold. `contract_tree` proceed bottom-up. Any branches with a support less than "seuil" will be removed
-        if `break_tree_topo` is set to True, all the branch under this node will be recursively removed"""
+        """ Contract tree based on the dist between node, using a threshold. `contract_tree` 
+        proceed bottom-up. Any branches with a support less than "seuil" will be removed
+        if `break_tree_topo` is set to True, all the branch under this node will be recursively removed
+        """
         for node in self.traverse("postorder"):
             if(node.has_feature(feature) and node.is_internal() and getattr(node, feature) < seuil):
                 node.toPolytomy(break_tree_topo)
