@@ -42,8 +42,7 @@ sub_parser = parser.add_subparsers(help="Available option")
 recon_parser = sub_parser.add_parser('run', help="Do Reconciliation")
 recon_parser.add_argument(
 	'-s', '--sFile',  dest='specietree', help="Specie tree in newick format", required=True)
-recon_parser.add_argument('-S', '--sMap', type=argparse.FileType('r'),
-						  dest='smap', help="Gene to species map. Use the standard format.")
+recon_parser.add_argument('-S', '--sMap', dest='smap', help="Gene to species map. Use the standard format.")
 recon_parser.add_argument(
 	'-g', '--gFile',  dest='genetree', help="Gene tree in newick format.", required=True)
 recon_parser.add_argument(
@@ -55,7 +54,7 @@ recon_parser.add_argument('--cap', dest='cap',  action='store_true',
 recon_parser.add_argument('--display_losses', dest='losses',
 						  action='store_true', help="Display losses in the reconciliation")
 recon_parser.add_argument('--output', '--out', dest='output', default="tree",
-						  help="Output image the reconciliated tree.")
+						  help="Output an image of the reconciliated tree.")
 recon_parser.add_argument("--outform", dest="outform", default="pdf", help = "Accepted format are svg|pdf|png")
 recon_parser.add_argument('--export_orthoxml', dest='orthoxml', action='store_true',
 						  help="Export reconciliated tree to export_orthoxml. Losses are not expected")
@@ -63,6 +62,8 @@ recon_parser.add_argument('--show_branch_tag', dest='branch_tag',
 						  action='store_true', help="Show branch length and support")
 recon_parser.add_argument(
 	'--verbose', '-v', action='store_true', help="Verbosity")
+recon_parser.add_argument(
+	'--reroot', '-r', action='store_true', help="Reroot in order to display all root reconciliation result. Not Available in batch mode !!")
 recon_parser.add_argument(
 	'--debug', action='store_true', help="Debugging ( test, will be removed )")
 
@@ -86,6 +87,10 @@ if(runmode):
 		gnewicks = read_trees(args.genetree)
 	i = 0
 
+	elif(args.reroot):
+		nt = TreeClass(args.genetree)
+		gnewicks = [t.write(features=[]) for t in nt.reroot()]
+
 	for genewick in gnewicks:
 		i += 1
 		genetree = TreeClass(genewick)
@@ -95,9 +100,8 @@ if(runmode):
 		events_output = args.genetree + "_%devents"%i
 
 		if(args.smap):
-			smap = args.smap
 			regexmap = {}
-			with (open(smap, 'rU') if isinstance(smap, basestring) else smap) as INPUT:
+			with (open(args.smap, 'rU') if isinstance(args.smap, basestring) else args.smap) as INPUT:
 				for line in INPUT:
 					g, s = line.strip().split()
 					g_regex = re.compile(g.replace('*', '.*'), re.IGNORECASE)
