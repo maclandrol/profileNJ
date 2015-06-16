@@ -348,6 +348,25 @@ def runRaxmlPval(basedir, alignfile, narbres, out=None, listfile=[], sort=None):
     return rx_time, consel_output
 
 
+def calculate_likelihood(profileNJ_file, alignfile , basedir=os.getcwd()):
+    cmd = "raxmlHPC-SSE3 -f G -z %s -s %s -m GTRGAMMA -n trees -w %s" % (
+        profileNJ_file, alignfile, os.path.abspath(basedir))
+    rx_time, rst = runRAxML_likelihood(cmd)
+    infofile = glob.glob("%s/*info.trees" % basedir)[0]
+    consel_input = glob.glob("%s/*perSiteLLs.trees" % basedir)[0]
+    likelihoods = extractRAXMLikelihood(infofile, narbres)
+    consel_output = {}
+
+    title = 'rank item    obs     au     np      bp     kh     sh    wkh    wsh'
+    if(narbres) > 1:
+        consel_output = consel(consel_input, 'puzzle', '.trees', sort)
+    else:
+        consel_output = dict(zip(title.split(), 10 * ['N/A']))
+
+    consel_output['likelihood'] = likelihoods
+    return rx_time, consel_output
+        
+
 @timeit
 def runRAxML_likelihood(cmd):
     executeCMD(cmd)

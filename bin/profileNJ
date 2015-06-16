@@ -146,6 +146,11 @@ for gtree in gtrees:
 
     bestroot_para = parallelize(args.parallele, len(tree_list))
 
+    if (args.seuil):
+        # if we want a contraction, do it before
+        for tree in tree_list:
+            tree.contract_tree(seuil=args.seuil)
+
     if args.reroot.lower() == 'all':
         tree_list.extend(oritree.reroot())
 
@@ -185,9 +190,6 @@ for gtree in gtrees:
         isexecuted = [True] * len(tree_list)
         for genetree in tree_list:
 
-            if (args.seuil):
-                genetree.contract_tree(seuil=args.seuil)
-
             if genetree.has_polytomies():
                 arguments = (genetree, specietree, distance_matrix, node_order,
                              args.verbose, args.path_limit, args.cluster, args.sol_limit)
@@ -222,9 +224,6 @@ for gtree in gtrees:
         for genetree in tree_list:
             first = True
             count += 1
-
-            if( args.seuil):
-                genetree.contract_tree(seuil=args.seuil)
 
             if genetree.has_polytomies():
                 polysolution = solvePolytomy(genetree, specietree, distance_matrix, node_order,

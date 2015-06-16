@@ -553,14 +553,17 @@ def export_to_orthoXML(t, database='customdb', handle=sys.stdout):
     O.export(handle, 0, namespace_="")
 
 
-def generate_smap(specietree, output="smap"):
+def generate_smap(specietree, output="smap", relaxed=False, suffix=""):
     """
     Generate a specie map from genetree and specietree
     """
     gene_to_spec_map = []
     specie_names = specietree.get_leaf_names()
     for name in specie_names:
-        genes = re.compile(".*" + name + ".*", re.IGNORECASE)
+        if(relaxed):
+            genes = re.compile(".*" + name + suffix + ".*", re.IGNORECASE)
+        else :
+            genes = re.compile("^" + name + suffix + ".*", re.IGNORECASE)
         gene_to_spec_map.append([genes.pattern, name])
     with open(output, "w") as f:
         f.writelines('\t'.join(line) + "\n" for line in gene_to_spec_map)
