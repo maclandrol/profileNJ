@@ -8,6 +8,7 @@ from ete2 import TreeNode
 from ete2.phylo import EvolEvent
 import types
 from collections import defaultdict as ddict
+from itertools import izip
 import copy
 
 try:
@@ -100,7 +101,7 @@ class TreeClass(TreeNode):
             self.up = parent
 
         else:
-            raise ValuerError("Invalid copy method")
+            raise ValueError("Invalid copy method")
 
         return self._correct_copy(new_node) if binary_correct else new_node
 
@@ -251,6 +252,7 @@ class TreeClass(TreeNode):
                     leaf.add_features(
                         species=leaf._extractFeatureName(separator=sep, order=pos, cap=capitalize))
 
+
     def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None, **kwargs):
         """Set gene feature for each leaf in the tree.
 
@@ -336,8 +338,8 @@ class TreeClass(TreeNode):
         com_anc = self.get_common_ancestor(node)
         path1 = self.get_path_to_ancestor(self, com_anc)
         path2 = self.get_path_to_ancestor(node, com_anc)[::-1]
-        print path1
-        print path2
+        #print path1
+        #print path2
         return path1[1:] + path2[1:-1]
 
     def toPolytomy(self, break_tree_topo=False):
@@ -438,6 +440,61 @@ Return True if current node is an internal node.
             elif not root_node:
                 yield c_tree
 
+
+    def iter_edges(self):
+        """ Iter all over the edges in the tree"""
+
+        for node in self.traverse("levelorder"):
+            for child in node.get_children():
+                yield (node, child)
+
+    def get_edges(self):
+        """ Return the list of edges under a particular node"""
+        return [edge for edge in self.iter_edges()]
+
+
+    def edge_reroot(self, unroot=False):
+        """ Reroot a tree around all the edge"""
+        i= 0
+        for edge in self.iter_edges():
+            parent , child = edge
+            c_tree = self.copy("simplecopy", nw_format_root_node=True)
+            if(unroot):
+                c_tree.unroot()
+            c_child = c_tree.get_common_ancestor(child.get_leaf_name()) if child.is_internal() else c_tree&child.name
+           
+            c_parent = c_child.up
+            new_root =  TreeClass()
+            i +=1
+            if c_parent and (unroot or c_parent is not c_tree):
+                c_child = c_child.detach()
+                path_to_root = [c_parent] if (unroot and c_parent is c_tree) else c_tree.get_path_to_ancestor(c_parent, c_tree)
+                sisters = [c_tree] if unroot else path_to_root[-2].get_sisters() 
+                
+                if(len(path_to_root)>1):
+                    last_node = path_to_root[-1]
+                    removed_children = []
+                    for n in reversed(path_to_root[:-1]):
+                        last_node = last_node.remove_child(n)
+                        removed_children.append(last_node)
+                    
+
+                    cur_node = removed_children.pop(-1)
+                    for node in reversed(removed_children):
+                        cur_node = cur_node.add_child(node)
+
+                    # adding sister list at the root
+                    for c in sisters:
+                        cur_node.add_child(c)
+
+                new_root.add_child(c_child)
+                new_root.add_child(c_parent)
+                #additional security to avoid single internal node
+                new_root.delete_single_child_internal()
+                yield new_root
+            
+      
+
     def get_events(self, include_lost=True):
         """Returns a list of **all** duplication and speciation
         events detected after this node.
@@ -450,7 +507,7 @@ Return True if current node is an internal node.
             e.node = node
 
             if not node.is_leaf():
-                assert node.is_binary(), "Polytomy found in your tree"
+                assert node.is_binary(), node
                 species_include = [set([n.name for n in node.get_child_at(0).get_leaves() if n.type != TreeClass.LOST]),
                                    set([n.name for n in node.get_child_at(1).get_leaves() if n.type != TreeClass.LOST])]
 

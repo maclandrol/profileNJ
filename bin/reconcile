@@ -85,26 +85,29 @@ if(runmode):
 	gnewicks = [args.genetree]
 	if(args.batch):
 		gnewicks = read_trees(args.genetree)
-	i = 0
 
 	elif(args.reroot):
 		nt = TreeClass(args.genetree)
-		gnewicks = [t.write(features=[]) for t in nt.reroot()]
+		gnewicks = [t.write() for t in nt.edge_reroot(unroot=True)]
 
+	i = 0
+	nw_sav = []
 	for genewick in gnewicks:
 		i += 1
 		genetree = TreeClass(genewick)
 		speciemap = {}
 
-		rec_output = args.genetree + "_%dreconcilied"%i
-		events_output = args.genetree + "_%devents"%i
+		rec_output = args.output + "_%dreconcilied"%i
+		events_output = args.output + "_%devents"%i
 
 		if(args.smap):
 			regexmap = {}
 			with (open(args.smap, 'rU') if isinstance(args.smap, basestring) else args.smap) as INPUT:
 				for line in INPUT:
 					g, s = line.strip().split()
-					g_regex = re.compile(g.replace('*', '.*'), re.IGNORECASE)
+					if ('*') in g and '.*' not in g:
+						g = g.replace('*', '.*')
+					g_regex = re.compile(g, re.IGNORECASE)
 					regexmap[g_regex] = s
 			for leaf in genetree:
 				for key, value in regexmap.iteritems():
@@ -113,13 +116,13 @@ if(runmode):
 
 		if args.gene_sep:
 			genetree.set_species(
-				speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap, pos=args.spos,)
+				speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap, pos=args.spos)
 		else:
 			# use a function instead
 			genetree.set_species(speciesMap=speciemap, sep=args.gene_sep, capitalize=args.cap,
 								 pos=args.spos, use_fn=get_specie_parser(args.spos), speclist=specietree.get_leaf_name())
 
-		mapping = TreeUtils.lcaMapping(genetree, specietree)
+		mapping = TreeUtils.lcaMapping(genetree, specietree )
 		TreeUtils.reconcile(genetree, mapping, args.losses)
 
 		# display tree if verbose
@@ -171,7 +174,7 @@ if(runmode):
 		all_events = genetree.get_events(include_lost=args.losses)
 
 		with open(events_output, 'w') as OUT:
-			ad, nad, loss = TreeUtils.detComputeDupLostScore(genetree)
+			nad, ad, loss = TreeUtils.detComputeDupLostScore(genetree)
 			OUT.write(
 				'DUPLICATIONS : ' + str(ad + nad) + "\tLOSSES : " + str(loss) + "\n")
 			for ev in all_events:
@@ -184,10 +187,17 @@ if(runmode):
 				elif(ev.etype == 'L'):
 					OUT.write('    LOSSES: ' + ev.losses + "\n")
 
+			
+			header = '>tree %d ; (%d) mcost=%d - dup=%d'%(i, i, ad+nad+loss, ad+nad)
+			header += ' - lost=%d\n'%loss if args.losses else '\n'
+			nw_sav.append(header)
+			nw_sav.append(genewick+"\n")
+		
 		# export tree to orthoXML format
 		if(args.orthoxml):
 			TreeUtils.export_to_orthoXML(
-				genetree, handle=open(args.genetree + "_%dorthoxml"%i, 'w'))
+				genetree, handle=open(args.output + "_%dorthoxml"%i, 'w'))
+
 
 		################### TEST  purposes #######################
 
@@ -221,6 +231,10 @@ if(runmode):
 					lostcost += 1
 
 			print "Phylonode dup : ", dup2cost,  "Reconcile dup: ",  dupcost,  "Reconcile losses: ", lostcost
+
+	if args.reroot:
+		with open(args.output+".trees", 'w+') as g_IN:
+			g_IN.writelines(nw_sav)
 
 else:
 	TreeUtils.generate_smap(specietree, output=args.smapfile)

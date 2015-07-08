@@ -203,8 +203,7 @@ for gtree in gtrees:
 
         for i in range(len(results)):
 
-            polysolution = results[
-                i].get() if isexecuted[i] else [tree_list[i]]
+            polysolution = results[i].get() if isexecuted[i] else [tree_list[i]]
 
             # Copy, in order to not change the solution newick for export
             f_tree = polysolution[0].copy(method='simplecopy')

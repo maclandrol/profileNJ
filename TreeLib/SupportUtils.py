@@ -149,7 +149,7 @@ def read_trees(file):
     with open(file, 'r') as infile:
         for line in infile:
             if not (line.startswith('>')):
-                yield line
+                yield line.strip()
 
 
 def convert_to_phylip(filename, filetype, old_ext, rm=False):

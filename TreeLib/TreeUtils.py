@@ -90,12 +90,13 @@ def lcaMapping(geneTree, specieTree, multspeciename=True):
 
     smap = {}
     mapping = {}
-    try:
+
+    for node in geneTree.traverse(strategy="postorder"):
+        try:
         # Children are always visited before parent
         # So for an internal node, we see leaves
         # under an internal node before visiting that node
-
-        for node in geneTree.traverse(strategy="postorder"):
+        
             if not node.is_leaf():
 
                 # ML ADDED THIS
@@ -121,9 +122,9 @@ def lcaMapping(geneTree, specieTree, multspeciename=True):
                     s = smap[sname]
                 mapping[node] = s
 
-    except Exception as e:
-        print type(e)
-        print("Leaves without species")
+        except Exception as e:
+            print e
+            print("Leaves without species")
 
     return mapping
 
@@ -436,6 +437,8 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
         with open(smap, 'rU') if isinstance(smap, basestring) else smap as INPUT:
             for line in INPUT:
                 g, s = line.strip().split()
+                if ('*') in g and '.*' not in g:
+                    g = g.replace('*', '.*')
                 g_regex = re.compile(g, re.IGNORECASE)
                 regexmap[g_regex] = s
 
