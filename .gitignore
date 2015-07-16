@@ -9,11 +9,11 @@ profileNJ
 reconcile.py
 
 # Simulation data
-tests/*.mat
-tests/Simulation
-tests/matlab/*mat
-tests/matlab/data/*
-tests/matlab/images/*
+simuldata/*.mat
+simuldata/simulation/*
+simuldata/matlab/*mat
+simuldata/matlab/data/*
+simuldata/matlab/images/*
 
 # Distribution and packaging
 .Python
