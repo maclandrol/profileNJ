@@ -146,49 +146,6 @@ def get_lca(sptree, species):
     else:
         return A[M[j- 2**(k) +1, k]]
 
-
-def lcaMapping_old(geneTree, specieTree, multspeciename=True):
-
-    smap = {}
-    mapping = {}
-
-    for node in geneTree.traverse(strategy="postorder"):
-        try:
-        # Children are always visited before parent
-        # So for an internal node, we see leaves
-        # under an internal node before visiting that node
-        
-            if not node.is_leaf():
-
-                # ML ADDED THIS
-                species = set([mapping[n] for n in node.get_children()])
-
-                if(len(species) > 1):
-                    mapping[node] = specieTree.get_common_ancestor(species)
-                else:
-                    mapping[node] = list(species)[0]
-
-                if(multspeciename):
-                    node.add_features(
-                        species=",".join([x.name for x in species]))
-                else:
-                    node.add_features(species=mapping[node].name)
-
-            else:
-                sname = node.species
-                if not sname in smap:
-                    s = specieTree & node.species
-                    smap[sname] = s
-                else:
-                    s = smap[sname]
-                mapping[node] = s
-
-        except Exception as e:
-            print e
-            print("Leaves without species")
-
-    return mapping
-
 def lcaMapping(genetree, specietree, multspeciename=True):
     """LCA mapping between a genetree and a specietree
     :argument genetree: your genetree, All leave in the genetree should already have feature 'specie' (set_specie was called)
@@ -210,6 +167,8 @@ def lcaMapping(genetree, specietree, multspeciename=True):
                 # ML ADDED THIS
                 species = set([mapping[n] for n in node.get_children()])
                 if(len(species) > 1):
+                    # EN changed this
+                    # mapping[node] = specieTree.get_common_ancestor(species)
                     mapping[node] = get_lca(specietree, species)
                 else:
                     mapping[node] = list(species)[0]
