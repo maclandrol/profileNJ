@@ -168,7 +168,7 @@ def lcaMapping(genetree, specietree, multspeciename=True):
                 species = set([mapping[n] for n in node.get_children()])
                 if(len(species) > 1):
                     # EN changed this
-                    # mapping[node] = specieTree.get_common_ancestor(species)
+                    #  mapping[node] = specieTree.get_common_ancestor(species)
                     mapping[node] = get_lca(specietree, species)
                 else:
                     mapping[node] = list(species)[0]
