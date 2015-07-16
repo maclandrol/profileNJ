@@ -11,7 +11,7 @@ import re
 import string
 import sys
 import urllib2
-
+import numpy as np
 from TreeClass import TreeClass
 from collections import defaultdict as ddict
 from ete2 import Phyloxml
@@ -86,7 +86,68 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
             return getTreeFromPhyloxml(content)
 
 
-def lcaMapping(geneTree, specieTree, multspeciename=True):
+def lcapreprocess(tree):
+    """Make an euler tour of this tree"""
+    #root = tree.get_tree_root()
+    tree.add_features(depth=0)
+    tree.del_feature('euler_visit')
+    for node in tree.iter_descendants("levelorder"):
+        node.del_feature('euler_visit')
+        # can write this because parent are always visited before
+        node.add_features(depth=node.up.depth + 1)
+    node_visited = tree._euler_visit([])
+    #print tree.get_ascii(show_internal= True, attributes=['name', 'euler_visit', 'depth'])
+    # number of element in array
+    n = len(node_visited)
+    m = int(np.ceil(np.log2(n)))
+    rmq_array =  np.zeros((n, m), dtype=int)
+    for i in xrange(n):
+        rmq_array[i,0] = i
+    for j in xrange(1, m):
+        i = 0
+        while(i + 2**j < n-1 ):
+            if(node_visited[rmq_array[i,j-1]].depth < node_visited[rmq_array[(i+2**(j-1)), j-1]].depth):
+                rmq_array[i,j] = rmq_array[i,j-1]
+            else :
+                rmq_array[i,j] = rmq_array[i+2**(j-1), j-1]                 
+            i += 1
+
+    node_map = ddict()
+    for i in xrange(n):
+        cur_node = node_visited[i]
+        # bad practice
+        try:
+            node_map[cur_node] = min(node_map[cur_node], i)
+        except :
+            node_map[cur_node] = i
+
+    tree.add_features(lcaprocess=True)
+    tree.add_features(rmqmat=rmq_array)
+    tree.add_features(ind2node=node_visited)
+    tree.add_features(node2ind=node_map)
+
+
+def get_lca(sptree, species):
+    """This should be a faster lcamapping
+    species should be a list of node"""
+    if not sptree.has_feature('lcaprocess', True):
+        lcapreprocess(sptree)
+    A = sptree.ind2node
+    M = sptree.rmqmat
+    # using the biggest interval should return the lca of all species
+    s_index = sorted([sptree.node2ind[spec] for spec in species])
+    #print "s_index vaut :", s_index , " et taille est : ", len(sptree.node2ind), " et rmq est : ", sptree.rmqmat.shape
+    #print sptree.ind2node
+    i = s_index[0]
+    j = s_index[-1]
+    k = int(np.log2(j-i+1))
+    if (A[M[i, k]].depth<= A[M[j-2**(k) +1, k]].depth):
+        return A[M[i,k]]
+    else:
+        return A[M[j- 2**(k) +1, k]]
+
+
+def lcaMapping_old(geneTree, specieTree, multspeciename=True):
 
     smap = {}
     mapping = {}
@@ -128,17 +189,65 @@ def lcaMapping(geneTree, specieTree, multspeciename=True):
 
     return mapping
 
+def lcaMapping(genetree, specietree, multspeciename=True):
+    """LCA mapping between a genetree and a specietree
+    :argument genetree: your genetree, All leave in the genetree should already have feature 'specie' (set_specie was called)
+    :argument specietree: your specietree
+    :argument multspeciename: A flag to use in order to accept multi specie name at genetree internal node.
+    """
 
-def reconcile(geneTree=None, lcaMap=None, lost=False):
-    """Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
+    smap = {} #a dict that map specie name to specie node in specietree
+    mapping = {}
+    if not specietree.has_feature('lcaprocess', True):
+        lcapreprocess(specietree)
+
+    for node in genetree.traverse(strategy="postorder"):
+        try:
+        # Children are always visited before parent
+        # So for an internal node, we see leaves
+        # under an internal node before visiting that node
+            if not node.is_leaf():
+                # ML ADDED THIS
+                species = set([mapping[n] for n in node.get_children()])
+                if(len(species) > 1):
+                    mapping[node] = get_lca(specietree, species)
+                else:
+                    mapping[node] = list(species)[0]
+
+                if(multspeciename):
+                    node.add_features(
+                        species=",".join(sorted([x.name for x in species])))
+                else:
+                    node.add_features(species=mapping[node].name)
+
+            else:
+                sname = node.species
+                if not sname in smap:
+                    s = specietree & node.species
+                    smap[sname] = s
+                else:
+                    s = smap[sname]
+                mapping[node] = s
+
+        except Exception as e:
+            print e
+            print("%s without species" % node.name)
+            print node.get_ascii(attributes=['name', 'specie'])
+
+    genetree.add_features(lcaMap=mapping)
+    return mapping
+
+
+def reconcile(genetree=None, lcaMap=None, lost=False):
+    """Reconcile genetree topology to a specietree, using an adequate mapping obtained with lcaMapping.
     'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
     """
 
-    if(lcaMap is None or geneTree is None):
-        raise Exception("lcaMapping or geneTree not found")
+    if(lcaMap is None or genetree is None):
+        raise Exception("lcaMapping or genetree not found")
     else:
         lost_count = 1
-        for node in geneTree.traverse("levelorder"):
+        for node in genetree.traverse("levelorder"):
             node.add_features(type=TreeClass.SPEC)
             node.add_features(dup=False)
 
@@ -153,8 +262,8 @@ def reconcile(geneTree=None, lcaMap=None, lost=False):
                 if not (set(node.get_child_at(0).get_species()).intersection(set(node.get_child_at(1).get_species()))):
                     node.type = TreeClass.NAD
 
-        if (isinstance(lost, basestring) and lost.upper() == "YES") or lost:
-            for node in geneTree.traverse("postorder"):
+        if (isinstance(lost, basestring) and lost.upper() == "YES") or lost==True:
+            for node in genetree.traverse("postorder"):
                 children_list = node.get_children()
                 node_is_dup = (
                     node.type == TreeClass.NAD or node.type == TreeClass.AD)
@@ -228,43 +337,75 @@ def reconcile(geneTree=None, lcaMap=None, lost=False):
 
                         lost_count += 1
                         node.add_child(lostnode)
-    geneTree.add_features(reconciled=True)
+    genetree.add_features(reconciled=True)
 
 
-def ComputeDupLostScore(genetree=None):
+def ComputeDLScore(genetree, lcaMap=None):
     """
     Compute the reconciliation cost
     """
-    if(genetree is None or 'type' not in genetree.get_all_features()):
-        raise Exception("Your Genetree didn't undergoes reconciliation yet")
-    nadscore, adscore, lossscore = detComputeDupLostScore(genetree)
-    return (nadscore + adscore) * params.dupcost + lossscore * params.losscost
+    if not lcaMap and genetree.has_feature('lcaMap'):
+        lcaMap = genetree.lcaMap
+    dup_score = 0
+    loss_score = 0
+    if lcaMap:
+        for node in genetree.traverse("levelorder"):
+            node_is_dup = 0
+            child_map = [lcaMap[child] for child in node.get_children()]
+            if (lcaMap[node] in child_map):
+                node_is_dup = np.mean([params.getdup(l.name) for l in lcaMap[node].get_leaves()])
+                dup_score += node_is_dup
+            
+            for child in node.get_children():
+                if node_is_dup:
+                    child_map = [lcaMap[node]]
+                else:
+                    child_map = lcaMap[node].get_children()
+                curr_node = lcaMap[child]
+                while(curr_node not in child_map):
+                    lost_nodes = set(curr_node.up.get_leaves()) - set(curr_node.get_leaves())
+                    loss_score += np.mean([params.getloss(l.name) for l in lost_nodes]) 
+                    curr_node = curr_node.up 
 
+    else :
+        raise Exception("LcaMapping not provided !!")
 
-def detComputeDupLostScore(genetree):
+    return dup_score, loss_score
+
+def detComputeDLScore(genetree, lcaMap=None):
     """
-    Compute the duplication and lost cost
+    Compute the number of duplication and the number of losses
     """
-    if(genetree is None or 'type' not in genetree.get_all_features()):
-        raise Exception("Your Genetree didn't undergoes reconciliation yet")
-    nad = 0
-    ad = 0
     loss = 0
     dup = 0
-    for node in genetree.traverse():
-        if node.has_feature('type'):
-            if(node.type == TreeClass.NAD):
-                nad += 1
-            elif node.type == TreeClass.AD:
-                ad += 1
-            elif node.type == TreeClass.LOST:
-                loss += 1
-        if(node.has_feature(dup, name=True)):
-            dup += 1
 
-    if (dup > 0 and (ad + nad) < 0):
-        ad = dup
-    return (nad, ad, loss)
+    if not lcaMap and genetree.has_feature('lcaMap'):
+        lcaMap = genetree.lcaMap
+
+    if lcaMap:  
+        for node in genetree.traverse("levelorder"):
+            if (lcaMap[node] in [lcaMap[child] for child in node.get_children()]):
+                dup += 1
+            if(node.up):
+                parent = node.up
+                parent_is_dup = 0
+                if(lcaMap[parent] in [lcaMap[child] for child in parent.get_children()]):
+                    parent_is_dup = 1
+                loss += (lcaMap[node].depth - lcaMap[parent].depth - 1 + parent_is_dup)
+        print loss
+    
+    else :
+        if(genetree is None or 'type' not in genetree.get_all_features()):
+            raise Exception("LcaMapping not found and your Genetree didn't undergo reconciliation yet")
+
+        for node in genetree.traverse():
+            if node.has_feature('type'):
+                if(node.type == TreeClass.NAD or node.type == TreeClass.AD ):
+                    dup += 1
+                elif node.type == TreeClass.LOST:
+                    loss += 1
+
+    return dup, loss
 
 
 def CleanFeatures(tree=None, features=[]):
@@ -279,13 +420,13 @@ def CleanFeatures(tree=None, features=[]):
 
 
 def binary_recon_score(node, lcamap):
-    """Reconcile genetree topology to a specieTree, using an adequate mapping obtained with lcaMapping.
+    """Reconcile genetree topology to a specietree, using an adequate mapping obtained with lcaMapping.
     'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
     """
     dup = 0
     lost = 0
     if(lcamap is None or node is None):
-        raise Exception("lcaMapping or geneTree not found")
+        raise Exception("lcaMapping or genetree not found")
     else:
         # print node.name , node.species, " and children name ",
         # node.get_children_name()," and children species ",

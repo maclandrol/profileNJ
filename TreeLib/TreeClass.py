@@ -169,6 +169,19 @@ class TreeClass(TreeNode):
         descendant = self.translate_nodes(descendant)
         descendants = self.get_descendants()
         return True if len(list(filter(lambda x: x in descendants, descendant))) == len(descendant) else False
+             
+
+    def _euler_visit(self, node_visited=[]):
+        """Visit a node"""
+        if self:
+            node_visited.append(self)
+            self.add_features(euler_visit=True)
+            for child in self.get_children():
+                if( not child.has_feature('euler_visit')):
+                    node_visited = child._euler_visit(node_visited)
+        if (self.up):
+            node_visited.append(self.up)
+        return node_visited
 
     def translate_nodes(self, *target_nodes):
         """Translate list of node name into Node"""

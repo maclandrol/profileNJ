@@ -174,9 +174,9 @@ if(runmode):
 		all_events = genetree.get_events(include_lost=args.losses)
 
 		with open(events_output, 'w') as OUT:
-			nad, ad, loss = TreeUtils.detComputeDupLostScore(genetree)
+			dup, loss = TreeUtils.detComputeDLScore(genetree)
 			OUT.write(
-				'DUPLICATIONS : ' + str(ad + nad) + "\tLOSSES : " + str(loss) + "\n")
+				'DUPLICATIONS : ' + str(dup) + "\tLOSSES : " + str(loss) + "\n")
 			for ev in all_events:
 				if(ev.etype == 'S'):
 					OUT.write('    ORTHOLOGY RELATIONSHIP: ' + ', '.join(

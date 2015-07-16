@@ -52,12 +52,12 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
             # by default, all the position in the table are 0
             i = zeropos - 1
             while(i >= 0):
-                cost_table[n, i] = cost_table[n, i + 1] + params.dupcost
+                cost_table[n, i] = cost_table[n, i + 1] + params.getdup(node.name)
                 path_table[n, i] = DUP
                 i -= 1
             i = zeropos + 1
             while(i < max_y):
-                cost_table[n, i] = cost_table[n, i - 1] + params.losscost
+                cost_table[n, i] = cost_table[n, i - 1] + params.getdup(node.name)
                 path_table[n, i] = LOST
                 i += 1
             # We should take into account the special case here
@@ -83,27 +83,25 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
             for pos in minpos[0]:
                 i = pos - 1
                 while(i >= 0):
-                    if(cost_table[n, i] == cost_table[n, i + 1] + params.dupcost):
+                    if(cost_table[n, i] == cost_table[n, i + 1] + params.getdup(node.name)):
                         if DUP not in path_table[n, i]:
                             path_table[n, i] += DUP
-                    elif (cost_table[n, i] > cost_table[n, i + 1] + params.dupcost):
+                    elif (cost_table[n, i] > cost_table[n, i + 1] + params.getdup(node.name)):
                         cost_table[n, i] = min(
-                            cost_table[n, i + 1] + params.dupcost, cost_table[n, i])
+                            cost_table[n, i + 1] + params.getdup(node.name), cost_table[n, i])
                         path_table[n, i] = DUP
                     i -= 1
 
                 i = pos + 1
                 while(i < max_y):
-                    if(cost_table[n, i] == cost_table[n, i - 1] + params.losscost):
+                    if(cost_table[n, i] == cost_table[n, i - 1] + params.getloss(node.name)):
                         if LOST not in path_table[n, i]:
                             path_table[n, i] += LOST
-                    elif (cost_table[n, i] > cost_table[n, i - 1] + params.losscost):
+                    elif (cost_table[n, i] > cost_table[n, i - 1] + params.getloss(node.name)):
                         cost_table[n, i] = min(
-                            cost_table[n, i - 1] + params.losscost, cost_table[n, i])
+                            cost_table[n, i - 1] + params.getloss(node.name), cost_table[n, i])
                         path_table[n, i] = LOST
                     i += 1
-
-            # Should also consider a special case for filling the table here
 
     # find the shape of the cost_table
     xsize, ysize = cost_table.shape

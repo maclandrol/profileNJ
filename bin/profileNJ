@@ -90,16 +90,14 @@ parser.add_argument('-gl', '--gLine', type=int,  dest='gline',
                     help="Index of the line in the gene tree file that corresponds to the current gene tree, starting by 1. When the flag batch is used, each line of gFile will be used as genetree", default=1)
 parser.add_argument('-r', '--reroot', choices=reroot_option, dest='reroot', default='none',
                     help='''C|Enable/Disable root mode.\n\tnone: disable reroot mode, correct the input polytomies and return the result.\n\tall: enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.\n\tbest: enable reroot mode, rerrot the genetree at each node and return all polytomy corrected version for the rooted tree with the smallest Dup-Lost score (First one if not unique).\n\n''')
-parser.add_argument('--cost', type=float, nargs=2,  dest='costdl',
-                    help="D L : 2 float values, duplication and loss cost in this order")
 parser.add_argument('-n', '-nf', '--nnflag', action='store_true',
                     dest='nflag', help="Treat negative distances as large distances.")
 parser.add_argument('--sep', dest='gene_sep',
                     help="Gene-Specie separator for each leaf name in the genetree. PolytomySolver will guess by default in a very limited list of special character. ***';;' is not a valid separator for the newick format! IF YOUR SEPARATOR IS \";;\", DON'T USE THIS FLAG. THE PROGRAM WILL AUTOMATICALLY GUESS. ***")
 parser.add_argument('--nflagval', type=float, dest='mval', default=1e305,
                     help="Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue.")
-parser.add_argument('-c', '--cluster', choices=['nj', 'upgma'], default='nj',
-                    help="C|Set the clustering methods.\n\tupgma: UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.\n\tnj: neighbor joining clustering method, (slower).\n\n")
+parser.add_argument('-c', '--cluster', choices=['nj', 'upgma', 'rand'], default='rand',
+                    help="C|Set the clustering methods.\n\tupgma: UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.\n\tnj: neighbor joining clustering method, (slower).\n\trand: A random clustering method (should be faster than upgma).\n\n")
 parser.add_argument('--slimit', type=int, dest="sol_limit", default=30,
                     help="Set the max number of solution per genetree. Possible values are -1 to return all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is computationally expensive.")
 parser.add_argument('--plimit', type=int, default=-1,  dest="path_limit",
@@ -117,11 +115,47 @@ parser.add_argument('--parallelize', dest='parallele',
 parser.add_argument('--firstbest', dest='firstbest',  action='store_true',
                     help="Only output solution for the first root with the best dl score.")
 
+cost_group = parser.add_mutually_exclusive_group(required=False)
+cost_group.add_argument('--cost', type=float, nargs=2,  dest='costdl',
+                    help="D L : 2 float values, duplication and loss cost in this order")
+cost_group.add_argument('--scost', dest='scostdl', type=argparse.FileType('r'), 
+                    help="A file which contain the DL cost for each species. If a specie is not found in this list, its DL cost will be set to default value (1)")
+ 
+
+
 
 args = parser.parse_args()
 
+# Get list of species
+sp = TreeClass(args.specietree.name)
+spleave = sp.get_leaf_names()
+
+# dup and loss cost
+dupcost = {}
+losscost = {}
+
+# if user prefer a 2 input cost
 if(args.costdl):
-    params.set(args.costdl[0], args.costdl[1])
+    for spl in spleave:
+        dupcost[spl] =  args.costdl[0]
+        losscost[spl] =  args.costdl[1]
+
+# a dlcost file is provided
+elif(args.sdlcost)
+    for dline in args.sdlcost:
+        try:
+            sp, spdup, sploss = dline.strip().split()
+            dupcost[sp] = float(spdup)
+            losscost[sp] = float(sploss)
+        except :
+            pass
+
+# set any species without a match to default dlcost : 1, 1
+for spl in spleave :
+    dupcost[spl] = dupcost.get(spl,1)
+    losscost[spl] = losscost.get(spl,1)
+
+params.set(dupcost, losscost)
 
 if(args.gline < 0):
     raise Exception("gLine must be > 0")
@@ -209,7 +243,7 @@ for gtree in gtrees:
             f_tree = polysolution[0].copy(method='simplecopy')
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
             TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
-            dl_cost = TreeUtils.ComputeDupLostScore(f_tree)
+            dl_cost = TreeUtils.ComputeDLScore(f_tree)
 
             outlog.write('>Tree %s; m_cost=%s' % (i + 1, dl_cost))
             for tree in polysolution:
@@ -234,7 +268,7 @@ for gtree in gtrees:
             f_tree = polysolution[0].copy(method='simplecopy')
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
             TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
-            dl_cost = TreeUtils.ComputeDupLostScore(f_tree)
+            dl_cost = TreeUtils.ComputeDLScore(f_tree)
 
             outlog.write('>Tree %s; m_cost=%s' % (count, dl_cost))
             for tree in polysolution:
