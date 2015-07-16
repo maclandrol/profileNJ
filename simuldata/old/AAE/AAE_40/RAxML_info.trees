@@ -1,0 +1,175 @@
+
+
+This is RAxML version 8.1.2 released by Alexandros Stamatakis on August 5 2014.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+
+Alignment has 316 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 28.31%
+
+RAxML computation of per-site log likelihoods
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heteorgeneity, ML estimate of alpha-parameter
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 316
+Name: No Name Provided
+DataType: AA
+Substitution Matrix: AUTO
+Using fixed base frequencies
+
+
+
+
+RAxML was called as follows:
+
+raxmlHPC-PTHREADS-SSE3 -f G -z AAE_40/AAE.trees -s AAE_clean_mafft_trim.ali -m PROTGAMMAAUTO -n trees -w /home/manu/Dropbox/Stage_Diro/Tree/AAE -T 4 
+
+
+
+
+Found 19 trees in File AAE_40/AAE.trees
+
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30087.405815
+
+
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30060.208638
+
+
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30060.127184
+
+
+Tree 0: -30060.125939
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.831764
+
+
+Tree 1: -30061.826526
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30060.398242
+
+
+Tree 2: -30060.395785
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.828996
+
+
+Tree 3: -30061.826484
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30057.627280
+
+
+Tree 4: -30057.613259
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.836374
+
+
+Tree 5: -30061.826588
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30057.625827
+
+
+Tree 6: -30057.613245
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.838310
+
+
+Tree 7: -30061.826618
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30059.302389
+
+
+Tree 8: -30059.299636
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.828569
+
+
+Tree 9: -30061.826491
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.826542
+
+
+Tree 10: -30061.826477
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30057.627335
+
+
+Tree 11: -30057.613263
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30059.305535
+
+
+Tree 12: -30059.299681
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.828183
+
+
+Tree 13: -30061.826493
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.826540
+
+
+Tree 14: -30061.826477
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.826547
+
+
+Tree 15: -30061.826477
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.826532
+
+
+Tree 16: -30061.826477
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -30061.826531
+
+
+Tree 17: -30061.826477
+Automatic protein model assignment algorithm:
+
+	Partition: 0 best-scoring AA model: WAG likelihood -29993.415645
+
+
+Tree 18: -29993.405640
+
+
+Time for Optimization of per-site log likelihoods 2339.108781
+Per-site Log Likelihoods written to File /home/manu/Dropbox/Stage_Diro/Tree/AAE/RAxML_perSiteLLs.trees in Tree-Puzzle format
+Execution information file written to :  /home/manu/Dropbox/Stage_Diro/Tree/AAE/RAxML_info.trees

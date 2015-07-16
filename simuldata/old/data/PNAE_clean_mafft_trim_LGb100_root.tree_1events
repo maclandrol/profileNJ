@@ -1,0 +1,223 @@
+DUPLICATIONS : 85	LOSSES : 102
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, rha_maker-superscaffold25-snap-gene-4.32-mRNA-1, tom_Solyc01g108750.2.1, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, tom_Solyc03g044820.2.1, rha_maker-superscaffold25-snap-gene-4.33-mRNA-1, cra_locus_12491_iso_5_len_1678_ver_3, cra_locus_2499_iso_10_len_1427_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, rsa_locus_11750_iso_8_len_2213_ver_2, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, rha_maker-superscaffold4-snap-gene-3.49-mRNA-1, tom_Solyc01g108810.2.1, Cc05_g04650, Cc10_g13790, Thecc1EG000531t1, rsa_locus_9258_iso_6_len_1376_ver_2, tom_Solyc02g065260.2.1, Thecc1EG000546t1, cra_locus_15023_iso_5_len_467_ver_3, Cc05_g04320, tom_Solyc03g044790.2.1, rsa_locus_8562_iso_1_len_997_ver_2, cra_locus_7993_iso_3_len_932_ver_3, cra_locus_28805_iso_1_len_840_ver_3, tom_Solyc09g014970.2.1, Cc05_g04640, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1, tom_Solyc01g108680.2.1, cra_locus_11472_iso_1_len_917_ver_3, Thecc1EG000542t1, rha_maker-superscaffold8-snap-gene-52.19-mRNA-1, cra_locus_8260_iso_3_len_1134_ver_3, Thecc1EG000540t1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, tom_Solyc07g054880.2.1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3, rha_maker-superscaffold25-snap-gene-4.31-mRNA-1, Thecc1EG000539t1, tom_Solyc01g108740.2.1, tom_Solyc01g108820.1.1, tom_Solyc03g044810.1.1, rsa_locus_7002_iso_1_len_995_ver_2, tom_Solyc02g065240.2.1, rsa_locus_9056_iso_7_len_3430_ver_2, rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, rsa_locus_13134_iso_2_len_1179_ver_2, rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, cra_locus_3295_iso_2_len_1474_ver_3, tom_Solyc07g054900.2.1, Cc07_g05600, tom_Solyc02g065270.1.1, rsa_locus_2769_iso_1_len_1133_ver_2, cra_locus_23787_iso_4_len_719_ver_3, tom_Solyc03g044800.1.1, Cc00_g14510, Thecc1EG000533t1, Thecc1EG000532t1, Cc01_g05420, rsa_locus_4876_iso_4_len_1343_ver_2, Cc07_g05610, Cc07_g05590, Cc00_g13270, cra_locus_13670_iso_3_len_913_ver_3, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1, cra_locus_40743_iso_1_len_869_ver_3, Thecc1EG000534t1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Thecc1EG045571t1, tom_Solyc03g044740.2.1, rsa_locus_3656_iso_4_len_1009_ver_2, Thecc1EG000547t1, rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, tom_Solyc02g065250.1.1, tom_Solyc01g108730.1.1, cra_locus_11434_iso_2_len_3272_ver_3, Thecc1EG006988t1, cra_locus_15023_iso_4_len_555_ver_3, Thecc1EG000544t1, cra_locus_5068_iso_4_len_556_ver_3, rsa_locus_44186_iso_1_len_493_ver_2, Cc02_g18340, Thecc1EG006987t1, tom_Solyc01g108780.2.1, cra_locus_64080_iso_1_len_406_ver_3, rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, Thecc1EG000538t1, tom_Solyc02g065280.2.1, cra_locus_24001_iso_2_len_1142_ver_3, tom_Solyc03g070380.2.1, Cc01_g05440, Cc05_g04670, Cc00_g14520, rsa_locus_27259_iso_1_len_1034_ver_2, tom_Solyc01g108830.1.1, Thecc1EG000543t1    <====>    cra_locus_2887_iso_2_len_1005_ver_3, tom_Solyc02g089060.2.1, tom_Solyc06g064870.2.1, rsa_locus_5984_iso_7_len_1065_ver_2, rsa_locus_16260_iso_4_len_1672_ver_2, Cc07_g04340, rha_maker-superscaffold17-snap-gene-3.28-mRNA-1, tom_Solyc05g012180.2.1, Thecc1EG018818t1, rha_maker-superscaffold13-snap-gene-80.24-mRNA-1, Cc10_g09460, Thecc1EG011516t2, Thecc1EG028840t2, cra_locus_13312_iso_1_len_1768_ver_3, Thecc1EG042298t1, rha_maker-superscaffold21-snap-gene-67.23-mRNA-1, rsa_locus_42435_iso_1_len_802_ver_2, Thecc1EG045570t1, cra_locus_2670_iso_4_len_1722_ver_3, rsa_locus_3479_iso_2_len_1992_ver_2
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, tom_Solyc01g108750.2.1, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, tom_Solyc03g044820.2.1, cra_locus_12491_iso_5_len_1678_ver_3, cra_locus_2499_iso_10_len_1427_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, tom_Solyc01g108810.2.1, Cc05_g04650, Cc10_g13790, Thecc1EG000531t1, rsa_locus_9258_iso_6_len_1376_ver_2, tom_Solyc02g065260.2.1, Thecc1EG000546t1, cra_locus_15023_iso_5_len_467_ver_3, Cc05_g04320, tom_Solyc03g044790.2.1, rsa_locus_8562_iso_1_len_997_ver_2, cra_locus_7993_iso_3_len_932_ver_3, cra_locus_28805_iso_1_len_840_ver_3, tom_Solyc09g014970.2.1, Cc05_g04640, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1, tom_Solyc01g108680.2.1, cra_locus_11472_iso_1_len_917_ver_3, Thecc1EG000542t1, rha_maker-superscaffold8-snap-gene-52.19-mRNA-1, cra_locus_8260_iso_3_len_1134_ver_3, Thecc1EG000540t1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, tom_Solyc07g054880.2.1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3, Thecc1EG000539t1, tom_Solyc01g108740.2.1, tom_Solyc01g108820.1.1, tom_Solyc03g044810.1.1, rsa_locus_7002_iso_1_len_995_ver_2, tom_Solyc02g065240.2.1, rsa_locus_9056_iso_7_len_3430_ver_2, rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, rsa_locus_13134_iso_2_len_1179_ver_2, rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, cra_locus_3295_iso_2_len_1474_ver_3, tom_Solyc07g054900.2.1, Cc07_g05600, tom_Solyc02g065270.1.1, rsa_locus_2769_iso_1_len_1133_ver_2, cra_locus_23787_iso_4_len_719_ver_3, tom_Solyc03g044800.1.1, Cc00_g14510, Thecc1EG000533t1, Thecc1EG000532t1, Cc01_g05420, rsa_locus_4876_iso_4_len_1343_ver_2, Cc07_g05610, Cc07_g05590, Cc00_g13270, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1, cra_locus_40743_iso_1_len_869_ver_3, Thecc1EG000534t1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Thecc1EG045571t1, tom_Solyc03g044740.2.1, rsa_locus_3656_iso_4_len_1009_ver_2, Thecc1EG000547t1, rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, tom_Solyc02g065250.1.1, tom_Solyc01g108730.1.1, cra_locus_11434_iso_2_len_3272_ver_3, Thecc1EG006988t1, cra_locus_15023_iso_4_len_555_ver_3, Thecc1EG000544t1, cra_locus_5068_iso_4_len_556_ver_3, rsa_locus_44186_iso_1_len_493_ver_2, Cc02_g18340, Thecc1EG006987t1, tom_Solyc01g108780.2.1, cra_locus_64080_iso_1_len_406_ver_3, rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, Thecc1EG000538t1, tom_Solyc02g065280.2.1, cra_locus_24001_iso_2_len_1142_ver_3, tom_Solyc03g070380.2.1, Cc01_g05440, Cc05_g04670, Cc00_g14520, rsa_locus_27259_iso_1_len_1034_ver_2, tom_Solyc01g108830.1.1, Thecc1EG000543t1    <====>    rha_maker-superscaffold4-snap-gene-3.49-mRNA-1, rha_maker-superscaffold25-snap-gene-4.32-mRNA-1, cra_locus_13670_iso_3_len_913_ver_3, rha_maker-superscaffold25-snap-gene-4.31-mRNA-1, rsa_locus_11750_iso_8_len_2213_ver_2, rha_maker-superscaffold25-snap-gene-4.33-mRNA-1
+    PARALOGY RELATIONSHIP: cra_locus_2887_iso_2_len_1005_ver_3, Thecc1EG018818t1, Thecc1EG042298t1, rha_maker-superscaffold21-snap-gene-67.23-mRNA-1, Thecc1EG045570t1, rsa_locus_3479_iso_2_len_1992_ver_2    <====>    tom_Solyc02g089060.2.1, tom_Solyc06g064870.2.1, rsa_locus_5984_iso_7_len_1065_ver_2, rsa_locus_16260_iso_4_len_1672_ver_2, Cc07_g04340, tom_Solyc05g012180.2.1, cra_locus_13312_iso_1_len_1768_ver_3, rha_maker-superscaffold13-snap-gene-80.24-mRNA-1, Cc10_g09460, Thecc1EG011516t2, rha_maker-superscaffold17-snap-gene-3.28-mRNA-1, Thecc1EG028840t2, rsa_locus_42435_iso_1_len_802_ver_2, cra_locus_2670_iso_4_len_1722_ver_3
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, tom_Solyc03g044800.1.1, rsa_locus_9258_iso_6_len_1376_ver_2, rsa_locus_9056_iso_7_len_3430_ver_2, tom_Solyc03g044820.2.1, Thecc1EG000533t1, Thecc1EG045571t1, cra_locus_12491_iso_5_len_1678_ver_3, Cc07_g05590, cra_locus_15023_iso_4_len_555_ver_3, cra_locus_15023_iso_5_len_467_ver_3, rsa_locus_8562_iso_1_len_997_ver_2, Thecc1EG000531t1, tom_Solyc03g044810.1.1, Thecc1EG000532t1, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1, tom_Solyc03g044790.2.1, cra_locus_11434_iso_2_len_3272_ver_3    <====>    rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, tom_Solyc02g065260.2.1, Thecc1EG000534t1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, cra_locus_8260_iso_3_len_1134_ver_3, rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1, tom_Solyc01g108750.2.1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, Cc05_g04320, rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rsa_locus_13134_iso_2_len_1179_ver_2, rsa_locus_3656_iso_4_len_1009_ver_2, Cc05_g04640, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, Thecc1EG000547t1, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, cra_locus_7993_iso_3_len_932_ver_3, cra_locus_28805_iso_1_len_840_ver_3, tom_Solyc02g065250.1.1, cra_locus_2499_iso_10_len_1427_ver_3, tom_Solyc01g108730.1.1, Cc05_g04650, cra_locus_3295_iso_2_len_1474_ver_3, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, Cc07_g05600, tom_Solyc02g065270.1.1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, Thecc1EG006988t1, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1, Thecc1EG000544t1, tom_Solyc01g108680.2.1, cra_locus_11472_iso_1_len_917_ver_3, Thecc1EG000546t1, Thecc1EG000542t1, rha_maker-superscaffold8-snap-gene-52.19-mRNA-1, Cc07_g05610, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, Cc10_g13790, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE, Thecc1EG000540t1, cra_locus_5068_iso_4_len_556_ver_3, rsa_locus_44186_iso_1_len_493_ver_2, Cc02_g18340, cra_locus_23787_iso_4_len_719_ver_3, rsa_locus_2769_iso_1_len_1133_ver_2, Thecc1EG006987t1, tom_Solyc07g054880.2.1, tom_Solyc01g108780.2.1, Cc01_g05420, rsa_locus_4876_iso_4_len_1343_ver_2, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, cra_locus_64080_iso_1_len_406_ver_3, tom_Solyc01g108810.2.1, Thecc1EG000538t1, tom_Solyc02g065280.2.1, cra_locus_24001_iso_2_len_1142_ver_3, Cc00_g13270, tom_Solyc03g044740.2.1, cra_locus_24489_iso_1_len_1281_ver_3, cra_locus_40743_iso_1_len_869_ver_3, Thecc1EG000539t1, rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, tom_Solyc03g070380.2.1, Cc01_g05440, tom_Solyc01g108740.2.1, tom_Solyc01g108820.1.1, Cc05_g04670, Cc00_g14520, rsa_locus_27259_iso_1_len_1034_ver_2, rsa_locus_7002_iso_1_len_995_ver_2, tom_Solyc01g108830.1.1, tom_Solyc02g065240.2.1, Thecc1EG000543t1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold21-snap-gene-67.23-mRNA-1, Thecc1EG045570t1, Thecc1EG018818t1, Thecc1EG042298t1    <====>    cra_locus_2887_iso_2_len_1005_ver_3, rsa_locus_3479_iso_2_len_1992_ver_2
+    PARALOGY RELATIONSHIP: tom_Solyc06g064870.2.1, rsa_locus_5984_iso_7_len_1065_ver_2, Cc10_g09460, rha_maker-superscaffold17-snap-gene-3.28-mRNA-1, Thecc1EG028840t2, cra_locus_2670_iso_4_len_1722_ver_3    <====>    tom_Solyc02g089060.2.1, rsa_locus_16260_iso_4_len_1672_ver_2, Cc07_g04340, tom_Solyc05g012180.2.1, cra_locus_13312_iso_1_len_1768_ver_3, rha_maker-superscaffold13-snap-gene-80.24-mRNA-1, Thecc1EG011516t2, rsa_locus_42435_iso_1_len_802_ver_2
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, tom_Solyc03g044800.1.1, rsa_locus_9258_iso_6_len_1376_ver_2, rsa_locus_9056_iso_7_len_3430_ver_2, tom_Solyc03g044820.2.1, Thecc1EG045571t1, cra_locus_12491_iso_5_len_1678_ver_3, Cc07_g05590, cra_locus_15023_iso_4_len_555_ver_3, cra_locus_15023_iso_5_len_467_ver_3, rsa_locus_8562_iso_1_len_997_ver_2, tom_Solyc03g044810.1.1, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1, tom_Solyc03g044790.2.1, cra_locus_11434_iso_2_len_3272_ver_3    <====>    Thecc1EG000531t1, Thecc1EG000533t1, Thecc1EG000532t1
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1, tom_Solyc01g108750.2.1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, tom_Solyc01g108730.1.1, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, Thecc1EG006988t1, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1, tom_Solyc01g108680.2.1, cra_locus_11472_iso_1_len_917_ver_3, rha_maker-superscaffold8-snap-gene-52.19-mRNA-1, Cc02_g18340, rsa_locus_2769_iso_1_len_1133_ver_2, Thecc1EG006987t1, tom_Solyc07g054880.2.1, tom_Solyc01g108780.2.1, tom_Solyc01g108810.2.1, cra_locus_24489_iso_1_len_1281_ver_3, rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, tom_Solyc01g108740.2.1, tom_Solyc01g108820.1.1, rsa_locus_27259_iso_1_len_1034_ver_2, tom_Solyc01g108830.1.1    <====>    rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, tom_Solyc02g065260.2.1, Thecc1EG000534t1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Thecc1EG000546t1, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, Cc05_g04320, rsa_locus_13134_iso_2_len_1179_ver_2, rsa_locus_3656_iso_4_len_1009_ver_2, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, Thecc1EG000547t1, cra_locus_7993_iso_3_len_932_ver_3, cra_locus_28805_iso_1_len_840_ver_3, tom_Solyc02g065250.1.1, Cc05_g04650, cra_locus_3295_iso_2_len_1474_ver_3, Cc07_g05600, tom_Solyc02g065270.1.1, Cc05_g04640, Thecc1EG000544t1, cra_locus_2499_iso_10_len_1427_ver_3, cra_locus_23787_iso_4_len_719_ver_3, Thecc1EG000542t1, cra_locus_8260_iso_3_len_1134_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, Thecc1EG000540t1, cra_locus_5068_iso_4_len_556_ver_3, rsa_locus_44186_iso_1_len_493_ver_2, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE, Cc01_g05420, rsa_locus_4876_iso_4_len_1343_ver_2, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, cra_locus_64080_iso_1_len_406_ver_3, Cc07_g05610, Thecc1EG000538t1, tom_Solyc02g065280.2.1, cra_locus_24001_iso_2_len_1142_ver_3, Cc00_g13270, tom_Solyc03g044740.2.1, Thecc1EG000539t1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, tom_Solyc03g070380.2.1, Cc01_g05440, Cc10_g13790, Cc05_g04670, Cc00_g14520, rsa_locus_7002_iso_1_len_995_ver_2, cra_locus_40743_iso_1_len_869_ver_3, tom_Solyc02g065240.2.1, Thecc1EG000543t1
+    LOSSES: Thecc
+    ORTHOLOGY RELATIONSHIP: Thecc1EG045570t1, Thecc1EG018818t1, Thecc1EG042298t1    <====>    rha_maker-superscaffold21-snap-gene-67.23-mRNA-1
+    PARALOGY RELATIONSHIP: Thecc1EG028840t2, rha_maker-superscaffold17-snap-gene-3.28-mRNA-1, rsa_locus_5984_iso_7_len_1065_ver_2, cra_locus_2670_iso_4_len_1722_ver_3, Cc10_g09460    <====>    tom_Solyc06g064870.2.1
+    PARALOGY RELATIONSHIP: Thecc1EG011516t2, tom_Solyc02g089060.2.1, tom_Solyc05g012180.2.1, Cc07_g04340, rsa_locus_42435_iso_1_len_802_ver_2    <====>    cra_locus_13312_iso_1_len_1768_ver_3, rsa_locus_16260_iso_4_len_1672_ver_2, rha_maker-superscaffold13-snap-gene-80.24-mRNA-1
+    PARALOGY RELATIONSHIP: rsa_locus_9258_iso_6_len_1376_ver_2, rsa_locus_9056_iso_7_len_3430_ver_2, Thecc1EG045571t1, cra_locus_12491_iso_5_len_1678_ver_3, cra_locus_15023_iso_4_len_555_ver_3, cra_locus_15023_iso_5_len_467_ver_3, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1    <====>    rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, tom_Solyc03g044800.1.1, cra_locus_11434_iso_2_len_3272_ver_3, rsa_locus_8562_iso_1_len_997_ver_2, Cc07_g05590, tom_Solyc03g044810.1.1, tom_Solyc03g044820.2.1, tom_Solyc03g044790.2.1
+    PARALOGY RELATIONSHIP: tom_Solyc01g108780.2.1, tom_Solyc01g108810.2.1, tom_Solyc01g108730.1.1, rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, tom_Solyc01g108750.2.1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3, Thecc1EG006987t1, Cc02_g18340, tom_Solyc01g108740.2.1, Thecc1EG006988t1, tom_Solyc01g108820.1.1, tom_Solyc01g108680.2.1, rsa_locus_2769_iso_1_len_1133_ver_2, tom_Solyc07g054880.2.1, tom_Solyc01g108830.1.1, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1    <====>    rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1, rsa_locus_27259_iso_1_len_1034_ver_2, cra_locus_11472_iso_1_len_917_ver_3, rha_maker-superscaffold8-snap-gene-52.19-mRNA-1
+    PARALOGY RELATIONSHIP: cra_locus_28805_iso_1_len_840_ver_3, cra_locus_64080_iso_1_len_406_ver_3, Thecc1EG000546t1, tom_Solyc03g044740.2.1, Thecc1EG000544t1, Thecc1EG000547t1, rsa_locus_7002_iso_1_len_995_ver_2    <====>    rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, tom_Solyc02g065260.2.1, Thecc1EG000534t1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Cc05_g04320, rsa_locus_13134_iso_2_len_1179_ver_2, rsa_locus_3656_iso_4_len_1009_ver_2, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, cra_locus_7993_iso_3_len_932_ver_3, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, tom_Solyc02g065250.1.1, Cc05_g04650, cra_locus_3295_iso_2_len_1474_ver_3, Cc07_g05600, tom_Solyc02g065270.1.1, Cc05_g04640, cra_locus_2499_iso_10_len_1427_ver_3, cra_locus_23787_iso_4_len_719_ver_3, Thecc1EG000542t1, cra_locus_8260_iso_3_len_1134_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, Thecc1EG000540t1, cra_locus_5068_iso_4_len_556_ver_3, rsa_locus_44186_iso_1_len_493_ver_2, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE, Cc01_g05420, rsa_locus_4876_iso_4_len_1343_ver_2, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, Cc07_g05610, Thecc1EG000538t1, tom_Solyc02g065280.2.1, cra_locus_24001_iso_2_len_1142_ver_3, Cc00_g13270, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, Thecc1EG000539t1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, tom_Solyc03g070380.2.1, Cc01_g05440, Cc10_g13790, Cc05_g04670, Cc00_g14520, cra_locus_40743_iso_1_len_869_ver_3, tom_Solyc02g065240.2.1, Thecc1EG000543t1
+    LOSSES: tom
+    PARALOGY RELATIONSHIP: Thecc1EG045570t1    <====>    Thecc1EG018818t1, Thecc1EG042298t1
+    LOSSES: Thecc
+    ORTHOLOGY RELATIONSHIP: Thecc1EG028840t2    <====>    rha_maker-superscaffold17-snap-gene-3.28-mRNA-1, rsa_locus_5984_iso_7_len_1065_ver_2, cra_locus_2670_iso_4_len_1722_ver_3, Cc10_g09460
+    PARALOGY RELATIONSHIP: Thecc1EG011516t2, tom_Solyc02g089060.2.1, tom_Solyc05g012180.2.1, Cc07_g04340    <====>    rsa_locus_42435_iso_1_len_802_ver_2
+    PARALOGY RELATIONSHIP: rsa_locus_9258_iso_6_len_1376_ver_2, rsa_locus_9056_iso_7_len_3430_ver_2, Thecc1EG045571t1, cra_locus_12491_iso_5_len_1678_ver_3, cra_locus_15023_iso_5_len_467_ver_3, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1    <====>    cra_locus_15023_iso_4_len_555_ver_3
+    LOSSES: rha,tom,cra,rsa,CC0
+    PARALOGY RELATIONSHIP: Thecc1EG000531t1    <====>    Thecc1EG000533t1, Thecc1EG000532t1
+    PARALOGY RELATIONSHIP: tom_Solyc01g108780.2.1, tom_Solyc01g108810.2.1, tom_Solyc01g108730.1.1, rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, tom_Solyc01g108750.2.1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3, Cc02_g18340, tom_Solyc01g108740.2.1, Thecc1EG006988t1, tom_Solyc01g108820.1.1, tom_Solyc01g108680.2.1, rsa_locus_2769_iso_1_len_1133_ver_2, tom_Solyc07g054880.2.1, tom_Solyc01g108830.1.1, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1    <====>    Thecc1EG006987t1
+    PARALOGY RELATIONSHIP: cra_locus_28805_iso_1_len_840_ver_3, Thecc1EG000547t1, rsa_locus_7002_iso_1_len_995_ver_2, tom_Solyc03g044740.2.1, cra_locus_64080_iso_1_len_406_ver_3    <====>    Thecc1EG000544t1, Thecc1EG000546t1
+    PARALOGY RELATIONSHIP: tom_Solyc02g065260.2.1, Thecc1EG000534t1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Cc05_g04320, rsa_locus_13134_iso_2_len_1179_ver_2, rsa_locus_3656_iso_4_len_1009_ver_2, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, cra_locus_7993_iso_3_len_932_ver_3, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, tom_Solyc02g065250.1.1, Cc05_g04650, Cc07_g05600, tom_Solyc02g065270.1.1, Cc05_g04640, cra_locus_23787_iso_4_len_719_ver_3, Thecc1EG000542t1, cra_locus_8260_iso_3_len_1134_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, Thecc1EG000540t1, cra_locus_5068_iso_4_len_556_ver_3, rsa_locus_4876_iso_4_len_1343_ver_2, Cc07_g05610, Thecc1EG000538t1, tom_Solyc02g065280.2.1, Thecc1EG000539t1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, tom_Solyc03g070380.2.1, Cc05_g04670, Cc00_g14520, cra_locus_40743_iso_1_len_869_ver_3, tom_Solyc02g065240.2.1, Thecc1EG000543t1    <====>    rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, Cc01_g05420, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, cra_locus_3295_iso_2_len_1474_ver_3, cra_locus_24001_iso_2_len_1142_ver_3, Cc00_g13270, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE, rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rsa_locus_44186_iso_1_len_493_ver_2, Cc01_g05440, Cc10_g13790, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, cra_locus_2499_iso_10_len_1427_ver_3
+    LOSSES: cra,CC0,rsa
+    ORTHOLOGY RELATIONSHIP: rsa_locus_11750_iso_8_len_2213_ver_2, cra_locus_13670_iso_3_len_913_ver_3    <====>    rha_maker-superscaffold25-snap-gene-4.32-mRNA-1, rha_maker-superscaffold25-snap-gene-4.31-mRNA-1, rha_maker-superscaffold4-snap-gene-3.49-mRNA-1, rha_maker-superscaffold25-snap-gene-4.33-mRNA-1
+    PARALOGY RELATIONSHIP: Thecc1EG042298t1    <====>    Thecc1EG018818t1
+    LOSSES: tom
+    LOSSES: tom
+    LOSSES: Thecc
+    PARALOGY RELATIONSHIP: Thecc1EG011516t2, tom_Solyc02g089060.2.1, tom_Solyc05g012180.2.1    <====>    Cc07_g04340
+    LOSSES: Thecc
+    PARALOGY RELATIONSHIP: Thecc1EG045571t1, rsa_locus_9056_iso_7_len_3430_ver_2    <====>    cra_locus_15023_iso_5_len_467_ver_3, cra_locus_12491_iso_5_len_1678_ver_3, rsa_locus_9258_iso_6_len_1376_ver_2, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1
+    LOSSES: rha,cra,rsa,Thecc,CC0
+    ORTHOLOGY RELATIONSHIP: tom_Solyc03g044800.1.1, tom_Solyc03g044810.1.1, tom_Solyc03g044820.2.1, tom_Solyc03g044790.2.1    <====>    rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, Cc07_g05590, rsa_locus_8562_iso_1_len_997_ver_2, cra_locus_11434_iso_2_len_3272_ver_3
+    PARALOGY RELATIONSHIP: Thecc1EG000532t1    <====>    Thecc1EG000533t1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3, Cc02_g18340, Thecc1EG006988t1, rsa_locus_2769_iso_1_len_1133_ver_2, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1    <====>    tom_Solyc01g108780.2.1, tom_Solyc01g108730.1.1, tom_Solyc01g108810.2.1, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, tom_Solyc01g108750.2.1, tom_Solyc01g108740.2.1, tom_Solyc01g108820.1.1, tom_Solyc01g108680.2.1, tom_Solyc07g054880.2.1, tom_Solyc01g108830.1.1
+    LOSSES: Thecc
+    ORTHOLOGY RELATIONSHIP: Thecc1EG000547t1    <====>    cra_locus_28805_iso_1_len_840_ver_3, rsa_locus_7002_iso_1_len_995_ver_2, tom_Solyc03g044740.2.1, cra_locus_64080_iso_1_len_406_ver_3
+    PARALOGY RELATIONSHIP: rsa_locus_4876_iso_4_len_1343_ver_2, Thecc1EG000534t1, Cc07_g05610, Thecc1EG000538t1, Thecc1EG000540t1, cra_locus_5068_iso_4_len_556_ver_3, Thecc1EG000539t1, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, Thecc1EG000542t1, Thecc1EG000543t1    <====>    tom_Solyc02g065260.2.1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Cc05_g04320, rsa_locus_13134_iso_2_len_1179_ver_2, rsa_locus_3656_iso_4_len_1009_ver_2, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, cra_locus_7993_iso_3_len_932_ver_3, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, tom_Solyc02g065250.1.1, Cc07_g05600, tom_Solyc02g065270.1.1, Cc05_g04640, cra_locus_23787_iso_4_len_719_ver_3, cra_locus_8260_iso_3_len_1134_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, Cc05_g04650, tom_Solyc02g065280.2.1, tom_Solyc03g070380.2.1, Cc05_g04670, Cc00_g14520, cra_locus_40743_iso_1_len_869_ver_3, tom_Solyc02g065240.2.1
+    ORTHOLOGY RELATIONSHIP: cra_locus_13670_iso_3_len_913_ver_3    <====>    rsa_locus_11750_iso_8_len_2213_ver_2
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold4-snap-gene-3.49-mRNA-1    <====>    rha_maker-superscaffold25-snap-gene-4.32-mRNA-1, rha_maker-superscaffold25-snap-gene-4.33-mRNA-1, rha_maker-superscaffold25-snap-gene-4.31-mRNA-1
+    LOSSES: CC0
+    LOSSES: CC0
+    LOSSES: rha,cra,rsa,tom
+    ORTHOLOGY RELATIONSHIP: Cc10_g09460    <====>    rha_maker-superscaffold17-snap-gene-3.28-mRNA-1, rsa_locus_5984_iso_7_len_1065_ver_2, cra_locus_2670_iso_4_len_1722_ver_3
+    LOSSES: rha,cra,CC0,rsa
+    PARALOGY RELATIONSHIP: Thecc1EG011516t2, tom_Solyc05g012180.2.1    <====>    tom_Solyc02g089060.2.1
+    LOSSES: Thecc
+    LOSSES: tom
+    ORTHOLOGY RELATIONSHIP: Thecc1EG045571t1    <====>    rsa_locus_9056_iso_7_len_3430_ver_2
+    LOSSES: Thecc
+    PARALOGY RELATIONSHIP: tom_Solyc03g044800.1.1, tom_Solyc03g044820.2.1    <====>    tom_Solyc03g044810.1.1, tom_Solyc03g044790.2.1
+    ORTHOLOGY RELATIONSHIP: Cc07_g05590    <====>    rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, cra_locus_11434_iso_2_len_3272_ver_3, rsa_locus_8562_iso_1_len_997_ver_2
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold6-snap-gene-5.39-mRNA-1, Thecc1EG006988t1    <====>    rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, rsa_locus_2769_iso_1_len_1133_ver_2, Cc02_g18340, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3
+    LOSSES: rha,tom,cra,rsa,CC0
+    LOSSES: tom
+    ORTHOLOGY RELATIONSHIP: tom_Solyc03g044740.2.1    <====>    cra_locus_28805_iso_1_len_840_ver_3, rsa_locus_7002_iso_1_len_995_ver_2, cra_locus_64080_iso_1_len_406_ver_3
+    LOSSES: rha,tom,cra,rsa,CC0
+    PARALOGY RELATIONSHIP: Thecc1EG000544t1    <====>    Thecc1EG000546t1
+    ORTHOLOGY RELATIONSHIP: Thecc1EG000534t1, Thecc1EG000538t1, Thecc1EG000540t1, Thecc1EG000539t1, Thecc1EG000542t1, Thecc1EG000543t1    <====>    Cc07_g05610, rha_maker-superscaffold13-snap-gene-45.33-mRNA-1, rsa_locus_4876_iso_4_len_1343_ver_2, cra_locus_5068_iso_4_len_556_ver_3
+    LOSSES: Thecc
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold25-snap-gene-4.33-mRNA-1    <====>    rha_maker-superscaffold25-snap-gene-4.32-mRNA-1, rha_maker-superscaffold25-snap-gene-4.31-mRNA-1
+    LOSSES: cra,rsa
+    LOSSES: rha
+    ORTHOLOGY RELATIONSHIP: rsa_locus_3479_iso_2_len_1992_ver_2    <====>    cra_locus_2887_iso_2_len_1005_ver_3
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold17-snap-gene-3.28-mRNA-1    <====>    rsa_locus_5984_iso_7_len_1065_ver_2, cra_locus_2670_iso_4_len_1722_ver_3
+    ORTHOLOGY RELATIONSHIP: Thecc1EG011516t2    <====>    tom_Solyc05g012180.2.1
+    LOSSES: Thecc
+    LOSSES: tom
+    LOSSES: rha,cra,CC0
+    PARALOGY RELATIONSHIP: cra_locus_13312_iso_1_len_1768_ver_3, rha_maker-superscaffold13-snap-gene-80.24-mRNA-1    <====>    rsa_locus_16260_iso_4_len_1672_ver_2
+    LOSSES: Thecc
+    LOSSES: tom
+    PARALOGY RELATIONSHIP: tom_Solyc03g044800.1.1    <====>    tom_Solyc03g044820.2.1
+    PARALOGY RELATIONSHIP: tom_Solyc03g044810.1.1    <====>    tom_Solyc03g044790.2.1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.28-mRNA-1, rsa_locus_8562_iso_1_len_997_ver_2    <====>    cra_locus_11434_iso_2_len_3272_ver_3
+    ORTHOLOGY RELATIONSHIP: Thecc1EG006988t1    <====>    rha_maker-superscaffold6-snap-gene-5.39-mRNA-1
+    LOSSES: Thecc
+    LOSSES: cra,CC0,rsa
+    ORTHOLOGY RELATIONSHIP: rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1, rha_maker-superscaffold8-snap-gene-52.19-mRNA-1    <====>    cra_locus_11472_iso_1_len_917_ver_3, rsa_locus_27259_iso_1_len_1034_ver_2
+    PARALOGY RELATIONSHIP: Thecc1EG000543t1    <====>    Thecc1EG000539t1, Thecc1EG000538t1, Thecc1EG000540t1, Thecc1EG000534t1, Thecc1EG000542t1
+    LOSSES: rha,cra,rsa,Thecc,CC0
+    ORTHOLOGY RELATIONSHIP: tom_Solyc02g065250.1.1, tom_Solyc02g065260.2.1, tom_Solyc02g065280.2.1, tom_Solyc02g065270.1.1, tom_Solyc03g070380.2.1, tom_Solyc02g065240.2.1    <====>    rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, cra_locus_8260_iso_3_len_1134_ver_3, Cc05_g04650, Cc07_g05600, Cc05_g04670, Cc05_g04640, cra_locus_23787_iso_4_len_719_ver_3, Cc05_g04320, rsa_locus_13134_iso_2_len_1179_ver_2, rsa_locus_3656_iso_4_len_1009_ver_2, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, Cc00_g14520, cra_locus_40743_iso_1_len_869_ver_3, cra_locus_7993_iso_3_len_932_ver_3
+    LOSSES: rha,tom,cra,CC0,rsa
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, Cc01_g05420, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, cra_locus_3295_iso_2_len_1474_ver_3, Cc00_g13270, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, rsa_locus_44186_iso_1_len_493_ver_2, Cc01_g05440, Cc10_g13790, rha_maker-superscaffold13-snap-gene-45.25-mRNA-1, cra_locus_2499_iso_10_len_1427_ver_3    <====>    rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, cra_locus_24001_iso_2_len_1142_ver_3, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold25-snap-gene-4.32-mRNA-1    <====>    rha_maker-superscaffold25-snap-gene-4.31-mRNA-1
+    ORTHOLOGY RELATIONSHIP: rsa_locus_5984_iso_7_len_1065_ver_2    <====>    cra_locus_2670_iso_4_len_1722_ver_3
+    LOSSES: Thecc
+    LOSSES: tom
+    LOSSES: CC0
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-80.24-mRNA-1    <====>    cra_locus_13312_iso_1_len_1768_ver_3
+    LOSSES: tom
+    LOSSES: tom
+    LOSSES: CC0
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.28-mRNA-1    <====>    rsa_locus_8562_iso_1_len_997_ver_2
+    LOSSES: Thecc
+    LOSSES: rha,cra,CC0,rsa
+    PARALOGY RELATIONSHIP: tom_Solyc01g108750.2.1, tom_Solyc01g108740.2.1, tom_Solyc01g108730.1.1    <====>    tom_Solyc01g108780.2.1, tom_Solyc01g108810.2.1, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, tom_Solyc01g108820.1.1, tom_Solyc01g108680.2.1, tom_Solyc07g054880.2.1, tom_Solyc01g108830.1.1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold8-snap-gene-52.19-mRNA-1    <====>    rha_snap_masked-superscaffold8-processed-gene-52.3-mRNA-1
+    ORTHOLOGY RELATIONSHIP: cra_locus_11472_iso_1_len_917_ver_3    <====>    rsa_locus_27259_iso_1_len_1034_ver_2
+    LOSSES: CC0
+    PARALOGY RELATIONSHIP: Thecc1EG000534t1    <====>    Thecc1EG000539t1, Thecc1EG000538t1, Thecc1EG000540t1, Thecc1EG000542t1
+    LOSSES: tom,cra,CC0,rsa
+    PARALOGY RELATIONSHIP: Cc07_g05610, rsa_locus_4876_iso_4_len_1343_ver_2, cra_locus_5068_iso_4_len_556_ver_3    <====>    rha_maker-superscaffold13-snap-gene-45.33-mRNA-1
+    PARALOGY RELATIONSHIP: tom_Solyc02g065260.2.1    <====>    tom_Solyc02g065280.2.1, tom_Solyc02g065270.1.1, tom_Solyc03g070380.2.1, tom_Solyc02g065240.2.1, tom_Solyc02g065250.1.1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, Cc07_g05600, rsa_locus_13134_iso_2_len_1179_ver_2, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, cra_locus_7993_iso_3_len_932_ver_3    <====>    cra_locus_8260_iso_3_len_1134_ver_3, rsa_locus_3920_iso_1_len_1260_ver_2, Cc00_g14510, Cc05_g04650, Cc05_g04640, cra_locus_23787_iso_4_len_719_ver_3, Cc05_g04320, rsa_locus_3656_iso_4_len_1009_ver_2, Cc05_g04670, Cc00_g14520, cra_locus_40743_iso_1_len_869_ver_3
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, Cc01_g05420, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, cra_locus_3295_iso_2_len_1474_ver_3, Cc00_g13270, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, rsa_locus_44186_iso_1_len_493_ver_2, Cc01_g05440, Cc10_g13790, cra_locus_2499_iso_10_len_1427_ver_3    <====>    rha_maker-superscaffold13-snap-gene-45.25-mRNA-1
+    LOSSES: rha,cra,CC0,rsa
+    LOSSES: rha,cra,CC0,rsa
+    LOSSES: rha,cra,rsa
+    LOSSES: rha
+    LOSSES: rha
+    LOSSES: CC0
+    LOSSES: rha,CC0,rsa
+    PARALOGY RELATIONSHIP: rsa_locus_9258_iso_6_len_1376_ver_2, rha_maker-superscaffold12-snap-gene-53.22-mRNA-1    <====>    cra_locus_15023_iso_5_len_467_ver_3, cra_locus_12491_iso_5_len_1678_ver_3
+    LOSSES: rha
+    LOSSES: rha
+    LOSSES: tom
+    LOSSES: rha,cra,rsa,tom
+    ORTHOLOGY RELATIONSHIP: Cc02_g18340    <====>    rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, rsa_locus_2769_iso_1_len_1133_ver_2, rha_maker-superscaffold6-snap-gene-5.38-mRNA-1, cra_locus_24489_iso_1_len_1281_ver_3
+    PARALOGY RELATIONSHIP: tom_Solyc01g108730.1.1    <====>    tom_Solyc01g108750.2.1, tom_Solyc01g108740.2.1
+    PARALOGY RELATIONSHIP: tom_Solyc01g108780.2.1, tom_Solyc01g108810.2.1, tom_Solyc09g014970.2.1, tom_Solyc07g054900.2.1, tom_Solyc01g108820.1.1, tom_Solyc01g108680.2.1, tom_Solyc07g054880.2.1    <====>    tom_Solyc01g108830.1.1
+    LOSSES: rha,rsa
+    PARALOGY RELATIONSHIP: cra_locus_28805_iso_1_len_840_ver_3, rsa_locus_7002_iso_1_len_995_ver_2    <====>    cra_locus_64080_iso_1_len_406_ver_3
+    PARALOGY RELATIONSHIP: Thecc1EG000542t1    <====>    Thecc1EG000539t1, Thecc1EG000538t1, Thecc1EG000540t1
+    PARALOGY RELATIONSHIP: Cc07_g05610, rsa_locus_4876_iso_4_len_1343_ver_2    <====>    cra_locus_5068_iso_4_len_556_ver_3
+    PARALOGY RELATIONSHIP: tom_Solyc02g065280.2.1, tom_Solyc02g065270.1.1    <====>    tom_Solyc03g070380.2.1, tom_Solyc02g065250.1.1, tom_Solyc02g065240.2.1
+    ORTHOLOGY RELATIONSHIP: Cc07_g05600    <====>    rha_maker-superscaffold13-snap-gene-45.36-mRNA-1, rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, rsa_locus_13134_iso_2_len_1179_ver_2, rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, cra_locus_7993_iso_3_len_932_ver_3
+    PARALOGY RELATIONSHIP: Cc00_g14520, rsa_locus_3920_iso_1_len_1260_ver_2, cra_locus_40743_iso_1_len_869_ver_3    <====>    cra_locus_8260_iso_3_len_1134_ver_3, Cc00_g14510, Cc05_g04650, Cc05_g04640, Cc05_g04320, rsa_locus_3656_iso_4_len_1009_ver_2, Cc05_g04670, cra_locus_23787_iso_4_len_719_ver_3
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, cra_locus_3295_iso_2_len_1474_ver_3, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, rsa_locus_44186_iso_1_len_493_ver_2, Cc10_g13790, cra_locus_2499_iso_10_len_1427_ver_3    <====>    Cc01_g05420, Cc01_g05440, Cc00_g13270
+    LOSSES: CC0,rsa
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold29-snap-gene-2.31-mRNA-1, rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE    <====>    cra_locus_24001_iso_2_len_1142_ver_3
+    LOSSES: cra
+    LOSSES: rsa
+    LOSSES: cra
+    LOSSES: rha
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold12-snap-gene-53.22-mRNA-1    <====>    rsa_locus_9258_iso_6_len_1376_ver_2
+    LOSSES: rsa
+    LOSSES: cra
+    LOSSES: rsa
+    LOSSES: CC0
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, rsa_locus_2769_iso_1_len_1133_ver_2, cra_locus_24489_iso_1_len_1281_ver_3    <====>    rha_maker-superscaffold6-snap-gene-5.38-mRNA-1
+    PARALOGY RELATIONSHIP: tom_Solyc01g108750.2.1    <====>    tom_Solyc01g108740.2.1
+    PARALOGY RELATIONSHIP: tom_Solyc09g014970.2.1, tom_Solyc01g108820.1.1    <====>    tom_Solyc01g108810.2.1, tom_Solyc01g108680.2.1, tom_Solyc07g054900.2.1, tom_Solyc07g054880.2.1, tom_Solyc01g108780.2.1
+    ORTHOLOGY RELATIONSHIP: cra_locus_28805_iso_1_len_840_ver_3    <====>    rsa_locus_7002_iso_1_len_995_ver_2
+    PARALOGY RELATIONSHIP: Thecc1EG000540t1    <====>    Thecc1EG000539t1, Thecc1EG000538t1
+    ORTHOLOGY RELATIONSHIP: Cc07_g05610    <====>    rsa_locus_4876_iso_4_len_1343_ver_2
+    LOSSES: CC0
+    PARALOGY RELATIONSHIP: tom_Solyc02g065270.1.1    <====>    tom_Solyc02g065280.2.1
+    PARALOGY RELATIONSHIP: tom_Solyc03g070380.2.1    <====>    tom_Solyc02g065250.1.1, tom_Solyc02g065240.2.1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, rsa_locus_13134_iso_2_len_1179_ver_2, cra_locus_7993_iso_3_len_932_ver_3    <====>    rha_maker-superscaffold13-snap-gene-45.35-mRNA-1, rha_maker-superscaffold13-snap-gene-45.36-mRNA-1
+    ORTHOLOGY RELATIONSHIP: Cc00_g14520    <====>    rsa_locus_3920_iso_1_len_1260_ver_2, cra_locus_40743_iso_1_len_869_ver_3
+    PARALOGY RELATIONSHIP: Cc05_g04320, rsa_locus_3656_iso_4_len_1009_ver_2, Cc00_g14510, cra_locus_23787_iso_4_len_719_ver_3, cra_locus_8260_iso_3_len_1134_ver_3    <====>    Cc05_g04650, Cc05_g04640, Cc05_g04670
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1, Cc10_g13790    <====>    cra_locus_3295_iso_2_len_1474_ver_3, cra_locus_2499_iso_10_len_1427_ver_3, rsa_locus_44186_iso_1_len_493_ver_2
+    LOSSES: CC0
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold27-snap-gene-14.13-mRNA-1_PNAE    <====>    rha_maker-superscaffold29-snap-gene-2.31-mRNA-1
+    LOSSES: cra
+    LOSSES: rha
+    LOSSES: cra,rsa
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold6-snap-gene-5.37-mRNA-1, rsa_locus_2769_iso_1_len_1133_ver_2    <====>    cra_locus_24489_iso_1_len_1281_ver_3
+    PARALOGY RELATIONSHIP: tom_Solyc01g108820.1.1    <====>    tom_Solyc09g014970.2.1
+    PARALOGY RELATIONSHIP: tom_Solyc01g108680.2.1    <====>    tom_Solyc01g108810.2.1, tom_Solyc01g108780.2.1, tom_Solyc07g054900.2.1, tom_Solyc07g054880.2.1
+    LOSSES: rsa
+    PARALOGY RELATIONSHIP: Thecc1EG000538t1    <====>    Thecc1EG000539t1
+    LOSSES: CC0
+    LOSSES: cra,rsa
+    PARALOGY RELATIONSHIP: tom_Solyc02g065250.1.1    <====>    tom_Solyc02g065240.2.1
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.34-mRNA-1, rsa_locus_13134_iso_2_len_1179_ver_2    <====>    cra_locus_7993_iso_3_len_932_ver_3
+    PARALOGY RELATIONSHIP: Cc05_g04320, rsa_locus_3656_iso_4_len_1009_ver_2, Cc00_g14510, cra_locus_8260_iso_3_len_1134_ver_3    <====>    cra_locus_23787_iso_4_len_719_ver_3
+    PARALOGY RELATIONSHIP: rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1, Cc10_g13790    <====>    rha_maker-superscaffold34-snap-gene-17.26-mRNA-1, rha_maker-superscaffold13-snap-gene-45.30-mRNA-1
+    LOSSES: rha,cra,rsa
+    PARALOGY RELATIONSHIP: Cc01_g05440    <====>    Cc01_g05420, Cc00_g13270
+    LOSSES: cra,rsa
+    LOSSES: rsa
+    LOSSES: cra
+    LOSSES: rsa
+    PARALOGY RELATIONSHIP: cra_locus_12491_iso_5_len_1678_ver_3    <====>    cra_locus_15023_iso_5_len_467_ver_3
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold6-snap-gene-5.37-mRNA-1    <====>    rsa_locus_2769_iso_1_len_1133_ver_2
+    LOSSES: cra,rsa
+    PARALOGY RELATIONSHIP: tom_Solyc01g108810.2.1    <====>    tom_Solyc01g108780.2.1, tom_Solyc07g054900.2.1, tom_Solyc07g054880.2.1
+    LOSSES: rha
+    LOSSES: rha
+    ORTHOLOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.34-mRNA-1    <====>    rsa_locus_13134_iso_2_len_1179_ver_2
+    LOSSES: cra,rsa
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.35-mRNA-1    <====>    rha_maker-superscaffold13-snap-gene-45.36-mRNA-1
+    LOSSES: rha
+    ORTHOLOGY RELATIONSHIP: cra_locus_40743_iso_1_len_869_ver_3    <====>    rsa_locus_3920_iso_1_len_1260_ver_2
+    PARALOGY RELATIONSHIP: rsa_locus_3656_iso_4_len_1009_ver_2, Cc00_g14510, cra_locus_8260_iso_3_len_1134_ver_3    <====>    Cc05_g04320
+    LOSSES: rha,cra,rsa
+    PARALOGY RELATIONSHIP: Cc05_g04670    <====>    Cc05_g04650, Cc05_g04640
+    ORTHOLOGY RELATIONSHIP: Cc10_g13790    <====>    rha_snap_masked-superscaffold13-processed-gene-45.8-mRNA-1
+    LOSSES: CC0
+    PARALOGY RELATIONSHIP: Cc01_g05420    <====>    Cc00_g13270
+    LOSSES: rha
+    PARALOGY RELATIONSHIP: tom_Solyc01g108780.2.1    <====>    tom_Solyc07g054900.2.1, tom_Solyc07g054880.2.1
+    LOSSES: cra
+    LOSSES: rsa
+    LOSSES: rha
+    ORTHOLOGY RELATIONSHIP: Cc00_g14510    <====>    cra_locus_8260_iso_3_len_1134_ver_3, rsa_locus_3656_iso_4_len_1009_ver_2
+    LOSSES: CC0
+    PARALOGY RELATIONSHIP: Cc05_g04640    <====>    Cc05_g04650
+    LOSSES: CC0
+    LOSSES: rha,rsa
+    PARALOGY RELATIONSHIP: cra_locus_3295_iso_2_len_1474_ver_3, rsa_locus_44186_iso_1_len_493_ver_2    <====>    cra_locus_2499_iso_10_len_1427_ver_3
+    LOSSES: cra
+    LOSSES: rsa
+    PARALOGY RELATIONSHIP: tom_Solyc07g054880.2.1    <====>    tom_Solyc07g054900.2.1
+    LOSSES: cra
+    LOSSES: rsa
+    LOSSES: rha,cra,rsa
+    LOSSES: rha
+    LOSSES: cra,rsa
+    LOSSES: cra,rsa
+    PARALOGY RELATIONSHIP: rha_maker-superscaffold13-snap-gene-45.30-mRNA-1    <====>    rha_maker-superscaffold34-snap-gene-17.26-mRNA-1
+    ORTHOLOGY RELATIONSHIP: cra_locus_3295_iso_2_len_1474_ver_3    <====>    rsa_locus_44186_iso_1_len_493_ver_2
+    LOSSES: rha
+    ORTHOLOGY RELATIONSHIP: rsa_locus_3656_iso_4_len_1009_ver_2    <====>    cra_locus_8260_iso_3_len_1134_ver_3
+    LOSSES: rsa
+    LOSSES: rsa
