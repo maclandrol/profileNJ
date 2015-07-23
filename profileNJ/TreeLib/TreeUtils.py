@@ -344,7 +344,7 @@ def computeDL(genetree, lcaMap=None):
     if not lcaMap and genetree.has_feature('lcaMap'):
         lcaMap = genetree.lcaMap
 
-    if lcaMap:  
+    if lcaMap and not genetree.is_reconcilied():  
         for node in genetree.traverse("levelorder"):
             if (lcaMap[node] in [lcaMap[child] for child in node.get_children()]):
                 dup += 1
@@ -356,7 +356,7 @@ def computeDL(genetree, lcaMap=None):
                 loss += (lcaMap[node].depth - lcaMap[parent].depth - 1 + parent_is_dup)
     
     else :
-        if(genetree is None or 'type' not in genetree.get_all_features()):
+        if(genetree is None or not genetree.is_reconcilied()):
             raise Exception("LcaMapping not found and your Genetree didn't undergo reconciliation yet")
 
         for node in genetree.traverse():
