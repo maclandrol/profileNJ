@@ -2,18 +2,15 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-TreeLib/*pyc
+*pyc
 
 # Binary script in home folder
-profileNJ
+profileNJ.py
 reconcile.py
 
-# Simulation data
-simuldata/*.mat
-simuldata/simulation/*
-simuldata/matlab/*mat
-simuldata/matlab/data/*
-simuldata/matlab/images/*
+# data folder
+data/*
+
 
 # Distribution and packaging
 .Python

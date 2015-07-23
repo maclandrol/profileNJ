@@ -16,7 +16,7 @@ else:
 	README = ""  # a placeholder, readme is generated on release
 
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "python")))
-from PolytomySolver import __project__, __version__
+from profileNJ import __project__, __version__
 
 setuptools.setup(
 	name=__project__,
@@ -28,7 +28,7 @@ setuptools.setup(
 	author_email='emmanuel.noutahi@hotmail.ca',
 	scripts = ['bin/profileNJ', 'bin/reconcile'],
 
-	packages=setuptools.find_packages(),
+	packages=setuptools.find_packages(exclude=['tests']),
 
 	entry_points={'console_scripts': []},
 
@@ -45,10 +45,11 @@ setuptools.setup(
 		'Operating System :: POSIX',
 		'Programming Language :: Python',
 	],
+    test_suite="profileNJ.tests.test_suite",
 
 	install_requires=[
 		'ete2',
-		'numpy',
+		'numpy >= 1.8.1',
 		'lxml'
 	]
 )

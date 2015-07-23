@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from PolytomySolver import *
+from profileNJ.PolytomySolver import *
 from ete2 import PhyloTree
-from TreeLib.SupportUtils import read_trees
-from TreeLib import TreeUtils, TreeClass, params
+from profileNJ.TreeLib.SupportUtils import read_trees
+from profileNJ.TreeLib import TreeUtils, TreeClass, params
 import argparse
 import sys
 import time
@@ -174,7 +174,7 @@ if(runmode):
 		all_events = genetree.get_events(include_lost=args.losses)
 
 		with open(events_output, 'w') as OUT:
-			dup, loss = TreeUtils.detComputeDLScore(genetree)
+			dup, loss = TreeUtils.computeDL(genetree)
 			OUT.write(
 				'DUPLICATIONS : ' + str(dup) + "\tLOSSES : " + str(loss) + "\n")
 			for ev in all_events:
@@ -195,7 +195,7 @@ if(runmode):
 		
 		# export tree to orthoXML format
 		if(args.orthoxml):
-			TreeUtils.export_to_orthoXML(
+			TreeUtils.exportToOrthoXML(
 				genetree, handle=open(args.output + "_%dorthoxml"%i, 'w'))
 
 
@@ -237,4 +237,4 @@ if(runmode):
 			g_IN.writelines(nw_sav)
 
 else:
-	TreeUtils.generate_smap(specietree, output=args.smapfile)
+	TreeUtils.generateSmap(specietree, output=args.smapfile)
