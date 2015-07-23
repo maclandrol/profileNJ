@@ -120,10 +120,10 @@ parser.add_argument('--firstbest', dest='firstbest',  action='store_true',
 cost_group = parser.add_mutually_exclusive_group(required=False)
 cost_group.add_argument('--cost', type=float, nargs=2,  dest='costdl',
                     help="D L : 2 float values, duplication and loss cost in this order")
-cost_group.add_argument('--scost', dest='scostdl', type=argparse.FileType('r'), 
+cost_group.add_argument('--scost', dest='sdlcost', type=argparse.FileType('r'), 
                     help="A file which contain the DL cost for each species. If a specie is not found in this list, its DL cost will be set to default value (1)")
  
-parser.add_argument('--internalcost', dest='icostdl', choices=['mean', 'default'], default='default',
+parser.add_argument('--internalcost', dest='idlcost', choices=['mean', 'default'], default='default',
                     help="internal Node duplication and loss cost. Set this value to mean in order to take the mean duplication and loss from the leaf; or set it to default (1) or  value obtained from `cost`.")
 
 args = parser.parse_args()
@@ -143,7 +143,7 @@ if(args.costdl):
         losscost[spl] =  args.costdl[1]
 
 # a dlcost file is provided
-elif(args.sdlcost)
+elif(args.sdlcost):
     for dline in args.sdlcost:
         try:
             sp, spdup, sploss = dline.strip().split()
@@ -160,7 +160,7 @@ for spl in spleave :
     dupcost[spl] = dupcost.get(spl,1)
     losscost[spl] = losscost.get(spl,1)
 
-params.set(dupcost, losscost, args.icostdl)
+params.set(dupcost, losscost, args.idlcost)
 
 if(args.gline < 0):
     raise Exception("gLine must be > 0")
@@ -247,10 +247,9 @@ for gtree in gtrees:
             # Copy, in order to not change the solution newick for export
             f_tree = polysolution[0].copy(method='simplecopy')
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
-            TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
-            dl_cost = TreeUtils.ComputeDLScore(f_tree)
+            dl_cost = TreeUtils.computeDLScore(f_tree)
 
-            outlog.write('>Tree %s; m_cost=%s' % (i + 1, dl_cost))
+            outlog.write('>Tree %s; m_cost=%s' % (i + 1, sum(dl_cost)))
             for tree in polysolution:
                 outlog.write(tree.write(format=9))  # , features=["species"]))
 
@@ -272,10 +271,9 @@ for gtree in gtrees:
             # Copy, in order to not change the solution newick for export
             f_tree = polysolution[0].copy(method='simplecopy')
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
-            TreeUtils.reconcile(f_tree, lcaMap=lcamap, lost="yes")
-            dl_cost = TreeUtils.ComputeDLScore(f_tree)
+            dl_cost = TreeUtils.computeDLScore(f_tree)
 
-            outlog.write('>Tree %s; m_cost=%s' % (count, dl_cost))
+            outlog.write('>Tree %s; m_cost=%s' % (count, sum(dl_cost)))
             for tree in polysolution:
                 outlog.write(tree.write(format=9))  # , features=["species"]))
 

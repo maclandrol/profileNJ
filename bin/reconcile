@@ -11,7 +11,7 @@ import re
 
 GRAPHICAL_ACCESS = True
 try:
-	from ete2 import TreeStyle, NodeStyle
+	from ete2 import TreeStyle, NodeStyle, TextFace
 except ImportError, e:
 	GRAPHICAL_ACCESS = False
 	print "Warning : PyQt not installed"
@@ -123,6 +123,8 @@ if(runmode):
 								 pos=args.spos, use_fn=get_specie_parser(args.spos), speclist=specietree.get_leaf_name())
 
 		mapping = TreeUtils.lcaMapping(genetree, specietree )
+		dup, loss = TreeUtils.computeDLScore(genetree)
+
 		TreeUtils.reconcile(genetree, mapping, args.losses)
 
 		# display tree if verbose
@@ -130,7 +132,7 @@ if(runmode):
 			print genetree.get_ascii(attributes=['species', 'name'], show_internal=False)
 
 		# Export tree to extended newick format
-		genetree.write(outfile=rec_output, features=[], format_root_node=True)
+		genetree.write(outfile=rec_output, format=0, format_root_node=True)
 
 		# Rendering settings
 		if(GRAPHICAL_ACCESS):
@@ -142,13 +144,13 @@ if(runmode):
 				ts.show_branch_support = True
 
 			spec_style = NodeStyle()
-			spec_style["shape"] = "sphere"
-			spec_style["size"] = 8
+			spec_style["shape"] = "circle"
+			spec_style["size"] = 10
 			spec_style["fgcolor"] = "forestgreen"
 
 			dup_style = NodeStyle()
 			dup_style["shape"] = "square"
-			dup_style["size"] = 10
+			dup_style["size"] = 8
 			dup_style["fgcolor"] = "darkred"
 
 			loss_style = NodeStyle()
@@ -159,22 +161,42 @@ if(runmode):
 			loss_style["fgcolor"] = "#cccccc"
 			spec_style["size"] = 6
 
+			leaf_style = NodeStyle()
+			leaf_style["size"] = 0
+			leaf_style["vt_line_type"] = 0
+			leaf_style["hz_line_type"] = 0
+			leaf_style["hz_line_color"] = "#000000"
+
 			# Apply node style
 			for n in genetree.traverse():
-				if not n.is_leaf():
+				if n.is_leaf():
+					n.set_style(leaf_style)
+				elif not n.is_leaf():
 					n.set_style(spec_style)
 				if(n.type > 0):
 					n.set_style(dup_style)
 				elif(n.type == TreeClass.LOST):
 					n.set_style(loss_style)
+				
 
 			# Save tree as figure
+			ts.legend_position = 4
+			ts.branch_vertical_margin = 20
+			ts.margin_right = 50
+			ts.margin_top = 20
+			duptxt = TextFace("Duplications : %d"%dup, penwidth=10, fsize=12, ftype="Verdana")
+			losstxt = TextFace("Losses : %d"%loss, penwidth=10, fsize=12, ftype="Verdana")
+			duptxt.margin_right = 30; losstxt.margin_right = 30
+			duptxt.margin_top = 20
+			duptxt.margin_bottom = 10;
+			ts.legend.add_face(duptxt, column=0)
+			ts.legend.add_face(TextFace(""), column=0)
+			ts.legend.add_face(losstxt, column=0)
 			genetree.render("%s_%d.%s"%(args.output, i, args.outform), dpi=400, tree_style=ts)
 
 		all_events = genetree.get_events(include_lost=args.losses)
 
 		with open(events_output, 'w') as OUT:
-			dup, loss = TreeUtils.computeDL(genetree)
 			OUT.write(
 				'DUPLICATIONS : ' + str(dup) + "\tLOSSES : " + str(loss) + "\n")
 			for ev in all_events:
@@ -188,8 +210,7 @@ if(runmode):
 					OUT.write('    LOSSES: ' + ev.losses + "\n")
 
 			
-			header = '>tree %d ; (%d) mcost=%d - dup=%d'%(i, i, ad+nad+loss, ad+nad)
-			header += ' - lost=%d\n'%loss if args.losses else '\n'
+			header = '>tree %d ; (%d) mcost=%d - dup=%d - lost=%d\n'%(i, i, dup+loss, dup, loss)
 			nw_sav.append(header)
 			nw_sav.append(genewick+"\n")
 		
