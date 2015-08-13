@@ -237,9 +237,11 @@ class TreeClass(TreeNode):
             if(leaf.is_leaf()):
                 leaf.delete()
 
-    def get_degree(self):
+    def get_degree(self, as_graph=True):
         """Return the degree of the current Node"""
         child_number = len(self.get_children())
+        if(as_graph):
+            child_number += (1 if not self.is_root() else 0)
         return child_number
 
     def set_species(self, speciesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None, **kwargs):
@@ -385,7 +387,7 @@ class TreeClass(TreeNode):
         """
         Return True if current node is a binary node.
         """
-        return self.get_degree() == 2
+        return self.get_degree(False) == 2
 
     def is_internal(self):
         """
@@ -777,6 +779,7 @@ class TreeClass(TreeNode):
             self.remove_child(old_child)
             self.add_child(new_child)
             return self
+
 
     def write_seq_to_fasta(self, out='seq.fasta', comment=1):
         """Save sequence in tree into a fasta file"""

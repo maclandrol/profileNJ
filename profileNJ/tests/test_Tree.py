@@ -68,7 +68,8 @@ class TestTreeClass(unittest.TestCase):
 
 	def test_is_binary(self):
 		polytomy1 = TreeClass("((a,b)e, c, d)h;", format=1)
-		self.assertTrue(self.tree2.is_binary())
+		for node in self.tree2.iter_internal_node():
+			self.assertTrue(node.is_binary())
 		self.assertFalse(polytomy1.is_binary())
 
 	def test_is_internal(self):

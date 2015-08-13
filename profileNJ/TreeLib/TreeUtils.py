@@ -476,6 +476,80 @@ def getSpecieCount(tree):
     return count
 
 
+def getReverseMap(lcamap, use_name=False):
+    """Get reverse map from specie to gene"""
+    reversedmap = ddict(list)
+    for (g,s) in lcamap.items():
+        if(use_name):
+            reversedmap[s.name].append(g)
+        else:
+            reversedmap[s].append(g)
+    return reversedmap
+
+
+def getImageTreeNode(genetree, specietree, lcamap):
+    """ Get the specie image tree node of a genetree"""
+    
+    # get pre(s) for each  node in specietree
+    reversedmap = getReverseMap(lcamap)
+    
+    # Traverse G in df order and set ih to 0 for internal node
+    for node in genetree.iter_internal_node("levelorder", enable_root=True):
+        node.add_features(i_h=0)
+
+    # Arange the children of each node in G according to the position of their images 
+    # in post-order traversal of S
+    for snode in specietree.traverse("postorder"):
+        for gnode in reversedmap[snode]:
+            p_gnode = gnode.up
+            if(p_gnode):
+                gnode_ind = [x for x in xrange(len(p_gnode.children)) if p_gnode.children[x]==gnode][0]
+                p_gnode.children[gnode_ind], p_gnode.children[p_gnode.i_h] = p_gnode.children[p_gnode.i_h], p_gnode.children[gnode_ind]
+                p_gnode.i_h += 1
+    
+    # compute B(s) that contains all the gene tree nodes g / s in I(g) for s in S
+    B_array = ddict(list)
+    for node in genetree.traverse("postorder"):
+        childlist = node.get_children()
+        for child in childlist:
+            B_array[lcamap[child]].append(node)
+        for i in xrange(0, len(childlist)-1):
+            B_array[getLca(specietree, [lcamap[childlist[i]], lcamap[childlist[i+1]]])].append(node)
+
+    # Store all the specie tree nodes of the compresses child-image subtree I(g)
+    # and construct all I(g)
+    # At this step, we are actually certain that the euler tour of S was already computed
+    image_tree_nodes = ddict(list)
+    for s in specietree.ind2node:
+        for h in B_array[s]:
+            image_tree_nodes[h].append(s)
+
+    # Here we are going to construct the tree
+    image_tree = {}
+    for node in genetree.traverse("postorder"):
+        nodecopied = {}
+        if not image_tree_nodes[node]:
+            continue    
+        el1 = image_tree_nodes[node].pop()
+        a = el1._copy_node(features=['name', 'depth'])
+        nodecopied[el1] = a
+        while len(image_tree_nodes[node])>0:
+            el2 = image_tree_nodes[node].pop()
+            b = nodecopied.get(el2, None)
+            if not b:
+                b = el2._copy_node(features=['name', 'depth'])
+                nodecopied[el2] = b
+            if (a!=b):
+                if a.depth < b.depth:
+                    if(b not in a.get_children()):
+                        a.add_child(b)
+                elif a.depth > b.depth:
+                    if(a not in b.get_children()):
+                        b.add_child(a)
+            a = b
+        image_tree[node] = a.get_tree_root()
+    return image_tree
+
 def getSpecieGeneMap(genetree, specietree):
     """Find the reversed map (map between specietree node and genetree node)"""
     mapGene = {}
