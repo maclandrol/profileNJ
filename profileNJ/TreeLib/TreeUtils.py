@@ -199,7 +199,7 @@ def lcaMapping(genetree, specietree, multspeciename=True):
     return mapping
 
 
-def reconcile(genetree=None, lcaMap=None, lost=False):
+def reconcile(genetree=None, lcaMap=None, lost=False, lost_label_fn=None):
     """Reconcile genetree topology to a specietree, using an adequate mapping obtained with lcaMapping.
     'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
     """
@@ -254,12 +254,18 @@ def reconcile(genetree=None, lcaMap=None, lost=False):
                                 set(lcaMap[intern_lost].get_leaf_names()) - set(child_c.species.split(",")))
                             splist = lostnode.species.split(',')
                             if(len(splist) > 1):
-                                lostnode.name = "lost_" + \
-                                    str(lost_count) + "_" + \
-                                    "|".join([s[0:3] for s in splist])
+                                if lost_label_fn:
+                                    lostnode.name = lost_label_fn(splist)
+                                else:
+                                    lostnode.name = "lost_" + \
+                                        str(lost_count) + "_" + \
+                                        "|".join([s[0:3] for s in splist])
 
                             else:
-                                lostnode.name = "lost_" + lostnode.species
+                                if lost_label_fn:
+                                    lostnode.name = lost_label_fn(lostnode.species)
+                                else :
+                                    lostnode.name = "lost_" + lostnode.species
 
                             lostnode.add_features(type=TreeClass.LOST)
                             lostnode.add_features(dup=False)
@@ -302,7 +308,7 @@ def reconcile(genetree=None, lcaMap=None, lost=False):
     genetree.add_features(reconciled=True)
 
 
-def computeDLScore(genetree, lcaMap=None):
+def computeDLScore(genetree, lcaMap=None, dupcost=None, losscost=None):
     """
     Compute the reconciliation cost
     """
@@ -316,7 +322,7 @@ def computeDLScore(genetree, lcaMap=None):
             child_map = [lcaMap[child] for child in node.get_children()]
             if (lcaMap[node] in child_map):
                 node_is_dup = params.getdup(lcaMap[node])
-                dup_score += node_is_dup
+                dup_score += (dupcost if dupcost else node_is_dup)
             
             for child in node.get_children():
                 if node_is_dup:
@@ -326,7 +332,10 @@ def computeDLScore(genetree, lcaMap=None):
                 curr_node = lcaMap[child]
                 while(curr_node not in child_map):
                     lost_nodes = set(curr_node.up.get_children()) - set([curr_node])
-                    loss_score += np.sum([params.getloss(l) for l in lost_nodes])
+                    if losscost:
+                        loss_score += len(lost_nodes)*losscost
+                    else:
+                        loss_score += np.sum([params.getloss(l) for l in lost_nodes])
                     curr_node = curr_node.up 
 
     else :
@@ -380,7 +389,7 @@ def cleanFeatures(tree=None, features=[]):
     return cleaned
 
 
-def binaryRecScore(node, lcamap):
+def binaryRecScore(node, lcamap, dupcost=None, losscost=None):
     """Reconcile genetree topology to a specietree, using an adequate mapping obtained with lcaMapping.
     'reconcile' will infer evolutionary events like gene lost, gene speciation and gene duplication with distinction between AD and NAD
     """
@@ -393,7 +402,10 @@ def binaryRecScore(node, lcamap):
         # node.get_children_name()," and children species ",
         # node.get_children_species()
         if(not node.is_leaf() and (lcamap[node].name == lcamap[node.get_child_at(0)].name or lcamap[node].name == lcamap[node.get_child_at(1)].name)):
-            dup += params.getdup(lcamap[node].name)
+            if not dupcost:
+                dup += params.getdup(lcamap[node].name)
+            else:
+                dup += dupcost
 
         children_list = node.get_children()
         supposed_children_species = lcamap[node].get_children_name()
@@ -405,13 +417,20 @@ def binaryRecScore(node, lcamap):
 
             if(dup == 0):
                 while(c is not None and (c.name not in supposed_children_species)):
-                    lost += params.getloss(c.name)
+                    if not losscost:
+                        lost += params.getloss(c.name)
+                    else:
+                        lost += losscost
+
                     child_lost += 1
                     c = c.up
 
             if(dup > 0):
                 while(c is not None and c.name != node.species):
-                    lost += params.getloss(c.name)
+                    if not losscost:
+                        lost += params.getloss(c.name)
+                    else:
+                        lost += losscost
                     child_lost += 1
                     c = c.up
 
@@ -492,10 +511,11 @@ def getImageTreeNode(genetree, specietree, lcamap):
     
     # get pre(s) for each  node in specietree
     reversedmap = getReverseMap(lcamap)
-    
+    k = 0
     # Traverse G in df order and set ih to 0 for internal node
     for node in genetree.iter_internal_node("levelorder", enable_root=True):
         node.add_features(i_h=0)
+        node.name = 'n%d'%k
 
     # Arange the children of each node in G according to the position of their images 
     # in post-order traversal of S

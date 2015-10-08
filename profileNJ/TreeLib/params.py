@@ -22,11 +22,11 @@ def get_hash(splist):
 	return hashlib.sha384(splist).hexdigest()
 
 
-def getdup(specie):
+def getdup(specie=None):
 	global dupcost
 	slist = specie
 
-	if not isinstance(specie, basestring):
+	if specie and not isinstance(specie, basestring):
 		slist = specie.get_leaf_names()
 
 	if isinstance(dupcost, dict):
@@ -34,10 +34,10 @@ def getdup(specie):
 	else:
 		return dupcost
 
-def getloss(specie):
+def getloss(specie=None):
 	global losscost
 	slist = specie
-	if not isinstance(specie, basestring):
+	if specie and not isinstance(specie, basestring):
 		slist = specie.get_leaf_names()
 	if isinstance(losscost, dict):
 		return losscost.get(get_hash(slist), get_internal(specie, getloss))

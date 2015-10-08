@@ -144,6 +144,34 @@ class TreeClass(TreeNode):
                 copy.add_feature(feature, getattr(self, feature))
         return copy
 
+    def edge_exist(self, node):
+        """ Return True if there exist an edge between 2 node"""
+        return (self.up == node or node.up == self)
+
+
+    def insert_node_between(self, node, new_node):
+        """ insert a new node between self and node"""
+        if not self.edge_exist(node):
+            return None
+        else :
+            if(self.up != node):
+                self, node = node, self
+            self.detach()
+            node.add_child(new_node)
+            new_node.add_child(self)
+            return node
+
+    def replace_by(self, new_node):
+        """Replace self by new node"""
+        self.children = new_node.children
+        for node in self.children:
+            node.up = self
+        self.features = set([])
+        self.name = new_node.name
+        for f in new_node.features:
+            self.add_feature(f, getattr(new_node, f))
+  
+
     def _correct_copy(self, copy):
         """Correct the structure of new node copied using newick method"""
         for node in copy.traverse("postorder"):
@@ -682,8 +710,8 @@ class TreeClass(TreeNode):
         """Label the internal node of a specietree for the polysolver algorithm"""
         count = 1
         for node in self.traverse(strategy='levelorder'):
-            if not node.is_leaf() and node.name in [TreeClass.DEFAULT_NAME, TreeClass.DEFAULT_GENE]:
-                node.name = "%i" % (count)
+            if not node.is_leaf() and node.name in [TreeClass.DEFAULT_NAME, TreeClass.DEFAULT_GENE, '']:
+                node.name = "n%i" % (count)
                 count += 1
         return self
 

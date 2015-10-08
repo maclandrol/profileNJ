@@ -3,3 +3,5 @@
 """Package for ProfileNJ."""
 
 from Multipolysolver import solvePolytomy
+import PolySolver
+import ZhengPolySolver as SingleSolver
