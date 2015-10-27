@@ -1,7 +1,7 @@
 profileNJ
 =======================
 
-Utility package for tree processing written in python and based on the [ete2](https://pythonhosted.org/ete2/index.html) toolkit.
+Utility package for gene tree correction and reconciliation with a species tree, written in python and based on the [ete2](http://etetoolkit.org/) toolkit.
 
 ## Installation 
 
@@ -13,36 +13,11 @@ You may need sudo privileges. You can also install a local version by using the 
 
 
 ## Minimum Documentation
-### TreeClass
-
-Bases from the TreeNode class of the ete2 package, TreeClass is a tree representation class. A tree consists of a collection of TreeClass instances connected in a hierarchical way. A TreeClass object can be loaded from the New Hampshire Newick format (newick).
-TreeClass add specific functions for tree processing not present in the ete2 TreeNode.
-
-run pydoc for minimum documentation.
-
-### TreeUtils 
-
-TreeUtils offer several static functions related to phylogeny tree. With You can fetch ensembl genetree and reconcile a gene tree to its species tree.
-
-
-+ **fetch_ensembl_genetree_by_id** : fetch an ensembl tree using the tree id.
-+ **fetch_ensembl_genetree_by_member** : fetch an ensembl tree using a member id.
-+ **lcaMapping** : Map a genetree to a specietree.
-+ **reconcile** : Reconcile the genetree with the specietree
-
-### ClusterUtils 
-
-ClusterUtils is an implementation of UPGMA (Unweighted Pair Group Method with Arithmetic Mean) and NJ (Neighbor-Joining), two clustering distance-based method for tree construction.
-
-
-### Multipolysolver
-
-Multipolysolver is a module for polytomy correction in genetree using the duplication-lost criterion. Mutltipolysolver output all the binary solution for a non-binary gene tree that minimize the duplication-lost score. If the input tree is considered unrooted, Multipolysolver can test every possible root and return the binary tree with the lowest duplication-lost or all rooted binary tree.
-
 
 ### profileNJ
 
-profileNJ is the executable version of **Multipolysolver**.
+_profileNJ_ correct genetree by contracting weak branches and resolving them to have binary trees with a minimum reconciliation cost to their specietree. _profileNJ_ use NJ in order to keep sequence information as much as possible an can output multiple solutions. If the input tree is considered unrooted, profileNJ can test every possible root and return the binary tree with the lowest duplication-lost or all rooted binary tree.
+
 
 #### Command line arguments
 
@@ -123,6 +98,100 @@ profileNJ is the executable version of **Multipolysolver**.
 #### File formats
   see [polytomy-solver-distance] (https://github.com/UdeM-LBIT/polytomy-solver-distance#file-formats)
 
+
+### reconcile
+
+_reconcile_  compute  and output the reconcilied gene tree, and it's cost, between a binary genetree and a binary species tree. Two mode are possible : in the run mode, you can compute the reconcilied gene tree, whereas in the smap mode, _reconcile_ return an automatic map between the genes in the gene trees and the species.
+
+optional arguments:
++  *-h, --help*
+        show this help message and exit
++  *-s SPECIETREE, --sFile SPECIETREE*
+        Specie tree in newick format
++  *-S SMAP, --sMap SMAP*
+        Gene to species map. Use the standard format.
++  *-g GENETREE, --gFile GENETREE*
+        Gene tree in newick format.
++  *--sep GENE_SEP*
+        Gene-Specie separator for each leaf name in the genetree. The program will guess by default. But you should provide it
++  *--spos SPOS*
+        The position of the specie name according to the separator.
++  *--cap*
+        Capitalize the species name of the genetree leaves to
+        match each species. Almost all functions are case sensitive.
++  *--display_losses*
+        Display losses in the reconciliation
++  *--output OUTPUT, --out OUTPUT*
+        Output an image of the reconciliated tree.
++  *--outform OUTFORM*
+        Accepted format are svg|pdf|png
++  *--export_orthoxml*
+        Export reconciliated tree to export_orthoxml. Losses are not exported
++  *--show_branch_tag*
+        Show branch length and support
++  *--verbose, -v*
+        Verbosity
++  *--reroot, -r*
+        Reroot in order to display all root reconciliation
+        result. Not Available in batch mode !!
++  *--debug*
+        Debugging ( test, will be removed )
++  *--batch*
+        Batch mode, use profileNJ file output
+
+
+### polytomySolver
+
+_polytomySolver_ is a new algorithm for resolving gene trees with polytomies in linear time. _polytomySolver_ support both unit and weighted duplication and loss cost. It's an improved version of the quadratic algorithm described by Lafond and al. in 2012 (M. Lafond, K.M. Swenson, and N. El-Mabrouk. An optimal reconciliation algorithm for gene trees with polytomies. In LNCS, volume 7534 of WABI, pages 106-122, 2012.), using the compressed species tree idea of Zheng and Zhang (Y. Zheng and L. Zhang. Reconciliation with non-binary gene trees revisited. In Lecture Notes in Computer Science, volume 8394, pages 418-432, 2014. Proceedings of RECOMB.). _polytomySolver_ is faster than Notung and thus can be used on large trees.
+
++  *-h, --help*
+        show this help message and exit
++  *-s SPECNW, --spectree SPECNW*
+        Name of the file containing the species newick tree.
++  *-S SMAP, --sMap SMAP*
+        Gene to species map. Use the standard format.
++  *-g GENENW, --genetree GENENW*
+        Name of the file containing the gene newick tree.
++  *--sep GENE_SEP*
+        Specify a gene separator if you're are not using a smap
++  *--losscost LOSSCOST*
+        Specify the losses cost
++  *--dupcost DUPCOST*
+        Specify the duplication cost
++  *--nsol NSOL*
+        Number of solution to output, Our implementation of Notung algorithms and both linear and dynamic versions of the Zheng and Zhang's algorithm only output one solution
++  *--spos SPOS*
+        Gene position when you have specified a separator. Possible values are "prefix" and "postfix". Default value is prefix.
++  *-o OUTFILE, --output OUTFILE*
+        Name of your output files with the corrected tree. The resolutions are printed on stdout if omitted.
++  *--mode {psolver,linzz,dynzz,notung,dynzz2}*
+        Algorithm to use. psolver is the default algorithm and correspond to _polytomySolver_. "linzz" and "dynzz" are respectively the linear and dynamic version of the Zheng and Zhang's algorithm. 
++  *--showcost*
+        Use this to show the reconciliated cost at the end. By default, only the resolved tree is shown
+
+
+## Reusable modules
+
+### TreeClass
+
+Bases from the TreeNode class of the ete package, TreeClass is a tree representation class. A tree consists of a collection of TreeClass instances connected in a hierarchical way. A TreeClass object can be loaded from the New Hampshire Newick format (newick).
+TreeClass add specific functions for tree processing not present in ete's TreeNode.
+
+run pydoc for minimum documentation.
+
+### TreeUtils 
+
+TreeUtils offer several static functions related to phylogeny tree. With You can fetch ensembl genetree and reconcile a gene tree to its species tree.
+
+
++ **fetch_ensembl_genetree_by_id** : fetch an ensembl tree using the tree id.
++ **fetch_ensembl_genetree_by_member** : fetch an ensembl tree using a member id.
++ **lcaMapping** : Map a genetree to a specietree.
++ **reconcile** : Reconcile the genetree with the specietree
+
+### ClusterUtils 
+
+ClusterUtils is an implementation of UPGMA (Unweighted Pair Group Method with Arithmetic Mean) and NJ (Neighbor-Joining), two clustering distance-based method for tree construction.
 
 ## NCBI_tree_of_life 
 
