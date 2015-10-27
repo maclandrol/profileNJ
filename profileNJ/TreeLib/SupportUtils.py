@@ -1,3 +1,4 @@
+from __future__ import print_function
 import subprocess
 import TreeUtils
 from TreeClass import TreeClass
@@ -7,10 +8,6 @@ import os
 import time
 import glob
 import numpy as np
-from Bio.Phylo.Applications import _Phyml
-from Bio import AlignIO
-from Bio.Alphabet import IUPAC
-
 try: 
     from lxml import etree
 except ImportError:
@@ -21,6 +18,14 @@ except ImportError:
             # Python 2.5
             import xml.etree.ElementTree as etree
         except: pass
+
+try : 
+    from Bio.Phylo.Applications import _Phyml
+    from Bio import AlignIO
+    from Bio.Alphabet import IUPAC
+except ImportError as e:
+    print("Could not import Biopython modules")
+    raise e
 
 SEQUENCE_ALPHABET = {'dna': IUPAC.unambiguous_dna,
                      'rna': IUPAC.unambiguous_rna, 'protein': IUPAC.protein}
@@ -33,8 +38,7 @@ def timeit(func):
         result = func(*args, **kw)
         tend = time.time()
         ttime = tend - tstart
-
-        print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
+        #print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
         return ttime, result
 
     return timed
@@ -121,22 +125,22 @@ def fix_ps_out(ps_out, mltreesfile):
 def write_al_in_nxs_file(fastafile, outnxs="seq.nxs", al=0):
 
     if al:
-        print
-        print 'CONVERTING your fasta file to nexus format ... with "clustalw"'
+        print()
+        print('CONVERTING your fasta file to nexus format ... with "clustalw"')
         subprocess.call(['clustalw', ('-INFILE=' + fastafile),
                          ('-OUTFILE=' + outnxs), '-convert', '-OUTPUT=NEXUS'])
 
     else:
-        print
-        print 'Sequence not aligned!!'
-        print 'ALIGNING sequences with clustalw ...'
+        print()
+        print('Sequence not aligned!!')
+        print('ALIGNING sequences with clustalw ...')
         clustalcmd = "clustalw -INFILE=" + fastafile + \
             " -OUTFILE=" + outnxs + " -OUTPUT=NEXUS"
         error = executeCMD(clustalcmd)
         if not error:
-            print "DONE! :  sequences ALIGNED with clustalw"
+            print("DONE! :  sequences ALIGNED with clustalw")
         else:
-            print "FAILED at clustalw execution !!!"
+            print("FAILED at clustalw execution !!!")
             return
 
     return nexrepair(outnxs)
@@ -165,7 +169,6 @@ def convert_to_phylip(filename, filetype, old_ext, rm=False):
 def construct_phyml_tree(input_tree):
     phyml = _Phyml.PhymlCommandline(
         input=input_tree, datatype='nt', bootstrap=100, optimize='tlr')
-    print str(phyml)
     phyml()
 
 
@@ -236,13 +239,13 @@ def nexrepair(nxsfile):
     return nxsfile
 
 
-def executeCMD(cmd):
-    print "\n", cmd
+def executeCMD(cmd, dispout=False):
     p = subprocess.Popen(
         cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     out, err = p.communicate()
-    print "STDERR\n---------\n", err
-    print "\nSTDOUT\n---------\n", out
+    #print "STDERR\n---------\n", err
+    if distout:
+        print("\nSTDOUT\n---------\n", out)
     return err
 
 
@@ -321,13 +324,12 @@ def runRaxmlPval(basedir, alignfile, narbres, out=None, listfile=[], sort=None):
     if not out:
         out = "%s/all.tree" % basedir
         with open(out, 'w') as fout:
-            for file in listfile:
-                print >>fout, open(file, 'r').read().strip().replace(
-                    '\s', '').replace('\n', '')
+            for f in listfile:
+                print(open(f, 'r').read().strip().replace('\s', '').replace('\n', ''), file=fout)
 
     # cleaning for raxml
-    for file in glob.glob("%s/*trees" % basedir):
-        os.remove(file)
+    for f in glob.glob("%s/*trees" % basedir):
+        os.remove(f)
 
     cmd = "raxmlHPC-SSE3 -f g -z %s -s %s -m GTRGAMMA -n trees -w %s" % (
         out, alignfile, os.path.abspath(basedir))

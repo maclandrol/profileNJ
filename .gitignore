@@ -7,7 +7,7 @@ __pycache__/
 # Binary script in home folder
 profileNJ.py
 reconcile.py
-
+polySolver.py
 # data folder
 data/*
 

@@ -1,13 +1,13 @@
 # This file is part of profileNJ
 #
 # Date: 02/2014
-# TreeClass is a python class derived from TreeNode class from the ete2 package.
+# TreeClass is a python class derived from TreeNode class from the ete3 package.
 # TreeClass add additional specific function
 
 __author__ = "Emmanuel Noutahi"
 
-from ete2 import TreeNode
-from ete2.phylo import EvolEvent
+from ete3 import TreeNode
+from ete3.phylo import EvolEvent
 import types
 from collections import defaultdict as ddict
 from itertools import izip
@@ -181,7 +181,6 @@ class TreeClass(TreeNode):
                 child = node.get_child_at(0)
                 if(child.is_leaf()):
                     ori_node = (self & (child.name)).up
-                    print ori_node
                 else:
                     ori_node = self.get_common_ancestor(
                         child.get_leaf_name()).up
@@ -225,7 +224,7 @@ class TreeClass(TreeNode):
             return target_nodes
 
         except (ValueError, IndexError) as e:
-            print "You may have names which cannot be associated with a node"
+            print("You may have names which cannot be associated with a node")
             raise e
 
     def insert_child_at(self, i, newNode, replace_if_exist=True):
@@ -345,7 +344,8 @@ class TreeClass(TreeNode):
         return feature
 
     def contract_tree(self, seuil=0, feature='support', break_tree_topo=False):
-        """ Contract tree based on the dist between node, using a threshold. `contract_tree` 
+        """ Contract
+         tree based on the dist between node, using a threshold. `contract_tree` 
         proceed bottom-up. Any branches with a support less than "seuil" will be removed
         if `break_tree_topo` is set to True, all the branch under this node will be recursively removed
         """
@@ -361,8 +361,8 @@ class TreeClass(TreeNode):
                 hits.extend(self.get_leaves_by_feature(species=value))
             self.prune(hits)
         except Exception as e:
-            print e
-            print "Check if this tree have species as feature"
+            print("Check if this tree have species as feature")
+            raise e
 
     @classmethod
     def get_path_to_ancestor(cls, node, ancestor):
@@ -383,8 +383,6 @@ class TreeClass(TreeNode):
         com_anc = self.get_common_ancestor(node)
         path1 = self.get_path_to_ancestor(self, com_anc)
         path2 = self.get_path_to_ancestor(node, com_anc)[::-1]
-        #print path1
-        #print path2
         return path1[1:] + path2[1:-1]
 
     def to_polytomy(self, break_tree_topo=False):

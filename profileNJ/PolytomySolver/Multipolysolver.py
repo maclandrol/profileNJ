@@ -113,25 +113,25 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
         solution = []
 
         if(verbose):
-            print "Matrix M: \n"
-            print cost_table
-            print
-            print "Path table for tree construction: \n"
-            print path_table
-            print
-            print "Correspondance: \n"
+            print( "Matrix M: \n")
+            print( cost_table)
+            print()
+            print( "Path table for tree construction: \n")
+            print( path_table)
+            print()
+            print( "Correspondance: \n")
             pprint(row_node_corr)
-            print
-            print "Gene Tree:\n"
-            print genetree.get_ascii(attributes=['species', 'name'])
-            print
-            print "Specie Tree:\n"
-            print specietree.get_ascii()
-            print "\nNumber of Tree found : ", len(paths), "\n"
-            print "List of possible path: "
+            print()
+            print( "Gene Tree:\n")
+            print( genetree.get_ascii(attributes=['species', 'name']))
+            print()
+            print( "Specie Tree:\n")
+            print( specietree.get_ascii())
+            print( "\nNumber of Tree found : ", len(paths), "\n")
+            print( "List of possible path: ")
             for path in paths:
-                print path
-            print
+                print( path)
+            print()
 
         i = 1
         for path in paths:
@@ -474,16 +474,16 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
     # node_in_tree list
     if(node_in_tree and len(node_in_tree) == 1):
         if(verbose):
-            print "Total number of node = ", len(node_in_tree[0]), " root specie = ", node_in_tree[0].species, "\n\n"
+            print( "Total number of node = ", len(node_in_tree[0]), " root specie = ", node_in_tree[0].species, "\n\n")
         node_in_tree[0].add_features(cost=cost)
         return node_in_tree[0]
     else:
         # Display error or raise exception ??
-        print specietree.get_ascii(show_internal=True), "\n"
-        print genetree, "\n Node in tree\n\n"
-        print chemin
+        print(specietree.get_ascii(show_internal=True), "\n")
+        print(genetree, "\n Node in tree\n\n")
+        print(chemin)
         for node in node_in_tree:
-            print node.get_ascii(show_internal=True, attributes=['species'])
+            print( node.get_ascii(show_internal=True, attributes=['species']))
         raise ValueError(
             "Cannot construct your tree, %i node still not used !\n" % len(node_in_tree))
 
@@ -517,7 +517,7 @@ def findSpeciationBestJoin(matrice, node_order, parent_node, node_in_tree, metho
     join_index = []
 
     if(verbose):
-        print "Using %s as clustering method" % (method)
+        print( "Using %s as clustering method" % (method))
 
     if(method == 'upgma'):
         for x_0 in child_0_list:
@@ -703,7 +703,7 @@ def computePolytomyReconCost(genetree, specietree, verbose=False):
                 recon_cost += cost[0]
 
             except Exception as e:
-                print e
+                print(e)
 
         elif(node.is_polytomy()):
             sptree = specietree.copy(method="simplecopy")
@@ -712,9 +712,9 @@ def computePolytomyReconCost(genetree, specietree, verbose=False):
             mat_table, row_node = polySolver(TreeUtils.treeHash(
                 node), node, sptree, None, [], 1, verbose=verbose, mode="none")
             if(verbose):
-                print node
+                print(node)
                 pprint(mat_table)
-                print "%s : -------------------------------------------------------\n" % (recon_cost)
+                print("%s : -------------------------------------------------------\n" % (recon_cost))
             recon_cost += mat_table[-1, 0]
 
         else:

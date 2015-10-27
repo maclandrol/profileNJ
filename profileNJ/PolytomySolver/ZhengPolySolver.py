@@ -3,6 +3,7 @@ from ..TreeLib import TreeClass, TreeUtils, params
 from collections import defaultdict as ddict
 import numpy as np
 from functools import partial
+import operator
 
 def simpleConstruct(nodelist, nodemap, K, T, W, P, root):
 
@@ -12,15 +13,14 @@ def simpleConstruct(nodelist, nodemap, K, T, W, P, root):
     # W ==> multiplicity
     # Fid : Father id
     # image_nodes ==> P
-    #print nodelist
+    #print(nodelist)
     #parent = [(node.name, node.parent) for node in nodemap.values() if node.has_feature("parent")]
-    #print K
-    #print T
-    #print W
-    #print parent
-    #print P
+    #print(K)
+    #print(T)
+    #print(W)
+    #print(parent)
+    #print(P)
     
-
     def insertNode(node, nodes):
         if len(nodes) == 0 :
             return
@@ -97,7 +97,7 @@ class Solver(object):
         rW = ddict(list)
         for g in node.get_children():
             s = self.lcamap[g]
-            rW[s.name].append(g.copy())
+            rW[s.name].append(g)
             W[s.name] += 1
         return W, rW
 
@@ -112,7 +112,7 @@ class Solver(object):
                 W, rW = self._compute_mult(node)
                 solution = self.compute_table(images_trees[node], W, rW)
                 node.replace_by(solution)
-        return self.genetree.write()
+        return self.genetree.write(format=9)
 
     def get_solution(self, image_tree, multiplicities, reverse_node_map, outgene, ingene):
         """Reconstruct a genetree solution"""
@@ -134,8 +134,6 @@ class LinPolySolver(Solver):
         B = ddict(int)
         ingene = ddict(int)
         outgene = ddict(int)
-        #print image_tree
-
         def update(a, b, degree_diff):
             if degree_diff > 2:
                 return 0, 0
@@ -222,7 +220,7 @@ class DynPolySolver(Solver):
         U = ddict(partial(np.zeros))
         M = ddict(int)
         I = ddict(partial(np.zeros))
-        #print image_tree
+        #print( image_tree
 
         outgene = ddict(int)
         ingene = ddict(int)
@@ -321,80 +319,54 @@ class DynPolySolver(Solver):
             
             ingene[node.name] = I[node.name][outgene[node.name]]
 
+        #print( 'outgene ===> ', outgene)
+        #print( 'ingene ===> ', ingene_
+        #print( 'I == >', I_
+        #print( 'W == >', W_
+        #print( 'M == >', M)
+
 
         return self.get_solution(image_tree, W, rW, outgene, ingene)
 
 
 class NotungSolver(Solver):
-    def __init__(self, genetree, specietree, lcamap, dupcost=1, losscost=1, nsol=1):
+    def __init__(self, genetree, specietree, lcamap, dupcost=1, losscost=1):
         super(self.__class__, self).__init__(genetree, specietree, lcamap)
         # current version is not working if you want more that one solution
         # will let it that way for now, because we don't really need that in the simulation 
         # comparision
         self.dupcost = dupcost
         self.losscost = losscost
-        self.resolved = ddict(list)
 
-    def reconstruct(self, nsol=1):
-        self.nsol = (nsol or self.nsol)
-        cur_sol = 1
-        k = self.nsol
-        genetree_list = [self.genetree]
-        for tree in genetree_list:
-            found_polytomy = False
-            for node in tree.traverse("postorder"):
+    def reconstruct(self):
+        for node in self.genetree.traverse("postorder"):
 
-                if not node.is_leaf() and not node.is_binary():
-                    node_hash = TreeUtils.treeHash(node)
-                    find_polytomy = True
-                    W, rW = self._compute_mult(node)
-                    self.mincost = ddict(partial(np.zeros))
-                    self.cost = ddict(partial(np.zeros))
-                    self.out = ddict(int)
-                    self.losses = {}
-                    self.dups = {}
-                    self.changed = {}
-                    self.currDup = ddict(int)
-                    self.currLoss = ddict(int)
-                    self.currSpec = ddict(int)
-                    resolved_polytomy = []
-                    seen = False
-
-                    if self.resolved[node_hash]:
-                        next_solutions = self.resolved[node_hash]
-                        seen  = True
-
-                    else :
-                        next_solutions = self.Reconstruct(self.lcamap[node], W, rW, k)
-
-                    for resolved_node in next_solutions:
-                        # This is some memoizing optimisation
-                        # only hepfull is we output all the solution, which we are not doing
-                        # right now
-                        if resolved_node is not None:
-                            cur_sol += 1
-                            if cur_sol > self.nsol:
-                                k = 1
-                            if not seen:
-                                self.resolved[node_hash].append(resolved_node)
-                            node.replace_by(resolved_node)
-                            t = tree.copy()
-                            resolved_polytomy.append(t)
-                    genetree_list.extend(resolved_polytomy[:-1])
-
-            if not found_polytomy:
-                break
-        return [t.write() for t in genetree_list][0]
+            if not node.is_leaf() and not node.is_binary():
+                node_hash = TreeUtils.treeHash(node)
+                W, rW = self._compute_mult(node)
+                self.mincost = ddict(partial(np.zeros))
+                self.cost = ddict(partial(np.zeros))
+                self.out = ddict(int)
+                self.losses = {}
+                self.dups = {}
+                self.changed = {}
+                self.currDup = ddict(int)
+                self.currLoss = ddict(int)
+                self.currSpec = ddict(int)
+                for resolved_node in self.Reconstruct(self.lcamap[node], W, rW, len(node.get_children())):
+                    node.replace_by(resolved_node)
+                    
+        return self.genetree.write(format=9)
 
 
-    def Reconstruct(self, specT, W, rW, k=1):
+    def Reconstruct(self, specT, W, rW, n, k=1):
         """Reconstruct (see notung paper)"""
-        maxW = max(W.values())
+        maxW =  n #max(W.values())
         self.Ascend(specT, maxW, W)
         reset = True
         i = 1
         while True:
-            self.changed[specT.name] = self.Descend(specT, reset, 1, W)
+            self.changed[specT.name] = self.Descend(specT, reset, 1, W, maxW)
             if not (self.changed[specT.name]):
                 break
             if(i>k):
@@ -402,7 +374,7 @@ class NotungSolver(Solver):
             geneT, final_event = self.Construct(specT, rW)
             i += 1
             yield geneT
-            #print geneT.get_ascii(show_internal=True, attributes=['name'])
+            #print( geneT.get_ascii(show_internal=True, attributes=['name']))
             reset = False;
 
 
@@ -425,9 +397,8 @@ class NotungSolver(Solver):
             for i in xrange(1, maxW+1):
                 self.mincost[node.name][i-1] = np.min(self.cost[node.name][i-1,:])
 
-    def Descend(self, node, reset, i, W):
+    def Descend(self, node, reset, i, W, maxW):
         mv = W[node.name]
-        maxW = max(W.values())
         if node.is_leaf():
             self.out[node.name] = 0
             self.losses[node.name] = max(i-mv, 0)
@@ -439,10 +410,10 @@ class NotungSolver(Solver):
         if not reset:
             # Check each child - if either has another solution
             # return True
-            self.changed[lchild.name] = self.Descend(lchild, False, self.out[node.name], W)
+            self.changed[lchild.name] = self.Descend(lchild, False, self.out[node.name], W, maxW)
             if self.changed[lchild.name]:
                 return True
-            self.changed[rchild.name] = self.Descend(rchild, False, self.out[node.name], W)
+            self.changed[rchild.name] = self.Descend(rchild, False, self.out[node.name], W, maxW)
             if self.changed[rchild.name]:
                 return True 
 
@@ -460,8 +431,8 @@ class NotungSolver(Solver):
                 self.out[node.name] += 1
 
         # We need the values for a new out[node.name]
-        self.changed[lchild.name] = self.Descend(lchild, True, self.out[node.name], W)
-        self.changed[rchild.name] = self.Descend(rchild, True, self.out[node.name], W)
+        self.changed[lchild.name] = self.Descend(lchild, True, self.out[node.name], W, maxW)
+        self.changed[rchild.name] = self.Descend(rchild, True, self.out[node.name], W, maxW)
         self.losses[node.name] = max(i-self.out[node.name]-mv, 0)
         self.dups[node.name] = max(self.out[node.name]-i+mv, 0)
         return True
@@ -476,9 +447,20 @@ class NotungSolver(Solver):
             g_lchild, el = self.Construct(node, rW)
             g_rchild, er = self.Construct(node, rW)
             g.add_features(type=TreeClass.AD)
-            g.add_child(g_lchild)
-            g.add_child(g_rchild)
-        
+            # this is a little strange, it's like we have a duplication
+            # then one of the child go extinct ==> this just look like a speciation in the tree imo
+            if el=='lost' and er =='lost':
+                raise ValueError( "This case should not happen")
+                self.currDup[node.name] -=1
+
+            if el == 'lost':
+                g = g_rchild
+            elif er == 'lost':
+                g = g_lchild
+            else:
+                g.add_child(g_lchild)
+                g.add_child(g_rchild)
+
         elif self.currLoss[node.name] < self.losses[node.name]:
             self.currLoss[node.name] += 1
             event = "lost"
@@ -489,20 +471,109 @@ class NotungSolver(Solver):
             event = "spec"
             g_lchild, el = self.Construct(node.get_child_at(0), rW)
             g_rchild, er = self.Construct(node.get_child_at(1), rW)
-            if el == 'lost':
+            
+            if er == 'lost' and el=='lost':
+                event = 'lost'
+                g.add_child(g_lchild)
+                g.add_child(g_rchild)
+                g.add_features(type=TreeClass.LOST)
+
+            elif el == 'lost':
                 g = g_rchild
             elif er == 'lost':
                 g = g_lchild
+
             else:
                 g.add_child(g_lchild)
                 g.add_child(g_rchild)
                 g.add_features(type=TreeClass.SPEC)
 
         else :
+            event = 'None'
             g = rW[node.name].pop()
-        #print g
-        #print node.name
-        #print event
-        #print self.dups
-        #print self.losses
+            g.name = node.name
+
         return g, event
+
+
+class Dynamiq2(Solver):
+
+    def __init__(self, genetree, specietree, lcamap, dupcost=1, losscost=1):
+        super(self.__class__, self).__init__(genetree, specietree, lcamap)
+        self.dupcost = dupcost 
+        self.losscost = losscost
+
+
+    def reconstruct(self):
+        images_trees = TreeUtils.getImageTreeNode(self.genetree, self.specietree, self.lcamap)
+
+        for node in self.genetree.traverse("postorder"):
+            if (node.is_root() or node.is_internal()) and not node.is_binary():
+                for n in images_trees[node].traverse():
+                    if(n.up != None):
+                        n.add_features(parent=n.up.name)
+                W, rW = self._compute_mult(node)
+                solution = self.compute_table(images_trees[node], node, W, rW)
+                node.replace_by(solution)
+        return self.genetree.write(format=9)
+
+
+    def compute_table(self, image_tree, node, W, rW):
+        """Compute cost table"""
+
+        child_len = len(node.get_children())
+        costTable = ddict(partial(np.zeros))
+        ingene = ddict(int)
+        outgene = ddict(int)
+        #print( image_tree)
+
+        def getCost(w_u, k):
+            return self.dupcost if w_u>k else self.losscost
+
+        def getWbar(c_u):
+            return min(self.dupcost + self.losscost, c_u*self.losscost)
+
+        for node in image_tree.traverse("postorder"):
+            costTable[node.name] = np.zeros(child_len)
+            ingene[node.name] = +np.inf
+            c_u = 0 
+            if(node.up != None):
+                c_u = node.depth - node.up.depth - 1
+            w_bar = getWbar(c_u)
+            w_u = W[node.name]
+            for k in xrange(1, child_len+1):
+                w = getCost(w_u, k)
+
+                if len(node.get_children())==0:
+                    costTable[node.name][k-1] =  w_bar*min(k, w_u) + w*abs(k-w_u) 
+                    ingene[node.name] =  w_u - 1
+            
+                elif len(node.get_children())==1:
+                    child = node.get_children()[0]
+                    val_on_kp = []
+                    for k_p in xrange(1, child_len+1):
+                        dt = w_bar*min(k, w_u) + w*abs(k-w_u -k_p) 
+                        val_on_kp.append(dt+ k_p*self.losscost + costTable[child.name][k_p-1])
+                    min_kp, costTable[node.name][k-1] = min(enumerate(val_on_kp), key=operator.itemgetter(1))
+                    ingene[node.name] = min(min_kp + w_u , ingene[node.name])
+
+                elif len(node.get_children()) == 2:
+                    child1 = node.get_children()[0]
+                    child2 = node.get_children()[1]
+                    val_on_kp = []
+                    for k_p in xrange(1, child_len+1):
+                        dt = w_bar*min(k, w_u) + w*abs(k-w_u-k_p) 
+                        val_on_kp.append(dt + costTable[child1.name][k_p-1]+ costTable[child2.name][k_p-1] )
+                    min_kp, costTable[node.name][k-1] = min(enumerate(val_on_kp), key=operator.itemgetter(1))
+                    ingene[node.name] = min(min_kp + w_u , ingene[node.name])
+        
+        outgene[image_tree.name] = 0
+        
+        for node in reversed(image_tree.get_descendants("postorder")):
+            outgene[node.name] = ingene[node.parent] - W[node.parent]
+            depth_diff = node.depth - node.up.depth
+
+            if (depth_diff*self.losscost) > self.dupcost:
+                outgene[node.name] = 0
+
+        return self.get_solution(image_tree, W, rW, outgene, ingene)

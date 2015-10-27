@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from profileNJ.PolytomySolver import *
-from ete2 import PhyloTree
+from ete3 import PhyloTree
 from profileNJ.TreeLib.SupportUtils import read_trees
 from profileNJ.TreeLib import TreeUtils, TreeClass, params
 import argparse
@@ -11,16 +11,16 @@ import re
 
 GRAPHICAL_ACCESS = True
 try:
-	from ete2 import TreeStyle, NodeStyle, TextFace
+	from ete2 import TreeStyle, NodeStyle, TextFace, faces, AttrFace
 except ImportError, e:
 	GRAPHICAL_ACCESS = False
-	print "Warning : PyQt not installed"
+	print("Warning : PyQt not installed")
 
 def prefix_specie_parser(node, speclist):
 	matches = [
 		sp for sp in speclist if node.name.lower().startswith(sp.lower())]
 	if not matches:
-		print "Cannot set specie for this node : " + node.name + "\nRename its name in the newick file"
+		print("Cannot set specie for this node : " + node.name + "\nRename its name in the newick file")
 	return max(matches, key=len)
 
 
@@ -31,6 +31,12 @@ def suffix_specie_parser(node, speclist):
 
 def get_specie_parser(spos):
 	return prefix_specie_parser if spos == "prefix" else suffix_specie_parser
+
+def speciemapper(speclist):
+	if isinstance(speclist, list):
+		return " | ".join([x.lower()[0:2] for x in speclist])
+	else :
+		return  speclist[0:2].lower()
 
 
 parser = argparse.ArgumentParser(
@@ -94,11 +100,11 @@ if(runmode):
 	nw_sav = []
 	for genewick in gnewicks:
 		i += 1
-		genetree = TreeClass(genewick)
+		genetree = TreeClass(genewick, format=1)
 		speciemap = {}
 
-		rec_output = args.output + "_%dreconcilied"%i
-		events_output = args.output + "_%devents"%i
+		rec_output = args.output + "_%d_reconcilied.nwk"%i
+		events_output = args.output + "_%d.events"%i
 
 		if(args.smap):
 			regexmap = {}
@@ -125,11 +131,11 @@ if(runmode):
 		mapping = TreeUtils.lcaMapping(genetree, specietree )
 		dup, loss = TreeUtils.computeDLScore(genetree)
 
-		TreeUtils.reconcile(genetree, mapping, args.losses)
+		TreeUtils.reconcile(genetree, mapping, args.losses, speciemapper)
 
 		# display tree if verbose
 		if(args.verbose):
-			print genetree.get_ascii(attributes=['species', 'name'], show_internal=False)
+			print(genetree.get_ascii(attributes=['species', 'name'], show_internal=False))
 
 		# Export tree to extended newick format
 		genetree.write(outfile=rec_output, format=0, format_root_node=True)
@@ -156,10 +162,10 @@ if(runmode):
 			loss_style = NodeStyle()
 			# Gray dashed branch lines
 			loss_style["hz_line_type"] = 1
-			loss_style["hz_line_color"] = "#cccccc"
+			loss_style["hz_line_color"] = "#777777"
 			loss_style["shape"] = "circle"
-			loss_style["fgcolor"] = "#cccccc"
-			spec_style["size"] = 6
+			loss_style["fgcolor"] = "#777777"
+			spec_style["size"] = 8
 
 			leaf_style = NodeStyle()
 			leaf_style["size"] = 0
@@ -178,12 +184,21 @@ if(runmode):
 				elif(n.type == TreeClass.LOST):
 					n.set_style(loss_style)
 				
+			def layout(node):
+				if node.type == TreeClass.LOST:
+					faces.add_face_to_node(AttrFace("name", fgcolor="#777777"), node, 0)
+				elif node.is_leaf():
+					faces.add_face_to_node(AttrFace("name"), node, 0)
+
+
 
 			# Save tree as figure
 			ts.legend_position = 4
 			ts.branch_vertical_margin = 20
 			ts.margin_right = 50
 			ts.margin_top = 20
+			ts.show_leaf_name = False
+			ts.layout_fn = layout
 			duptxt = TextFace("Duplications : %d"%dup, penwidth=10, fsize=12, ftype="Verdana")
 			losstxt = TextFace("Losses : %d"%loss, penwidth=10, fsize=12, ftype="Verdana")
 			duptxt.margin_right = 30; losstxt.margin_right = 30
@@ -234,14 +249,14 @@ if(runmode):
 
 			recon_tree, events = gtree.reconcile(sptree)
 			dup2cost = 0
-			print recon_tree
-			print "Orthology and Paralogy relationships:"
+			print(recon_tree)
+			print("Orthology and Paralogy relationships:")
 			for ev in events:
 				if ev.etype == "S":
-					print 'ORTHOLOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.orthologs)
+					print('ORTHOLOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.orthologs))
 				elif ev.etype == "D":
 					dup2cost += 1
-					print 'PARALOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.outparalogs)
+					print('PARALOGY RELATIONSHIP:', ','.join(ev.inparalogs), "<====>", ','.join(ev.outparalogs))
 
 			dupcost, lostcost = 0, 0
 
@@ -251,7 +266,7 @@ if(runmode):
 				elif node.type == TreeClass.LOST:
 					lostcost += 1
 
-			print "Phylonode dup : ", dup2cost,  "Reconcile dup: ",  dupcost,  "Reconcile losses: ", lostcost
+			print("Phylonode dup : ", dup2cost,  "Reconcile dup: ",  dupcost,  "Reconcile losses: ", lostcost)
 
 	if args.reroot:
 		with open(args.output+".trees", 'w+') as g_IN:

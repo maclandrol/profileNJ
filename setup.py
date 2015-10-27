@@ -23,10 +23,10 @@ setuptools.setup(
 	version=__version__,
 
 	description="profileNJ correct polytomies in tree, using minimum reconciliation (with specietree) cost, and Neighbor-Joining algorithm for clustering",
-	url='https://github.com/UdeM-LBIT/python-tree-processing',
+	url='https://github.com/UdeM-LBIT/profileNJ',
 	author='Emmanuel Noutahi',
 	author_email='emmanuel.noutahi@hotmail.ca',
-	scripts = ['bin/profileNJ', 'bin/reconcile'],
+	scripts = ['bin/profileNJ', 'bin/reconcile', 'bin/polytomySolver'],
 
 	packages=setuptools.find_packages(exclude=['tests']),
 
@@ -48,7 +48,7 @@ setuptools.setup(
     test_suite="profileNJ.tests.test_suite",
 
 	install_requires=[
-		'ete2',
+		'ete3',
 		'numpy >= 1.8.1',
 		'lxml'
 	]

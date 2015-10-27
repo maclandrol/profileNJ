@@ -16,9 +16,9 @@ import urllib2
 import numpy as np
 from TreeClass import TreeClass
 from collections import defaultdict as ddict
-from ete2 import Phyloxml
-from ete2 import orthoxml
-from ete2.parser.newick import NewickError
+from ete3 import Phyloxml
+from ete3 import orthoxml
+from ete3.parser.newick import NewickError
 
 
 # TreeUtils:
@@ -47,7 +47,7 @@ def fetch_ensembl_genetree_by_id(treeID=None, aligned=0, sequence="none", output
         content = resp.read()
         #resp, content = http.request(server+ext, method="GET", headers={"Content-Type":output})
         if not resp.getcode() == 200:
-            print "Invalid response: ", resp.getcode()
+            print ("Invalid response: ", resp.getcode())
             raise ValueError('Failled to process request!')
 
         if(output.lower() != "text/x-phyloxml"):
@@ -80,7 +80,7 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
         resp, content = http.request(
             server + ext, method="GET", headers={"Content-Type": output})
         if not resp.status == 200:
-            print "Invalid response: ", resp.status
+            print("Invalid response: ", resp.status)
             raise ValueError('Failled to process request!')
         if(output.lower() != "text/x-phyloxml"):
             return TreeClass(content)
@@ -115,6 +115,7 @@ def lcaPreprocess(tree):
             i += 1
 
     node_map = ddict()
+    name2ind = ddict()
     for i in xrange(n):
         cur_node = node_visited[i]
         # bad practice
@@ -122,11 +123,13 @@ def lcaPreprocess(tree):
             node_map[cur_node] = min(node_map[cur_node], i)
         except :
             node_map[cur_node] = i
+        name2ind[cur_node.name] = node_map[cur_node]
 
     tree.add_features(lcaprocess=True)
     tree.add_features(rmqmat=rmq_array)
     tree.add_features(ind2node=node_visited)
     tree.add_features(node2ind=node_map)
+    tree.add_features(name2ind=name2ind)
 
 
 def getLca(sptree, species):
@@ -137,16 +140,28 @@ def getLca(sptree, species):
     A = sptree.ind2node
     M = sptree.rmqmat
     # using the biggest interval should return the lca of all species
-    s_index = sorted([sptree.node2ind[spec] for spec in species])
+    if len(species) > 1:
+        s_index = sorted([sptree.node2ind[spec] for spec in species])
     #print "s_index vaut :", s_index , " et taille est : ", len(sptree.node2ind), " et rmq est : ", sptree.rmqmat.shape
     #print sptree.ind2node
-    i = s_index[0]
-    j = s_index[-1]
+        i = s_index[0]
+        j = s_index[-1]
+    
+    else:
+        if isinstance(species[0], str):
+            # in this case, we have a leaf
+            i = sptree.name2ind[species[0]]
+        else:
+            # this is an instance of TreeClass
+            i = sptree.node2ind[species[0]]
+        j = i
     k = int(np.log2(j-i+1))
     if (A[M[i, k]].depth<= A[M[j-2**(k) +1, k]].depth):
         return A[M[i,k]]
     else:
         return A[M[j- 2**(k) +1, k]]
+
+
 
 def lcaMapping(genetree, specietree, multspeciename=True):
     """LCA mapping between a genetree and a specietree
@@ -161,39 +176,18 @@ def lcaMapping(genetree, specietree, multspeciename=True):
         lcaPreprocess(specietree)
 
     for node in genetree.traverse(strategy="postorder"):
-        try:
-        # Children are always visited before parent
-        # So for an internal node, we see leaves
-        # under an internal node before visiting that node
-            if not node.is_leaf():
-                # ML ADDED THIS
-                species = set([mapping[n] for n in node.get_children()])
-                if(len(species) > 1):
-                    # EN changed this
-                    #  mapping[node] = specieTree.get_common_ancestor(species)
-                    mapping[node] = getLca(specietree, species)
-                else:
-                    mapping[node] = list(species)[0]
-
-                if(multspeciename):
-                    node.add_features(
-                        species=",".join(sorted([x.name for x in species])))
-                else:
-                    node.add_features(species=mapping[node].name)
-
+        
+        if node.is_leaf():
+            mapping[node] = getLca(specietree, [node.species])
+        else:
+            # ML ADDED THIS
+            species = list(set([mapping[n] for n in node.get_children()]))
+            mapping[node] = getLca(specietree, species)
+            if(multspeciename):
+                node.add_features(
+                    species=",".join(sorted([x.name for x in species])))
             else:
-                sname = node.species
-                if not sname in smap:
-                    s = specietree & node.species
-                    smap[sname] = s
-                else:
-                    s = smap[sname]
-                mapping[node] = s
-
-        except Exception as e:
-            print e
-            print("%s without species" % node.name)
-            print node.get_ascii(attributes=['name', 'specie'])
+                node.add_features(species=mapping[node].name)
 
     genetree.add_features(lcaMap=mapping)
     return mapping
@@ -663,7 +657,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
             resetNodeName(genetree, gene_sep)
     else:
         # This is for debug, will never happen
-        print "error: dist file not found"
+        print("error: dist file not found")
         node_order = genetree.get_leaf_names()
         # Alternative, retrieve aligned sequence and run phyML
         gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
@@ -794,25 +788,25 @@ def customTreeCompare(original_t, corrected_t, t):
     ct_success = filter(None, map(lambda x: len(x) < 1, ct_leaves))
     t_success = filter(None, map(lambda x: len(x) < 1, t_leaves))
 
-    print "\nCorrected Tree binary list rf_fould\n"
-    print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_binary))
-    print "\nTree binary list rf_fould\n"
-    print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), t_binary))
+    print("\nCorrected Tree binary list rf_fould\n")
+    print("\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_binary)))
+    print("\nTree binary list rf_fould\n")
+    print("\n".join(map(lambda x: "\t".join([str(v) for v in x]), t_binary)))
 
     if(len(ct_success) == len(ct_leaves)):
-        print "**Leave remaining success for corrected tree"
-        print "\n".join([str(h) for h in t_success])
+        print("**Leave remaining success for corrected tree")
+        print("\n".join([str(h) for h in t_success]))
 
     else:
-        print "**Corrected tree doesn't follow patern"
-        print "\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves))
+        print("**Corrected tree doesn't follow patern")
+        print("\n".join(map(lambda x: "\t".join([str(v) for v in x]), ct_leaves)))
 
     if(len(t_success) == len(t_leaves)):
-        print "**Leave remaining success for tree"
+        print("**Leave remaining success for tree")
         # print "\n".join([str(h) for h in t_success])
     else:
-        print "**Tree doesn't follow patern"
+        print("**Tree doesn't follow patern")
         # print "\n".join(map(lambda x: "\t".join([str(v) for v in x]),
         # t_leaves))
 
-    print "**Compatibility test between tree: ", all(success)
+    print("**Compatibility test between tree: ", all(success))

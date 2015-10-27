@@ -9,12 +9,15 @@ from ..TreeLib.TreeUtils import *
 from ..TreeLib import params
 from ..PolytomySolver.Multipolysolver import polytomyPreprocess, polySolver
 from ..PolytomySolver.Multipolysolver import solvePolytomy, computePolytomyReconCost
+from ..PolytomySolver import *
 from ..tests import dirname
 
 import numpy as np
 import os
 
 genefile = os.path.join(dirname, "genetree/tree1.nw")
+g2solve = os.path.join(dirname, "genetree/500.nw")
+s2solve = os.path.join(dirname, "specietree/500.nw")
 specfile = os.path.join(dirname, "specietree/spec2.nw")
 ntgenefile = os.path.join(dirname, "genetree/notung_tree.nw")
 distmat = os.path.join(dirname, "distmat/distmat2.dist")
@@ -120,3 +123,57 @@ class TestSolver(unittest.TestCase):
 		#print tree
 		#print self.nttree
 		#print rf[0]
+
+	def test_polySolver(self):
+		genetree = TreeClass(g2solve)
+	    genetree.set_species(use_fn = lambda x : x.name)
+		specietree = TreeClass(s2solve)
+		lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
+        solver = PolySolver.GeneTreeSolver(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
+        solver.labelInternalNodes(genetree)
+        solver.labelInternalNodes(specietree)
+        solver.use_dp = False
+		self.solvePolytomies(solver, 'psolver')
+
+	def test_notungSolver(self):
+		genetree = TreeClass(g2solve)
+	    genetree.set_species(use_fn = lambda x : x.name)
+		specietree = TreeClass(s2solve)
+		specietree.label_internal_node()
+        lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
+        solver = SingleSolver.NotungSolver(genetree, specietree, self.lcamap,self.losscost, self.dupcost)
+		self.solvePolytomies(solver)
+
+	def test_zheng_Solver(self):
+		genetree = TreeClass(g2solve)
+	    genetree.set_species(use_fn = lambda x : x.name)
+		specietree = TreeClass(s2solve)
+		specietree.label_internal_node()
+		lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
+        solver = SingleSolver.LinPolySolver(genetree, specietree, self.lcamap)
+		self.solvePolytomies(solver)
+
+	def test_dynSolver(self):
+		genetree = TreeClass(g2solve)
+	    genetree.set_species(use_fn = lambda x : x.name)
+		specietree = TreeClass(s2solve)
+		specietree.label_internal_node()
+        lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
+        solver = SingleSolver.Dynamiq2(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
+        self.solvePolytomies(solver)
+	
+	def solvePolytomies(self, solver, solver_type='defsolver'):
+        
+        sols = []
+		if solver_type == 'psolver':
+            sols = [x+";" for x in self.solver.solvePolytomies(nsol)]
+        else:
+            sols = [self.solver.reconstruct()]
+        t = TreeClass(sols[0])
+        # should have 750 leaves
+		assert len(t) == 750
+		t.set_species(sep=args.gene_sep, pos=args.spos)
+		specietree = TreeClass(s2solve)
+        lcamap = TreeUtils.lcaMapping(t, specietree, False)
+		dup, loss = TreeUtils.computeDL(t,lcamap)
+		self.assertAlmostEqual(dup+loss,7605)		
