@@ -30,9 +30,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
     max_y = max(count.values()) + 1
     # assigning a correspondance between each row and a node
     # the assignment is done in level order
-
     polytomy_specie_set, row_node_corr = findMaxX(genetree, specietree)
-
     max_x = len(polytomy_specie_set)
     # cost cost_table to fill
     cost_table = numpy.zeros((max_x, max_y),  dtype=float)
@@ -40,6 +38,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
     path_table = numpy.ndarray((max_x, max_y), dtype='object')
 
     # fill the cost_table and the path_table
+
     for n in xrange(0, max_x):
         node = row_node_corr[n]
         zeropos = count[node.name] - 1
@@ -564,20 +563,11 @@ def getIndex(node_order, node):
 
 def polytomyPreprocess(polytomy, specietree, gene_matrix, node_order, method='upgma'):
     """Preprocessing of a polytomy """
-
+    lcamap = TreeUtils.lcaMapping(polytomy, specietree, multspeciename=False)
     for node in polytomy.traverse("postorder"):
         if(node.is_binary()):
-            children_list = node.get_children()
             ind_order = []
-            if (not node.has_feature('species')) or node.species == "Unknown":
-                species = set([i.species for i in children_list])
-                if(len(species) > 1):
-                    node.add_features(
-                        species=specietree.get_common_ancestor(species).name)
-                else:
-                    node.add_features(species=species.pop())
-
-            if(	node.name == TreeClass.DEFAULT_NAME):
+            if(	node.name == TreeClass.DEFAULT_NAME or node.name == "NoName"):
                 global PARTIAL_RESOLUTION_ITERATOR
                 node.name = "%s_I_%i" % (
                     node.species, PARTIAL_RESOLUTION_ITERATOR)
@@ -587,7 +577,7 @@ def polytomyPreprocess(polytomy, specietree, gene_matrix, node_order, method='up
                         node.species, PARTIAL_RESOLUTION_ITERATOR)
                 PARTIAL_RESOLUTION_ITERATOR += 1
 
-            for child_node in children_list:
+            for child_node in node.get_children():
                 ind_order.append(getIndex(node_order, child_node))
 
             ind_order.sort(reverse=True)
@@ -598,16 +588,20 @@ def polytomyPreprocess(polytomy, specietree, gene_matrix, node_order, method='up
     return gene_matrix, node_order
 
 
+def _compute_mult(polytomy, lcamap):
+    W = ddict(int)
+    for g in polytomy.get_children():
+        s = s.lcamap[g]
+        W[s.name] += 1
+    return W
+
 def findMaxX(polytomy, specietree):
     """Find Number of Specie and the specie list in order to create and fill the dup/cost matrix"""
+    if not polytomy.has_feature('species'):
+        lcamap = TreeUtils.lcaMapping(polytomy, specietree, multspeciename=False)
+
+    polytomy_specie_ancestor = (specietree&polytomy.species)
     polytomy_name_set = set(polytomy.get_children_species())
-    if(len(polytomy_name_set) == 1):
-        for e in polytomy_name_set:
-            break
-        polytomy_specie_ancestor = specietree & (e)
-    else:
-        polytomy_specie_ancestor = specietree.get_common_ancestor(
-            polytomy_name_set)
 
     for leaf in polytomy_specie_ancestor.traverse("postorder"):
         parent = leaf.up
@@ -624,6 +618,7 @@ def findMaxX(polytomy, specietree):
             else:
                 polytomy_name_set.add(leaf.name)
 
+
     row_node_corr = {}
     n_row = len(polytomy_name_set) - 1
 
@@ -633,7 +628,6 @@ def findMaxX(polytomy, specietree):
             n_row -= 1
 
     return polytomy_name_set, row_node_corr
-
 
 def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, path_limit=-1, method='upgma', sol_limit=-1):
 
@@ -706,9 +700,9 @@ def computePolytomyReconCost(genetree, specietree, verbose=False):
                 print(e)
 
         elif(node.is_polytomy()):
-            sptree = specietree.copy(method="simplecopy")
             # here, the node is a polytomy, so we compute the table and
             # find the solution cost at [-1, 0]
+            sptree = specietree.copy("simplecopy")
             mat_table, row_node = polySolver(TreeUtils.treeHash(
                 node), node, sptree, None, [], 1, verbose=verbose, mode="none")
             if(verbose):

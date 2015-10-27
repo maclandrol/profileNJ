@@ -46,12 +46,12 @@ class TestCluster(unittest.TestCase):
         node_order = [TreeClass("a:1;"),TreeClass("b:1;"),TreeClass("c:1;"),TreeClass("d:1;"),TreeClass("e:1;") ]
         t2_nj, final_array, smallest_index = C.treeCluster(self.distmat1, node_order, depth=None, method='nj')
         t1_nj = TreeClass("(((a,b),c),(d,e));")
-        rf, max_rf, common_leaves, parts_t1, parts_t2 = t1_nj.robinson_foulds(t2_nj, unrooted_trees=True)
-        assert rf == 0
+        rf = t1_nj.robinson_foulds(t2_nj, unrooted_trees=True)
+        assert rf[0] == 0
 
     def test_upgma(self):
         node_order = [TreeClass("a:1;"),TreeClass("b:1;"),TreeClass("c:1;"),TreeClass("d:1;"),TreeClass("e:1;") ]
         t2_upgma, final_array, smal_pos = C.treeCluster(self.upgmamat, node_order, depth=None, method='upgma')
         t1_upgma = TreeClass('((a,b),((d,e),c));')
-        rf, max_rf, common_leaves, parts_t1, parts_t2 = t1_upgma.robinson_foulds(t2_upgma)
-        assert rf==0
+        rf = t1_upgma.robinson_foulds(t2_upgma)
+        assert rf[0]==0

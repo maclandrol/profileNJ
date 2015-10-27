@@ -22,7 +22,7 @@ except:
 class TreeClass(TreeNode):
 
     DEFAULT_SPECIE = "Unknown"
-    DEFAULT_NAME = "NoName"
+    DEFAULT_NAME = ""
     DEFAULT_GENE = "Unknown"
     AD = 1
     LOST = -1

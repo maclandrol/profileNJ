@@ -30,7 +30,7 @@ class TestSolver(unittest.TestCase):
         self.sptreestar = TreeClass("((c,d)e,(a,b)f)g;", format=1)
         self.gtree = TreeClass(genefile)
         self.stree = TreeClass(specfile)
-        self.nttree = TreeClass(ntgenefile)
+        self.nttree = TreeClass(ntgenefile, format=1)
         self.matrix = {
             'a' : np.asarray([1,0,1,2], dtype=float),
             'b' : np.asarray([2,1,0,1], dtype=float),
@@ -86,10 +86,8 @@ class TestSolver(unittest.TestCase):
         params.set(dup_cost, loss_cost)
 
         node_order = self.nostar.get_leaf_names()
-        dist_mat = C.makeFakeDstMatrice(len(node_order), 1, 10)
-        
+        dist_mat = C.makeFakeDstMatrice(len(node_order), 1, 10)       
         dist_mat, node_order = polytomyPreprocess(self.nostar, self.sptreestar, dist_mat, node_order, method='nj')
-        
         matrix, row_node = polySolver(treeHash(self.nostar, addinfos='demo'), self.nostar, self.sptreestar, None, [], 1, verbose=False, mode="none")
         for key in row_node:
             assert np.array_equal(matrix[key,:], self.nostarmat[row_node[key].name])
@@ -128,29 +126,30 @@ class TestSolver(unittest.TestCase):
         genetree = TreeClass(g2solve)
         genetree.set_species(use_fn = lambda x : x.name)
         specietree = TreeClass(s2solve)
-        lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-        solver = PolySolver.GeneTreeSolver(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
+        lcamap = lcaMapping(genetree, specietree, False)
+        solver = PolySolver.GeneTreeSolver(genetree, specietree, lcamap, 1,1) 
         solver.labelInternalNodes(genetree)
         solver.labelInternalNodes(specietree)
         solver.use_dp = False
         self.solvePolytomies(solver, 'psolver')
+
 
     def test_notungSolver(self):
         genetree = TreeClass(g2solve)
         genetree.set_species(use_fn = lambda x : x.name)
         specietree = TreeClass(s2solve)
         specietree.label_internal_node()
-        lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-        solver = SingleSolver.NotungSolver(genetree, specietree, self.lcamap,self.losscost, self.dupcost)
+        lcamap = lcaMapping(genetree, specietree, False)
+        solver = SingleSolver.NotungSolver(genetree, specietree,lcamap)
         self.solvePolytomies(solver)
-
+        
     def test_zheng_Solver(self):
         genetree = TreeClass(g2solve)
         genetree.set_species(use_fn = lambda x : x.name)
         specietree = TreeClass(s2solve)
         specietree.label_internal_node()
-        lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-        solver = SingleSolver.LinPolySolver(genetree, specietree, self.lcamap)
+        lcamap = lcaMapping(genetree, specietree, False)
+        solver = SingleSolver.LinPolySolver(genetree, specietree, lcamap)
         self.solvePolytomies(solver)
 
     def test_dynSolver(self):
@@ -158,22 +157,22 @@ class TestSolver(unittest.TestCase):
         genetree.set_species(use_fn = lambda x : x.name)
         specietree = TreeClass(s2solve)
         specietree.label_internal_node()
-        lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-        solver = SingleSolver.Dynamiq2(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
+        lcamap = lcaMapping(genetree, specietree, False)
+        solver = SingleSolver.Dynamiq2(genetree, specietree, lcamap) 
         self.solvePolytomies(solver)
     
     def solvePolytomies(self, solver, solver_type='defsolver'):
         
         sols = []
         if solver_type == 'psolver':
-            sols = [x+";" for x in self.solver.solvePolytomies(nsol)]
+            sols = [x+";" for x in solver.solvePolytomies(1)]
         else:
-            sols = [self.solver.reconstruct()]
+            sols = [solver.reconstruct()]
         t = TreeClass(sols[0])
         # should have 750 leaves
         assert len(t) == 750
-        t.set_species(sep=args.gene_sep, pos=args.spos)
+        t.set_species(use_fn = lambda x : x.name)
         specietree = TreeClass(s2solve)
-        lcamap = TreeUtils.lcaMapping(t, specietree, False)
-        dup, loss = TreeUtils.computeDL(t,lcamap)
-        self.assertAlmostEqual(dup+loss,7605)       
+        lcamap = lcaMapping(t, specietree, False)
+        dup, loss = computeDL(t,lcamap)
+        self.assertAlmostEqual((dup+loss)/7605, 1)       

@@ -20,8 +20,8 @@ class TestTreeClass(unittest.TestCase):
 
 	def test_copy(self):
 		treecopy = self.tree1.copy("simplecopy")
-		rf, max_rf, common_leaves, parts_t1, parts_t2 = treecopy.robinson_foulds(self.tree1, unrooted_trees=True)
-		assert rf==0
+		rf = treecopy.robinson_foulds(self.tree1, unrooted_trees=True)
+		assert rf[0]==0
 		for node in treecopy:
 			ori_node = self.tree1&node.name
 			for feat in ori_node.features:
