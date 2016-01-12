@@ -138,6 +138,7 @@ losscost = {}
 # if user prefer a 2 input cost
 if(args.costdl):
     for spl in spleave:
+        spl = hashlib.sha384(",".join(sorted(spl.split(",")))).hexdigest()
         dupcost[spl] =  args.costdl[0]
         losscost[spl] =  args.costdl[1]
 
@@ -154,10 +155,11 @@ elif(args.sdlcost):
         except Exception:
             pass
 
-# set any species without a match to default dlcost : 1, 1
-for spl in spleave :
-    dupcost[spl] = dupcost.get(spl,1)
-    losscost[spl] = losscost.get(spl,1)
+    # set any species without a match to default dlcost : 1, 1
+    for spl in spleave :
+        spl = hashlib.sha384(",".join(sorted(spl.split(",")))).hexdigest()
+        dupcost[spl] = dupcost.get(spl,1)
+        losscost[spl] = losscost.get(spl,1)
 
 params.set(dupcost, losscost, args.idlcost)
 
