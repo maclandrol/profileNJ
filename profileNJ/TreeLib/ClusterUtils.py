@@ -248,7 +248,7 @@ def treeCluster(matrice, node_order, depth=None, method='upgma'):
         return UPGMA_cluster(matrice, node_order, upgma_depth=depth)
 
 
-def distMatProcessor(distances, nFlagVal=1e305, nFlag=False):
+def distMatProcessor(distances, nFlagVal=1e305, nFlag=False, ignoreNodes=[]):
     """Formating distance matrix from a file or string input and node order for
         UPGMA or NJ join
     """
@@ -256,16 +256,19 @@ def distMatProcessor(distances, nFlagVal=1e305, nFlag=False):
     read_fl = False
     dist_matrix = []
     node_order = []
+    matrix = None
 
     # Read in matrix if file name is given
-    if os.path.exists(distances):
-        distances = open(distances, 'rU').read()
+    if isinstance(distances, basestring) and os.path.exists(distances):
+        distances = open(distances, 'rU')
+
+    distances = distances.read()
 
     distances_lines = distances.splitlines()
     if '<?xml' in distances_lines[0]:
         # this is an xml file
         # parse it differently
-        return parseFastPhyloXml(StringIO(distances), nFlagVal, nFlag)
+        matrix, node_order = parseFastPhyloXml(StringIO(distances), nFlagVal, nFlag)
     else:
         x_ind = 0
         for line in distances_lines:
@@ -279,8 +282,16 @@ def distMatProcessor(distances, nFlagVal=1e305, nFlag=False):
                         x.strip(), x_ind, y_ind, nFlagVal, nFlag) for y_ind, x in enumerate(line.split())]
                     dist_matrix.append(line_list[1:])
                     node_order.append(line_list[0])
+        matrix = np.array(dist_matrix, dtype=np.float)
 
-    return np.array(dist_matrix, dtype=np.float), node_order
+    if ignoreNodes:
+        for n in ignoreNodes:
+            ind = node_order.index(n)
+            if ind > -1:
+                matrix = remove_ij(matrix, ind, ind)
+                node_order.remove(n)
+
+    return matrix, node_order
 
 
 def makeFakeDstMatrice(n, dmin, dmax):

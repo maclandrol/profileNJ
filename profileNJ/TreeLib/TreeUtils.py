@@ -245,7 +245,7 @@ def reconcile(genetree=None, lcaMap=None, lost=False, lost_label_fn=None):
                             # change here to display a subtree and not a leaf
                             # with a lot of specie
                             lostnode.species = ",".join(
-                                set(lcaMap[intern_lost].get_leaf_names()) - set(child_c.species.split(",")))
+                                set(lcaMap[intern_lost].get_leaf_names()) - set(lcaMap[child_c].get_leaf_names()))
                             splist = lostnode.species.split(',')
                             if(len(splist) > 1):
                                 if lost_label_fn:
@@ -334,7 +334,6 @@ def computeDLScore(genetree, lcaMap=None, dupcost=None, losscost=None):
 
     else :
         raise Exception("LcaMapping not provided !!")
-
     return dup_score, loss_score
 
 def computeDL(genetree, lcaMap=None):
@@ -622,22 +621,25 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
         genetree = TreeClass(genetree)
 
     elif smap:
-        genetree = TreeClass(genetree) if isinstance(
-            genetree, basestring) else genetree
-        regexmap = {}
-        speciemap = {}
-        with open(smap, 'rU') if isinstance(smap, basestring) else smap as INPUT:
-            for line in INPUT:
-                g, s = line.strip().split()
-                if ('*') in g and '.*' not in g:
-                    g = g.replace('*', '.*')
-                g_regex = re.compile(g, re.IGNORECASE)
-                regexmap[g_regex] = s
+        if isinstance(smap, dict):
+            speciemap = smap
+        else:
+            genetree = TreeClass(genetree) if isinstance(
+                genetree, basestring) else genetree
+            regexmap = {}
+            speciemap = {}
+            with open(smap, 'rU') if isinstance(smap, basestring) else smap as INPUT:
+                for line in INPUT:
+                    g, s = line.strip().split()
+                    if ('*') in g and '.*' not in g:
+                        g = g.replace('*', '.*')
+                    g_regex = re.compile(g, re.IGNORECASE)
+                    regexmap[g_regex] = s
 
-        for leaf in genetree:
-            for key, value in regexmap.iteritems():
-                if key.match(leaf.name):
-                    speciemap[leaf.name] = value
+            for leaf in genetree:
+                for key, value in regexmap.iteritems():
+                    if key.match(leaf.name):
+                        speciemap[leaf.name] = value
 
     genetree.set_species(
         speciesMap=speciemap, sep=gene_sep, capitalize=capitalize, pos=specie_pos)
@@ -655,12 +657,13 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
         # Difference check 1
         if set(node_order).difference(set(genetree.get_leaf_names())):
             resetNodeName(genetree, gene_sep)
-    else:
-        # This is for debug, will never happen
-        print("error: dist file not found")
-        node_order = genetree.get_leaf_names()
-        # Alternative, retrieve aligned sequence and run phyML
-        gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
+    
+    #else:
+    #    # This is for debug, will never happen
+    #    print("error: dist file not found")
+    #    node_order = genetree.get_leaf_names()
+    #    # Alternative, retrieve aligned sequence and run phyML
+    #    gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
 
     # Find list of species in genetree but not in specietree
     specieGeneList = set(genetree.get_leaf_species())
