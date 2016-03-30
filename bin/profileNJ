@@ -97,7 +97,7 @@ parser.add_argument('--sep', dest='gene_sep',
                     help="Gene-Specie separator for each leaf name in the genetree. PolytomySolver will guess by default in a very limited list of special character. ***';;' is not a valid separator for the newick format! IF YOUR SEPARATOR IS \";;\", DON'T USE THIS FLAG. THE PROGRAM WILL AUTOMATICALLY GUESS. ***")
 parser.add_argument('--nflagval', type=float, dest='mval', default=1e305,
                     help="Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue.")
-parser.add_argument('-c', '--cluster', choices=['nj', 'upgma', 'rand'], default='rand',
+parser.add_argument('-c', '--cluster', choices=['nj', 'upgma', 'rand'], default='nj',
                     help="C|Set the clustering methods.\n\tupgma: UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.\n\tnj: neighbor joining clustering method, (slower).\n\trand: A random clustering method (should be faster than upgma).\n\n")
 parser.add_argument('--slimit', type=int, dest="sol_limit", default=30,
                     help="Set the max number of solution per genetree. Possible values are -1 to return all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is computationally expensive.")
