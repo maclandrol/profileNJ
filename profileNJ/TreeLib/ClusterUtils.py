@@ -10,6 +10,18 @@ import os
 import numpy as np
 from StringIO import StringIO
 import random
+try:
+    from lxml import etree
+    # should work since etree is used by ete
+except ImportError:
+    try:
+        import xml.etree.cElementTree as etree
+    except ImporError:
+        try:
+            import xml.etree.ElementTree as etree
+        except:
+            pass
+
 
 np.set_printoptions(precision=3)
 numerictypes = np.core.numerictypes.sctype2char
