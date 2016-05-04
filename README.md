@@ -1,7 +1,7 @@
 profileNJ
 =======================
 
-Utility package for gene tree correction and reconciliation with a species tree, written in python and based on the [ete2](http://etetoolkit.org/) toolkit.
+Utility package for gene tree correction and reconciliation with a species tree, written in python and based on the [ete3](http://etetoolkit.org/) toolkit.
 
 ## Installation 
 
