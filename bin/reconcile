@@ -11,7 +11,7 @@ import re
 
 GRAPHICAL_ACCESS = True
 try:
-	from ete2 import TreeStyle, NodeStyle, TextFace, faces, AttrFace
+	from ete3 import TreeStyle, NodeStyle, TextFace, faces, AttrFace
 except ImportError, e:
 	GRAPHICAL_ACCESS = False
 	print("Warning : PyQt not installed")
