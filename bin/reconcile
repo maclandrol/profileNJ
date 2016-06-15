@@ -74,9 +74,6 @@ recon_parser.add_argument(
 	'--debug', action='store_true', help="Debugging ( test, will be removed )")
 
 recon_parser.add_argument(
-	'--rootloss', action='store_true', help="Add losses at the root")
-
-recon_parser.add_argument(
 	'--batch', action='store_true', help="Batch mode, use profileNJ file output")
 
 # Reconciliation parser
@@ -135,28 +132,6 @@ if(runmode):
 		dup, loss = TreeUtils.computeDLScore(genetree)
 
 		TreeUtils.reconcile(genetree, mapping, args.losses, speciemapper)
-
-		if args.rootloss :
-			root_map = mapping[genetree]
-			cur_node = genetree
-			while root_map.up  and root_map != specietree.get_tree_root():
-				new_node = TreeClass()
-				new_node.add_features(species=root_map.up.name)
-				new_node.add_child(cur_node)
-				new_node.add_features(type=TreeClass.SPEC)
-
-				for sister_node in root_map.get_sisters():
-					copy_sis_node = TreeClass()
-					copy_sis_node.name = sister_node.name
-					copy_sis_node.add_features(type=TreeClass.LOST)
-					copy_sis_node.add_features(species=copy_sis_node.name)
-					copy_sis_node.add_features(name=(" | ".join([x for x in sister_node.get_leaf_names()])))
-					new_node.add_child(copy_sis_node)
-				cur_node = new_node
-				root_map = root_map.up
-				loss += 1
-			genetree = cur_node
-			genetree.add_features(reconciled=True)
 
 		# display tree if verbose
 		if(args.verbose):
