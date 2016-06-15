@@ -478,11 +478,13 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
         return node_in_tree[0]
     else:
         # Display error or raise exception ??
-        print(specietree.get_ascii(show_internal=True), "\n")
-        print(genetree, "\n Node in tree\n\n")
-        print(chemin)
-        for node in node_in_tree:
-            print( node.get_ascii(show_internal=True, attributes=['species']))
+        if verbose:
+            print('Specie')
+            print(specietree.get_ascii(show_internal=True))
+            print("\n Node in Genetree\n\n")
+            print(chemin)
+            for node in node_in_tree:
+                print( node.get_ascii(show_internal=True, attributes=['species']))
         raise ValueError(
             "Cannot construct your tree, %i node still not used !\n" % len(node_in_tree))
 

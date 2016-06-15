@@ -105,6 +105,8 @@ parser.add_argument('--plimit', type=int, default=-1,  dest="path_limit",
                     help="Set the max number of solution for each polytomy in the genetree. Possible values are -1 to explore all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is also computationally expensive.")
 parser.add_argument(
     '-v',  action='store_true', dest='verbose', help=" Output verbosity")
+parser.add_argument(
+    '--try_hard',  action='store_true', dest='tryhard', help="Try correcting errors due to common mistake before raising an exception")
 parser.add_argument('--batch',  action='store_true', dest='batch',
                     help=" Use this flag to enable batch mode. In batch mode, gLine value is discarded, --dist should be a file whose line link to the distance matrix of the genetree at the same line number in your genetree file")
 parser.add_argument('--seuil',  type=float,  dest="seuil",
@@ -181,9 +183,9 @@ for gtree in gtrees:
     start_time = time.time()
 
     oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, dists[
-                                                                                         gtree_number], capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap))
+                                                                                         gtree_number], capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap), errorproof=args.tryhard)
     tree_list = [oritree]
-
+    
     bestroot_para = parallelize(args.parallele, len(tree_list))
 
     if (args.seuil):

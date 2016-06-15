@@ -78,7 +78,7 @@ args = parser.parse_args()
 
 genetree = TreeClass(args.genenw)
 specietree = TreeClass(args.specnw)
-
+speciemap = None
 if(args.smap):
     speciemap = {}
     regexmap = {}
@@ -100,7 +100,7 @@ elif args.gene_sep:
     genetree.set_species(sep=args.gene_sep, pos=args.spos)
 
 else:
-    genetree.set_species(use_fn = lambda x : x.name)
+    genetree.set_species(use_fn=lambda x : x.name)
 
 gsolver = GTreeSolver(genetree, specietree, args.mode, args.dupcost, args.losscost)
 
@@ -113,7 +113,10 @@ with (open(args.outfile, 'w') if args.outfile else stdout) as OUTPUT:
         if args.showcost:
             t = TreeClass(sol)
             print("Number of leaves", len(t))
-            t.set_species(sep=args.gene_sep, pos=args.spos)
+            if args.mode in ['dynzz', 'dynzz2', 'linzz']:
+                t.set_species(sep=args.gene_sep, pos=args.spos,speciesMap=speciemap)
+            else:
+                t.set_species(use_fn=lambda x : x.name)
             specietree = TreeClass(args.specnw)
             lcamap = TreeUtils.lcaMapping(t, specietree, False)
             dup, loss = TreeUtils.computeDL(t,lcamap)

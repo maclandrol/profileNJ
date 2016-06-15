@@ -611,9 +611,10 @@ def newickPreprocessing(newick, gene_sep=None):
             "'newick' argument must be either a filename or a newick string."
 
 
-def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep=None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None):
+def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep=None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None, errorproof=False):
     """Preprocess genetree for polytomysolver
     """
+
     # genetree input
     speciemap = None
     if isinstance(genetree, basestring) and not smap:
@@ -644,6 +645,12 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
     genetree.set_species(
         speciesMap=speciemap, sep=gene_sep, capitalize=capitalize, pos=specie_pos)
 
+    # genetree check
+    if len(genetree) != len(set(genetree.get_leaf_names())):
+        tmp_leaf_name = genetree.get_leaf_names()
+        duplicates = set([x for x in tmp_leaf_name if tmp_leaf_name.count(x) > 1])
+        raise ValueError("Your polytomy contains the following gene multiple times : %s"%", ".join(duplicates))
+
     # specietree input
     if isinstance(specietree, basestring):
         specietree, sep = newickPreprocessing(specietree, '')
@@ -655,9 +662,28 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
         gene_matrix, node_order = clu.distMatProcessor(
             distance_file, nFlagVal, nFlag)
         # Difference check 1
-        if set(node_order).difference(set(genetree.get_leaf_names())):
-            resetNodeName(genetree, gene_sep)
-    
+        listerr = set(node_order).symmetric_difference(set(genetree.get_leaf_names()))
+        if listerr:
+            if not errorproof:
+                raise ValueError("Different genes in distance matrix and genetree\n : See symmetric difference : %s\n"%", ".join(listerr))
+            else:
+                if gene_sep:
+                    resetNodeName(genetree, gene_sep)
+                else:
+                    exib1 = set(node_order).difference(set(genetree.get_leaf_names()))
+                    exib2 = set(genetree.get_leaf_names()).difference(set(node_order))
+                    if exib2:
+                        raise Exception('Genes in trees and not in matrix : %s'%(exib2))
+                    elif exib1:
+                        print("Genes in matrix and not in tree : %s \nAttempt to correct distance matrix"%(", ".join(exib1)))
+                        for l in exib1 :
+                            try:
+                                lpos = node_order.index(l)
+                                gene_matrix = clu.remove_ij(gene_matrix, lpos, lpos)
+                                del node_order[lpos]
+                            except:
+                                raise IndexError("Could not remove gene %s from distance matrix"%l)
+        
     #else:
     #    # This is for debug, will never happen
     #    print("error: dist file not found")
@@ -671,7 +697,7 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
     if(specieGeneList - specieList):
         raise Exception("Species in genetree but not in specietree : %s" % (
             ", ".join(specieGeneList - specieList)))
-
+    print len(node_order), 'after'
     return genetree, specietree, gene_matrix, node_order
 
 
