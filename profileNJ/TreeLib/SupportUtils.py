@@ -244,7 +244,7 @@ def executeCMD(cmd, dispout=False):
         cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     out, err = p.communicate()
     #print "STDERR\n---------\n", err
-    if distout:
+    if dispout:
         print("\nSTDOUT\n---------\n", out)
     return err
 
