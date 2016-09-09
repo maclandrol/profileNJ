@@ -134,17 +134,16 @@ sp = TreeClass(args.specietree.name)
 spleave = sp.get_leaf_names()
 
 # dup and loss cost
-dupcost = 1
-losscost = 1
+defdup, defloss = 1, 1
+losscost, dupcost = {}, {}
 
 # if user prefer a 2 input cost
 if(args.costdl):
-    dupcost =  args.costdl[0]
-    losscost =  args.costdl[1]
+    defdup =  args.costdl[0]
+    defloss =  args.costdl[1]
 
 # a dlcost file is provided
 if(args.sdlcost):
-    losscost, dupcost = {}, {}
     for dline in args.sdlcost:
         try:
             sp, spdup, sploss = dline.strip().split()
@@ -156,15 +155,7 @@ if(args.sdlcost):
         except Exception:
             pass
 
-    # set any species without a match to default dlcost : 1, 1
-    defdup = 1 if not args.costdl else args.costdl[0]
-    defloss = 1 if not args.costdl else args.costdl[1]
-    for spl in spleave :
-        spl = hashlib.sha384(",".join(sorted(spl.split(",")))).hexdigest()
-        dupcost[spl] = dupcost.get(spl, defdup )
-        losscost[spl] = losscost.get(spl,defloss)
-
-params.set(dupcost, losscost, args.idlcost)
+params.set(dupcost, losscost, (defdup, defloss), args.idlcost)
 
 if(args.gline < 0):
     raise Exception("gLine must be > 0")
@@ -263,8 +254,9 @@ for gtree in gtrees:
             f_tree = polysolution[0].copy(method='simplecopy')
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
             dl_cost = TreeUtils.computeDLScore(f_tree)
+            dl_count = TreeUtils.computeDL(f_tree)
 
-            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (i + 1,  dl_cost[0], dl_cost[1], sum(dl_cost)))
+            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (i + 1,  dl_count[0], dl_count[1], sum(dl_cost)))
             for tree in polysolution:
                 outlog.write(tree.write(format=9))  # , features=["species"]))
 
@@ -287,8 +279,8 @@ for gtree in gtrees:
             f_tree = polysolution[0].copy(method='simplecopy')
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
             dl_cost = TreeUtils.computeDLScore(f_tree)
-
-            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (count, dl_cost[0], dl_cost[1], sum(dl_cost)))
+            dl_count = TreeUtils.computeDL(f_tree)
+            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (count, dl_count[0], dl_count[1], sum(dl_cost)))
             for tree in polysolution:
                 outlog.write(tree.write(format=9))  # , features=["species"]))
 

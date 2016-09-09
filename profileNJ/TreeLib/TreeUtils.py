@@ -686,6 +686,9 @@ def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False
             # in that case, just try to get it from the genetree
             gene_matrix, node_order = get_distance_from_tree(genetree)
         # Difference check 1
+        #pos = node_order.index('ENSDORP00000008194_dordii')
+        #print node_order
+        #print gene_matrix[pos, :]
         listerr = set(node_order).symmetric_difference(set(genetree.get_leaf_names()))
         if listerr:
             if not errorproof:

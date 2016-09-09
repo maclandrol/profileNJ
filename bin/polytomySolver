@@ -22,21 +22,21 @@ class GTreeSolver():
             specietree.label_internal_node()
             self.lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
             self.solver = SingleSolver.LinPolySolver(genetree, specietree, self.lcamap)
-        
+
         elif mode == 'dynzz':
             specietree.label_internal_node()
             self.lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-            self.solver = SingleSolver.DynPolySolver(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
-        
+            self.solver = SingleSolver.DynPolySolver(genetree, specietree, self.lcamap, self.dupcost, self.losscost)
+
         elif mode == "psolver" :
             self.lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-            self.solver = PolySolver.GeneTreeSolver(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
+            self.solver = PolySolver.GeneTreeSolver(genetree, specietree, self.lcamap, self.dupcost, self.losscost)
             self.solver.labelInternalNodes(genetree)
             self.solver.labelInternalNodes(specietree)
             self.solver.use_dp = False
             if dupcost != losscost:
                 self.solver.use_dp = True
-        
+
         elif mode == "notung":
             specietree.label_internal_node()
             self.lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
@@ -45,8 +45,8 @@ class GTreeSolver():
         else :
             specietree.label_internal_node()
             self.lcamap = TreeUtils.lcaMapping(genetree, specietree, False)
-            self.solver = SingleSolver.Dynamiq2(genetree, specietree, self.lcamap, self.dupcost, self.losscost) 
-        
+            self.solver = SingleSolver.Dynamiq2(genetree, specietree, self.lcamap, self.dupcost, self.losscost)
+
 
     # to consider everything fair, this is the method
     # I think we should time to get running time for each algorithm
@@ -55,10 +55,10 @@ class GTreeSolver():
         if self.mode == 'psolver':
             return [x+";" for x in self.solver.solvePolytomies(nsol)]
         else:
-            # current notung DP implementation does not enable enable 
+            # current notung DP implementation does not enable enable
             # multiple solution.
             return [self.solver.reconstruct()]
-        
+
 
 parser = argparse.ArgumentParser(description='PolySolver : A tool to resolve polytomies in a genetree')
 parser.add_argument('-s', '--spectree', dest='specnw',
@@ -109,7 +109,7 @@ time, solutions = gsolver.solvePolytomies(args.nsol)
 with (open(args.outfile, 'w') if args.outfile else stdout) as OUTPUT:
     for sol in solutions:
         OUTPUT.write(sol+"\n")
-        
+
         if args.showcost:
             t = TreeClass(sol)
             print("Number of leaves", len(t))

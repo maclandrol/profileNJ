@@ -6,14 +6,17 @@ __author__ = "Emmanuel Noutahi"
 
 import hashlib, numpy as np
 
-dupcost, losscost = 1, 1
-internal = 0
-def set(dup, loss, internal_mode='default'):
-	global dupcost
-	global losscost
-	global internal
+cdup, closs = 1, 1
+dupcost, losscost = {}, {}
+internal_type = 0
+
+def set(dup, loss, constdlcost=(1,1), internal_mode='default'):
+	global dupcost, losscost
+	global cdup, closs
+	global internal_type
 	dupcost, losscost = dup, loss
-	internal = 1 if internal_mode=='mean' else 0
+	cdup, closs = constdlcost
+	internal_type = 1 if internal_mode=='mean' else 0
 
 
 def get_hash(splist):
@@ -23,30 +26,31 @@ def get_hash(splist):
 
 
 def getdup(specie=None):
-	global dupcost
+	global dupcost, cdup
 	slist = specie
-
 	if specie and not isinstance(specie, basestring):
 		slist = specie.get_leaf_names()
-
-	if isinstance(dupcost, dict):
-		return dupcost.get(get_hash(slist), get_internal(specie, getdup))
+	if len(slist) > 1:
+		return get_internal(specie, getdup)
 	else:
-		return dupcost
+		return dupcost.get(get_hash(slist), cdup)
+
 
 def getloss(specie=None):
-	global losscost
+	global losscost, closs
 	slist = specie
 	if specie and not isinstance(specie, basestring):
 		slist = specie.get_leaf_names()
-	if isinstance(losscost, dict):
-		return losscost.get(get_hash(slist), get_internal(specie, getloss))
+	if len(slist) > 1:
+		return get_internal(specie, getloss)
 	else:
-		return losscost
+		return losscost.get(get_hash(slist), closs)
 
-def get_internal(specie, costfun=getdup):
-	global internal
-	defcost = 1
-	if not isinstance(specie, basestring) and specie.is_internal() and internal==1:
+
+def get_internal(specie, costfun, ctype="loss"):
+	global internal_type, closs, cdup
+	if not isinstance(specie, basestring) and specie.is_internal() and internal_type==1:
 		defcost = np.mean([costfun(s) for s in specie.get_leaves()])
+	else:
+		defcost =  closs if ctype=='loss' else cdup
 	return defcost
