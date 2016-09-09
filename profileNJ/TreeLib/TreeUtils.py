@@ -111,7 +111,7 @@ def lcaPreprocess(tree):
             if(node_visited[rmq_array[i,j-1]].depth < node_visited[rmq_array[(i+2**(j-1)), j-1]].depth):
                 rmq_array[i,j] = rmq_array[i,j-1]
             else :
-                rmq_array[i,j] = rmq_array[i+2**(j-1), j-1]                 
+                rmq_array[i,j] = rmq_array[i+2**(j-1), j-1]
             i += 1
 
     node_map = ddict()
@@ -146,7 +146,7 @@ def getLca(sptree, species):
     #print sptree.ind2node
         i = s_index[0]
         j = s_index[-1]
-    
+
     else:
         if isinstance(species[0], str):
             # in this case, we have a leaf
@@ -176,7 +176,7 @@ def lcaMapping(genetree, specietree, multspeciename=True):
         lcaPreprocess(specietree)
 
     for node in genetree.traverse(strategy="postorder"):
-        
+
         if node.is_leaf():
             mapping[node] = getLca(specietree, [node.species])
         else:
@@ -317,7 +317,7 @@ def computeDLScore(genetree, lcaMap=None, dupcost=None, losscost=None):
             if (lcaMap[node] in child_map):
                 node_is_dup = params.getdup(lcaMap[node])
                 dup_score += (dupcost if dupcost else node_is_dup)
-            
+
             for child in node.get_children():
                 if node_is_dup:
                     child_map = [lcaMap[node]]
@@ -330,7 +330,7 @@ def computeDLScore(genetree, lcaMap=None, dupcost=None, losscost=None):
                         loss_score += len(lost_nodes)*losscost
                     else:
                         loss_score += np.sum([params.getloss(l) for l in lost_nodes])
-                    curr_node = curr_node.up 
+                    curr_node = curr_node.up
 
     else :
         raise Exception("LcaMapping not provided !!")
@@ -346,7 +346,7 @@ def computeDL(genetree, lcaMap=None):
     if not lcaMap and genetree.has_feature('lcaMap'):
         lcaMap = genetree.lcaMap
 
-    if lcaMap and not genetree.is_reconcilied():  
+    if lcaMap and not genetree.is_reconcilied():
         for node in genetree.traverse("levelorder"):
             if (lcaMap[node] in [lcaMap[child] for child in node.get_children()]):
                 dup += 1
@@ -356,7 +356,7 @@ def computeDL(genetree, lcaMap=None):
                 if(lcaMap[parent] in [lcaMap[child] for child in parent.get_children()]):
                     parent_is_dup = 1
                 loss += (lcaMap[node].depth - lcaMap[parent].depth - 1 + parent_is_dup)
-    
+
     else :
         if(genetree is None or not genetree.is_reconcilied()):
             raise Exception("LcaMapping not found and your Genetree didn't undergo reconciliation yet")
@@ -380,6 +380,25 @@ def cleanFeatures(tree=None, features=[]):
                     node.del_feature(f)
                     cleaned = True
     return cleaned
+
+
+def __is_dist_elligible(tree):
+    """Check whether or not a tree has branch length on all its branch"""
+    return not (all([n.dist == 1.0 for n in tree.iter_descendants()]) and tree.dist == 0)
+
+def get_distance_from_tree(tree):
+    """Return a distance matrix from input tree
+    """
+    node_order = tree.get_leaf_names()
+    if not __is_dist_elligible(tree):
+        raise ValueError("Cannot infer distance matrix from tree branch length. All branch are set to default")
+    nl = len(node_order) # number of leaf
+    distance_mat = np.zeros((nl, nl), dtype=float)
+    for i in range(nl):
+        for j in range(i+1, nl):
+            distance_mat[i, j] = distance_mat [j, i] = tree.get_distance(node_order[i], node_order[j])
+    np.fill_diagonal(distance_mat, 0)
+    return distance_mat, node_order
 
 
 def binaryRecScore(node, lcamap, dupcost=None, losscost=None):
@@ -501,7 +520,7 @@ def getReverseMap(lcamap, use_name=False):
 
 def getImageTreeNode(genetree, specietree, lcamap):
     """ Get the specie image tree node of a genetree"""
-    
+
     # get pre(s) for each  node in specietree
     reversedmap = getReverseMap(lcamap)
     k = 0
@@ -510,7 +529,7 @@ def getImageTreeNode(genetree, specietree, lcamap):
         node.add_features(i_h=0)
         node.name = 'n%d'%k
 
-    # Arange the children of each node in G according to the position of their images 
+    # Arange the children of each node in G according to the position of their images
     # in post-order traversal of S
     for snode in specietree.traverse("postorder"):
         for gnode in reversedmap[snode]:
@@ -519,7 +538,7 @@ def getImageTreeNode(genetree, specietree, lcamap):
                 gnode_ind = [x for x in xrange(len(p_gnode.children)) if p_gnode.children[x]==gnode][0]
                 p_gnode.children[gnode_ind], p_gnode.children[p_gnode.i_h] = p_gnode.children[p_gnode.i_h], p_gnode.children[gnode_ind]
                 p_gnode.i_h += 1
-    
+
     # compute B(s) that contains all the gene tree nodes g / s in I(g) for s in S
     B_array = ddict(list)
     for node in genetree.traverse("postorder"):
@@ -542,7 +561,7 @@ def getImageTreeNode(genetree, specietree, lcamap):
     for node in genetree.traverse("postorder"):
         nodecopied = {}
         if not image_tree_nodes[node]:
-            continue    
+            continue
         el1 = image_tree_nodes[node].pop()
         a = el1._copy_node(features=['name', 'depth'])
         nodecopied[el1] = a
@@ -611,7 +630,7 @@ def newickPreprocessing(newick, gene_sep=None):
             "'newick' argument must be either a filename or a newick string."
 
 
-def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=False, gene_sep=None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None, errorproof=False):
+def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False, gene_sep=None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None, errorproof=False):
     """Preprocess genetree for polytomysolver
     """
 
@@ -658,9 +677,14 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
     specietree.label_internal_node()
 
     # distance matrice input
-    if(distance_file):
-        gene_matrix, node_order = clu.distMatProcessor(
-            distance_file, nFlagVal, nFlag)
+    if(distance_mat):
+        if isinstance(distance_mat, basestring):
+            gene_matrix, node_order = clu.distMatProcessor(
+                distance_mat, nFlagVal, nFlag)
+        else:
+            # distance mat is provided as a boolean
+            # in that case, just try to get it from the genetree
+            gene_matrix, node_order = get_distance_from_tree(genetree)
         # Difference check 1
         listerr = set(node_order).symmetric_difference(set(genetree.get_leaf_names()))
         if listerr:
@@ -683,13 +707,11 @@ def polySolverPreprocessing(genetree, specietree, distance_file, capitalize=Fals
                                 del node_order[lpos]
                             except:
                                 raise IndexError("Could not remove gene %s from distance matrix"%l)
-        
-    #else:
-    #    # This is for debug, will never happen
-    #    print("error: dist file not found")
-    #    node_order = genetree.get_leaf_names()
-    #    # Alternative, retrieve aligned sequence and run phyML
-    #    gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
+
+    else:
+        # This is for debug, will never happen
+        raise ValueError("distance matrix not provided and could not be infered from tree")
+        #gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
 
     # Find list of species in genetree but not in specietree
     specieGeneList = set(genetree.get_leaf_species())

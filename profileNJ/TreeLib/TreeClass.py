@@ -170,7 +170,7 @@ class TreeClass(TreeNode):
         self.name = new_node.name
         for f in new_node.features:
             self.add_feature(f, getattr(new_node, f))
-  
+
 
     def _correct_copy(self, copy):
         """Correct the structure of new node copied using newick method"""
@@ -198,7 +198,7 @@ class TreeClass(TreeNode):
         descendant = self.get_tree_root().translate_nodes(descendant)
         descendants = self.get_descendants()
         return True if len(list(filter(lambda x: x in descendants, descendant))) == len(descendant) else False
-             
+
 
     def _euler_visit(self, node_visited=[]):
         """Perform a euler tour and return visited nodes"""
@@ -345,7 +345,7 @@ class TreeClass(TreeNode):
 
     def contract_tree(self, seuil=0, feature='support', break_tree_topo=False):
         """ Contract
-         tree based on the dist between node, using a threshold. `contract_tree` 
+         tree based on the dist between node, using a threshold. `contract_tree`
         proceed bottom-up. Any branches with a support less than "seuil" will be removed
         if `break_tree_topo` is set to True, all the branch under this node will be recursively removed
         """
@@ -503,22 +503,22 @@ class TreeClass(TreeNode):
             if(unroot):
                 c_tree.unroot()
             c_child = c_tree.get_common_ancestor(child.get_leaf_name()) if child.is_internal() else c_tree&child.name
-           
+
             c_parent = c_child.up
             new_root =  TreeClass()
             i +=1
             if c_parent and (unroot or c_parent is not c_tree):
                 c_child = c_child.detach()
                 path_to_root = [c_parent] if (unroot and c_parent is c_tree) else c_tree.get_path_to_ancestor(c_parent, c_tree)
-                sisters = [c_tree] if unroot else path_to_root[-2].get_sisters() 
-                
+                sisters = [c_tree] if unroot else path_to_root[-2].get_sisters()
+
                 if(len(path_to_root)>1):
                     last_node = path_to_root[-1]
                     removed_children = []
                     for n in reversed(path_to_root[:-1]):
                         last_node = last_node.remove_child(n)
                         removed_children.append(last_node)
-                    
+
 
                     cur_node = removed_children.pop(-1)
                     for node in reversed(removed_children):
@@ -533,7 +533,7 @@ class TreeClass(TreeNode):
                 #additional security to avoid single internal node
                 new_root.delete_single_child_internal()
                 yield new_root
-            
+
     def get_events(self, include_lost=True):
         """Returns a list of **all** duplication and speciation
         events detected after this node.
@@ -569,7 +569,7 @@ class TreeClass(TreeNode):
         return all_events
 
     def _find_closest_descendant_having_feature(self, name, value, descendant=[]):
-        """Find the first closest descendant in right and left child 
+        """Find the first closest descendant in right and left child
         having a particular feature """
 
         for node in self.get_children():
@@ -722,7 +722,7 @@ class TreeClass(TreeNode):
         return cost
 
     def compute_dup_cons(self):
-        """Compute duplication consitency score at the node, 
+        """Compute duplication consitency score at the node,
         this function will raise an error if the node is a polytomy or a speciation node
         """
         assert(not self.is_leaf() and self.is_binary() and (
