@@ -31,7 +31,7 @@ def getdup(specie=None):
 	if specie and not isinstance(specie, basestring):
 		slist = specie.get_leaf_names()
 	if len(slist) > 1:
-		return get_internal(specie, getdup)
+		return get_internal(specie, getdup, ctype="dup")
 	else:
 		return dupcost.get(get_hash(slist), cdup)
 
@@ -52,5 +52,5 @@ def get_internal(specie, costfun, ctype="loss"):
 	if not isinstance(specie, basestring) and specie.is_internal() and internal_type==1:
 		defcost = np.mean([costfun(s) for s in specie.get_leaves()])
 	else:
-		defcost =  closs if ctype=='loss' else cdup
+		defcost = closs if ctype=='loss' else cdup
 	return defcost

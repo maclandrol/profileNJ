@@ -722,7 +722,7 @@ def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False
     if(specieGeneList - specieList):
         raise Exception("Species in genetree but not in specietree : %s" % (
             ", ".join(specieGeneList - specieList)))
-    print len(node_order), 'after'
+
     return genetree, specietree, gene_matrix, node_order
 
 

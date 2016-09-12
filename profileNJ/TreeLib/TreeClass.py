@@ -409,6 +409,13 @@ class TreeClass(TreeNode):
         """
         return len(self.children) > 2
 
+    def tree_is_polytomy(self):
+        """
+        Return True if the all tree is a polytomy.
+        """
+        root = self.get_tree_root()
+        return len(root) == len(root.get_children())
+
     def is_binary(self):
         """
         Return True if current node is a binary node.
@@ -478,10 +485,7 @@ class TreeClass(TreeNode):
                 new_child.detach()
                 # new_child.label_internal_node()
                 c_tree.add_child(new_child)
-                yield c_tree
-
-            elif not root_node:
-                yield c_tree
+            yield c_tree
 
     def iter_edges(self):
         """ Iter all over the edges in this tree"""
