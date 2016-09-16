@@ -255,10 +255,11 @@ for gtree in gtrees:
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
             dl_cost = TreeUtils.computeDLScore(f_tree)
             dl_count = TreeUtils.computeDL(f_tree)
-            if args.verbose:
+            if args.verbose and infer_dist_from_br:
                 print("Distance matrix used: \n")
                 print("  ".join(node_order))
-                print([" ".join(x)+"\n" for x in distance_matrix])
+                for x in distance_matrix:
+                    print("["+" ".join(["%.3f"%y for y in x])+"]\n")
                 print("--------------------------------------\n")
             outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (i + 1,  dl_count[0], dl_count[1], sum(dl_cost)))
             for tree in polysolution:
@@ -284,10 +285,11 @@ for gtree in gtrees:
             lcamap = TreeUtils.lcaMapping(f_tree, specietree)
             dl_cost = TreeUtils.computeDLScore(f_tree)
             dl_count = TreeUtils.computeDL(f_tree)
-            if args.verbose:
+            if args.verbose and infer_dist_from_br:
                 print("Distance matrix used: \n")
                 print("  ".join(node_order))
-                print([" ".join([x)+"\n" for x in distance_matrix[:]])
+                for x in distance_matrix:
+                    print("["+" ".join(["%.3f"%y for y in x])+"]\n")
                 print("--------------------------------------\n")
 
             outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (count, dl_count[0], dl_count[1], sum(dl_cost)))
