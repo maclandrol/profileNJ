@@ -44,6 +44,8 @@ _profileNJ_ correct genetree by contracting weak branches and resolving them to 
 +  *--sep GENE_SEP*
         Gene-Specie separator for each leaf name in the genetree. PolytomySolver will guess by default in a very limited list of special character. (default: None) 
         **';;' is not a valid separator for the newick format! IF YOUR SEPARATOR IS ";;", DON'T USE THIS FLAG. THE PROGRAM WILL AUTOMATICALLY GUESS. ** 
++  *--spos {prefix,postfix}*
+        The position of the specie name according to the separator. Supported option are prefix and postfix (default: prefix)
 +  *--mValue MVAL*        
         Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue. (default: 1e+305)
 +  *-c {nj,upgma}, --cluster {nj,upgma}*
@@ -92,8 +94,8 @@ optional arguments:
         Gene tree in newick format.
 +  *--sep GENE_SEP*
         Gene-Specie separator for each leaf name in the genetree. The program will guess by default. But you should provide it
-+  *--spos SPOS*
-        The position of the specie name according to the separator.
++  *--spos {prefix,postfix}*
+        The position of the specie name according to the separator. Supported option are prefix and postfix (default: prefix)
 +  *--cap*
         Capitalize the species name of the genetree leaves to
         match each species. Almost all functions are case sensitive.

@@ -484,9 +484,10 @@ def getTreeFromPhyloxml(xml, saveToFile="default.xml", delFile=True):
     return treeList
 
 
-def resetNodeName(tree, sep):
+def resetNodeName(tree, sep, spec_pos):
+    spec_pos *= -1
     for x in tree.traverse():
-        x.name = x.name.split(sep)[0]
+        x.name = x.name.split(sep)[spec_pos]
     return tree
 
 
@@ -695,7 +696,7 @@ def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False
                 raise ValueError("Different genes in distance matrix and genetree\n : See symmetric difference : %s\n"%", ".join(listerr))
             else:
                 if gene_sep:
-                    resetNodeName(genetree, gene_sep)
+                    resetNodeName(genetree, gene_sep, specie_pos=='postfix')
                 else:
                     exib1 = set(node_order).difference(set(genetree.get_leaf_names()))
                     exib2 = set(genetree.get_leaf_names()).difference(set(node_order))
@@ -720,6 +721,8 @@ def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False
     specieGeneList = set(genetree.get_leaf_species())
     specieList = set([x.name for x in specietree.get_leaves()])
     if(specieGeneList - specieList):
+        if len(specieGeneList.intersection(specieList)) == 0 and  gene_sep:
+            raise Exception("*** You probably didn't set the correct species position for you input tree !!")
         raise Exception("Species in genetree but not in specietree : %s" % (
             ", ".join(specieGeneList - specieList)))
 

@@ -95,6 +95,8 @@ parser.add_argument('-n', '-nf', '--nnflag', action='store_true',
                     dest='nflag', help="Treat negative distances as large distances.")
 parser.add_argument('--sep', dest='gene_sep',
                     help="Gene-Specie separator for each leaf name in the genetree. PolytomySolver will guess by default in a very limited list of special character. ***';;' is not a valid separator for the newick format! IF YOUR SEPARATOR IS \";;\", DON'T USE THIS FLAG. THE PROGRAM WILL AUTOMATICALLY GUESS. ***")
+parser.add_argument('--spos', dest='spos', default="prefix", choices=("prefix", "postfix"),
+						  help="The position of the specie name according to the separator. Supported option are prefix and postfix")
 parser.add_argument('--nflagval', type=float, dest='mval', default=1e305,
                     help="Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue.")
 parser.add_argument('-c', '--cluster', choices=['nj', 'upgma', 'rand'], default='nj',
@@ -186,7 +188,7 @@ for gtree in gtrees:
         cur_dist = True
         # bad idea but used to decrease the number of arguments
 
-    oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, cur_dist, capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap), errorproof=args.tryhard)
+    oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, cur_dist, specie_pos=args.spos, capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap), errorproof=args.tryhard)
     tree_list = [oritree]
 
     bestroot_para = parallelize(args.parallele, len(tree_list))
