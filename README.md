@@ -16,8 +16,9 @@ You may need sudo privileges. You can also install a local version by using the 
 
 ### profileNJ
 
-_profileNJ_ correct genetree by contracting weak branches and resolving them to have binary trees with a minimum reconciliation cost to their specietree. _profileNJ_ use NJ in order to keep sequence information as much as possible an can output multiple solutions. If the input tree is considered unrooted, profileNJ can test every possible root and return the binary tree with the lowest duplication-lost or all rooted binary tree.
+_profileNJ_ correct genetree by contracting weak branches and resolving them to have binary trees with a minimum reconciliation cost to their specietree. _profileNJ_ use NJ in order to keep sequence information as much as possible an can output multiple solutions. If the input tree is considered unrooted, profileNJ can test every possible root and return the binary tree with the lowest duplication-lost or all rooted binary tree. A detailed description of the algorithm can be found in our paper : 
 
+        Noutahi E, Semeria M, Lafond M, Seguin J, Boussau B, et al. (2016) Efficient Gene Tree Correction Guided by Genome Evolution. PLoS ONE 11(8): e0159559. doi: 10.1371/journal.pone.0159559
 
 
 +  *-h, --help*            
@@ -178,3 +179,12 @@ ClusterUtils is an implementation of UPGMA (Unweighted Pair Group Method with Ar
 *see SPECIES_TREE*
 
 Script to reconstruct the tree of life using the ncbi taxonomy. The current newick file (**tree.nw**) is obtained with the latest ncbi taxonomy release.
+
+
+## How to cite.
+
+If you use profileNJ or polytomySolver, please cite the following papers:
+
++ Noutahi E, Semeria M, Lafond M, Seguin J, Boussau B, et al. (2016) Efficient Gene Tree Correction Guided by Genome Evolution. PLoS ONE 11(8): e0159559. doi: 10.1371/journal.pone.0159559
+
++ Lafond M, Noutahi E and EL-Mabrouk N. (2016) Efficient Non-Binary Gene Tree Resolution with Weighted Reconciliation Cost. 27th Annual Symposium on Combinatorial Pattern Matching (CPM 2016)
