@@ -34,13 +34,13 @@ class TestSolver(unittest.TestCase):
         self.stree = TreeClass(specfile)
         self.nttree = TreeClass(ntgenefile, format=1)
         self.matrix = {
-            'a': np.asarray([1, 0, 1, 2], dtype=float),
-            'b': np.asarray([2, 1, 0, 1], dtype=float),
+            'a': np.asarray([0.5, 0, 1, 2], dtype=float),
+            'b': np.asarray([1, 0.5, 0, 1], dtype=float),
             'c': np.asarray([0, 1, 2, 3], dtype=float),
             'd': np.asarray([1.5, 3, 4.5, 6], dtype=float),
             'e': np.asarray([1.5, 2.75, 4, 5.25], dtype=float),
-            'f': np.asarray([1.5, 1, 1, 2], dtype=float),
-            'g': np.asarray([3, 3.75, 4.75, 5.75], dtype=float)
+            'f': np.asarray([1, 0.5, 1, 2], dtype=float),
+            'g': np.asarray([2.5, 3.25, 4.375, 5.5], dtype=float)
         }
 
         self.nostarmat = {
@@ -65,13 +65,16 @@ class TestSolver(unittest.TestCase):
             loss_cost[params.get_hash(node.name)] = 1
             if node.name == 'd':
                 loss_cost[params.get_hash(node.name)] = 1.5
-
-        dup_cost[params.get_hash(
-            (self.sptreestar & 'f').get_leaf_names())] = 0.5
+            if node.name in ['a', 'b']:
+                dup_cost[params.get_hash(node.name)] = 0.5
         params.set(dup_cost, loss_cost, internal_mode='mean')
 
+        for node in self.sptreestar.traverse():
+            print(node.name, ' L : ', params.getloss(
+                node), ' D : ', params.getdup(node))
         matrix, row_node = polySolver(treeHash(
             self.star, addinfos='demo'), self.star, self.sptreestar, None, [], 1, verbose=False, mode="none")
+
         for key in row_node:
             assert np.array_equal(matrix[key, :], self.matrix[
                                   row_node[key].name])

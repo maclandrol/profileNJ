@@ -51,7 +51,7 @@ def getloss(specie=None):
 
 def get_internal(specie, costfun, ctype="loss"):
     global internal_type, closs, cdup
-    if not isinstance(specie, basestring) and specie.is_internal() and internal_type == 1:
+    if not isinstance(specie, basestring) and (specie.is_internal() or specie.is_root()) and internal_type == 1:
         defcost = np.mean([costfun(s) for s in specie.get_leaves()])
     else:
         defcost = closs if ctype == 'loss' else cdup
