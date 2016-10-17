@@ -133,7 +133,7 @@ class TestSolver(unittest.TestCase):
         lcamap = lcaMapping(tree, self.stree)
         dup, loss = computeDL(tree)
         assert (dup, loss) == notung_score
-        #rf = tree.robinson_foulds(self.nttree)
+        # rf = tree.robinson_foulds(self.nttree)
         # print tree
         # print self.nttree
         # print rf[0]

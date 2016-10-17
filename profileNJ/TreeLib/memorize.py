@@ -19,7 +19,7 @@ class memorize(object):
             return self.cache[hash]
 
         elif not isinstance(hash, hashable) or hash is None:
-            #hash is None or uncachable
+            # hash is None or uncachable
             return self.function(*args, **kwargs)
 
         else:

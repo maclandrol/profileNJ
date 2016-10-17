@@ -1,7 +1,7 @@
 """
 Author: Manuel Lafond
 Date: 07/2015
-Functions for the the dynamic programming scheme of polytomy resolution 
+Functions for the the dynamic programming scheme of polytomy resolution
 """
 import os
 import sys
@@ -15,7 +15,7 @@ from ..TreeLib import TreeUtils, TreeClass
 class PolytomySolver:
 
     """
-    Usage example : 
+    Usage example :
     lcamap = TreeUtils.lcaMapping(genetree, specietree, multspeciename=False)
 
     ps = PolytomySolver(genetree, specietree, lcamap)
@@ -57,7 +57,7 @@ class PolytomySolver:
         for g in self.polytomy.get_children():
             s = self.lcaMapping[g]
 
-            if not s in self.multiplicities:
+            if s not in self.multiplicities:
                 self.multiplicities[s] = 0
 
             self.multiplicities[s] += 1
@@ -104,7 +104,7 @@ class PolytomySolver:
                 else:
                     self.cup_values[s] = (0, mult, mult)
 
-                #----------------------------------
+                # ----------------------------------
                 # DP MODE
                 if self.use_dp:
                     dp_values[s] = dpsize * [0]
@@ -112,7 +112,7 @@ class PolytomySolver:
                         dp_values[s][k] = (mult - k) * s_dupcost
                     for k in range(mult + 1, dpsize):
                         dp_values[s][k] = (k - mult) * s_losscost
-                #----------------------------------
+                # ----------------------------------
 
                 if self.debug:
                     print("CUP=", self.cup_values[s])
@@ -135,7 +135,7 @@ class PolytomySolver:
                 else:
                     sploss_r = self.losscost
 
-                #---------------------------------------------------
+                # ---------------------------------------------------
                 # SPECIAL CASE : we are NOT in use_dp mode, but some child has
                 # a special cost
                 if (not self.use_dp) and sploss_l > self.losscost:
@@ -148,7 +148,7 @@ class PolytomySolver:
                     self.cup_values[s] = (
                         self.getTableValue(sl, 1) + sploss_r, 1, 1)
 
-                #---------------------------------------------------
+                # ---------------------------------------------------
                 else:
 
                     lmin = cl[0]
@@ -192,7 +192,7 @@ class PolytomySolver:
 
                     self.cup_values[s] = (smin, b1, b2)
 
-                    #---------------------------------------------------
+                    # ---------------------------------------------------
                     # DP MODE
 
                     MAXINT = sys.maxint
@@ -233,7 +233,7 @@ class PolytomySolver:
                         for k in range(bb2 + 1, dpsize):
                             dp_values[s][k] = min(dp_values[s][k], dp_values[
                                                   s][k - 1] + s_losscost)
-                    #---------------------------------------------------
+                    # ---------------------------------------------------
                 # end if, else of special case
                 if self.debug:
                     print("CUP=", self.cup_values[s])
@@ -267,8 +267,8 @@ class PolytomySolver:
 
     def getResolutions(self, s, k, limit=1):
         """ Returns all possible ways of having k subtrees rooted at s.
-                Return value is an array of arrays.  Each entry of the main array (i.e. the first dimension) 
-                is a k-resolution, which are represented as arrays. 
+                Return value is an array of arrays.  Each entry of the main array (i.e. the first dimension)
+                is a k-resolution, which are represented as arrays.
                 These subarrays contain k elements in newick form, one for each subtree.
         """
         v = self.getTableValue(s, k)
@@ -283,9 +283,9 @@ class PolytomySolver:
         if s in self.special_species_losscost:
             s_dupcost = self.special_species_losscost[s]
 
-        #------------------------------------------
+        # ------------------------------------------
         # the leaf case
-        #------------------------------------------
+        # ------------------------------------------
         if s.is_leaf():
 
             trees_to_return = []
@@ -316,14 +316,14 @@ class PolytomySolver:
                 # resolution
                 resz = self.getResolutions(s, k - 1, 1)[0]
 
-                #resz.append(s.name + '_LOSS')
+                # resz.append(s.name + '_LOSS')
 
                 trees_to_return = resz
 
             return [trees_to_return]
-        #------------------------------------------
+        # ------------------------------------------
         # the non-leaf case
-        #------------------------------------------
+        # ------------------------------------------
         else:
 
             if self.debug:
@@ -418,9 +418,8 @@ class PolytomySolver:
 
 
 class GeneTreeSolver:
-
     """
-    Usage example : 
+    Usage example :
     gts = GeneTreeSolver(genetree, speciestree, lcamap)
 
     r = gts.solvePolytomies(10000)
@@ -443,7 +442,7 @@ class GeneTreeSolver:
         self.solutions_per_gene = {}
 
     def labelInternalNodes(self, tree):
-        """ Gives a name to every unlabeled internal node of tree.  Names are of the form [i], 
+        """ Gives a name to every unlabeled internal node of tree.  Names are of the form [i],
                 where i starts at 1 and is incremented at each name given.
         """
         cpt = 1
@@ -460,7 +459,7 @@ class GeneTreeSolver:
 
         self.solutions_per_gene = {}
 
-        #TreeUtils.lcaMapping(self.genetree, self.speciestree)
+        # TreeUtils.lcaMapping(self.genetree, self.speciestree)
         s_images = TreeUtils.getImageTreeNode(
             self.genetree, self.speciestree, self.lcaMapping)
 
@@ -532,7 +531,7 @@ class GeneTreeSolver:
                 ps.debug = self.debug
                 ps.setDupLossCosts(self.dupcost, self.losscost)
 
-                # or len(special_cost_species) > 0)  #TODO : ML says THIS IS
+                # or len(special_cost_species) > 0)  TODO : ML says THIS IS
                 # WRONG !
                 ps.use_dp = self.use_dp
                 # EN add this
@@ -576,14 +575,14 @@ class GeneTreeSolver:
 
                                 for sol_child in rchild:
 
-                                    #sol2 = sol[:pos] + "(" + sol_child + ")" + sol[pos + len(s.name):]
+                                    # sol2 = sol[:pos] + "(" + sol_child + ")" + sol[pos + len(s.name):]
                                     sol2 = sol[:pos] + sol_child + \
                                         sol[pos + len(s.name):]
                                     r2.append(sol2)
 
-                                    #limit -= 1
+                                    # limit -= 1
 
-                        #limit = max(limit, 1)
+                        # limit = max(limit, 1)
 
                         r = r2
 
@@ -591,6 +590,6 @@ class GeneTreeSolver:
                     r = r[0:limit]
                 self.solutions_per_gene[g] = r
                 remainingLimit = limit - len(r) + 2
-                #remainingLimit = max(remainingLimit, 1)
+                # remainingLimit = max(remainingLimit, 1)
 
         return self.solutions_per_gene[self.genetree]

@@ -78,7 +78,7 @@ class TreeClass(TreeNode):
                 - "simplecopy" : Simple recursive tree topology and feature copy
 
         """
-        #nw_features = ["name", "species"]
+        # nw_features = ["name", "species"]
         if method == "newick":
             new_node = self.__class__(
                 self.write(features=["name"], format_root_node=True))
@@ -464,15 +464,15 @@ class TreeClass(TreeNode):
         # self.label_internal_node()
         for node in self.iter_descendants():
             c_tree = self.copy("simplecopy", nw_format_root_node=True)
-            #c_node =c_tree&node.name
+            # c_node =c_tree&node.name
             c_node = c_tree.get_common_ancestor(
                 node.get_leaf_name()) if node.is_internal() else c_tree & node.name
             c_tree.set_outgroup(c_node)
             # case where we root at the node and not at the branch
             if(root_node and not node.is_leaf()):
                 root = c_tree.get_tree_root()
-                #new_child= [child for child in root.get_children() if child !=node.name][0]
-                #rooting_node = [child for child in root.get_children() if child.name ==node.name][0]
+                # new_child= [child for child in root.get_children() if child !=node.name][0]
+                # rooting_node = [child for child in root.get_children() if child.name ==node.name][0]
                 new_child = [child for child in root.get_children() if set(
                     child.get_leaf_name()).symmetric_difference(set(node.get_leaf_name()))][0]
                 rooting_node = [

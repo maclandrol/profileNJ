@@ -35,7 +35,7 @@ def fetch_ensembl_genetree_by_id(treeID=None, aligned=0, sequence="none", output
     if not treeID:
         raise valueError('Please provide a genetree id')
     else:
-        #http = httplib2.Http(".cache")
+        # http = httplib2.Http(".cache")
         server = "http://rest.ensembl.org"
         ext = "/genetree/id/%s?sequence=%s;aligned=%i" % (
             treeID, sequence, aligned)
@@ -46,7 +46,7 @@ def fetch_ensembl_genetree_by_id(treeID=None, aligned=0, sequence="none", output
             server + ext, headers={"Content-Type": output})
         resp = urllib2.urlopen(request)
         content = resp.read()
-        #resp, content = http.request(server+ext, method="GET", headers={"Content-Type":output})
+        # resp, content = http.request(server+ext, method="GET", headers={"Content-Type":output})
         if not resp.getcode() == 200:
             print("Invalid response: ", resp.getcode())
             raise ValueError('Failled to process request!')
@@ -91,7 +91,7 @@ def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, 
 
 def lcaPreprocess(tree):
     """Make an euler tour of this tree"""
-    #root = tree.get_tree_root()
+    # root = tree.get_tree_root()
     tree.add_features(depth=0)
     tree.del_feature('euler_visit')
     for node in tree.iter_descendants("levelorder"):
@@ -217,7 +217,7 @@ def reconcile(genetree=None, lcaMap=None, lost=False, lost_label_fn=None):
                 if not (set(node.get_child_at(0).get_species()).intersection(set(node.get_child_at(1).get_species()))):
                     node.type = TreeClass.NAD
 
-        if (isinstance(lost, basestring) and lost.upper() == "YES") or lost == True:
+        if (isinstance(lost, basestring) and lost.upper() == "YES") or lost:
             for node in genetree.traverse("postorder"):
                 children_list = node.get_children()
                 node_is_dup = (
@@ -637,13 +637,11 @@ def newickPreprocessing(newick, gene_sep=None):
                 nw = nw.replace(DEF_SEP_LIST[i], gene_sep)
 
             elif i >= len(DEF_SEP_LIST) or ';' in nw:
-                raise NewickError, \
-                    'Unable to format your newick file, Bad gene-specie separator or too much special chars'
+                raise NewickError('Unable to format your newick file, Bad gene-specie separator or too much special chars')
         nw += ';'
         return nw, gene_sep
     else:
-        raise NewickError, \
-            "'newick' argument must be either a filename or a newick string."
+        raise NewickError("'newick' argument must be either a filename or a newick string.")
 
 
 def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False, gene_sep=None, specie_pos="postfix", nFlagVal=1e305, nFlag=False, smap=None, errorproof=False):
@@ -704,7 +702,7 @@ def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False
             # in that case, just try to get it from the genetree
             gene_matrix, node_order = get_distance_from_tree(genetree)
         # Difference check 1
-        #pos = node_order.index('ENSDORP00000008194_dordii')
+        # pos = node_order.index('ENSDORP00000008194_dordii')
         # print node_order
         # print gene_matrix[pos, :]
         listerr = set(node_order).symmetric_difference(
@@ -741,7 +739,7 @@ def polySolverPreprocessing(genetree, specietree, distance_mat, capitalize=False
         # This is for debug, will never happen
         raise ValueError(
             "distance matrix not provided and could not be infered from tree")
-        #gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
+        # gene_matrix = clu.makeFakeDstMatrice(len(node_order), 0, 1)
 
     # Find list of species in genetree but not in specietree
     specieGeneList = set(genetree.get_leaf_species())
@@ -790,11 +788,10 @@ def exportToOrthoXML(t, database='customdb', handle=sys.stdout):
     ortho_groups = orthoxml.groups()
     O.set_groups(ortho_groups)
 
-    # OrthoXML does not support duplication events to be at the root
+    # OrthoXML does not support duplication events at the root
     # of the tree, so we search for the top most speciation events in
     # the tree and export them as separate ortholog groups
-    is_speciation = lambda n: getattr(n, 'type', "") == "S" or not n.children
-    for speciation_root in t.iter_leaves(is_leaf_fn=is_speciation):
+    for speciation_root in t.iter_leaves(is_leaf_fn=(lambda n: getattr(n, 'type', "") == "S" or not n.children)):
         # Creates an orthogroup in which all events will be added
         node2event = {}
         node2event[speciation_root] = orthoxml.group()

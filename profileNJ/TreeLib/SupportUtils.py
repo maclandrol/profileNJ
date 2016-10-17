@@ -164,7 +164,7 @@ def read_trees(file):
 def convert_to_phylip(filename, filetype, old_ext, rm=False):
     con_file = filename.replace(old_ext, "phy")
     with open(filename, 'rU') as infile, open(con_file, 'w') as outfile:
-        al_input = AlignIO.parse(infile,  filetype)
+        al_input = AlignIO.parse(infile, filetype)
         AlignIO.write(al_input, outfile, 'phylip')
     if(rm):
         os.remove(filename)

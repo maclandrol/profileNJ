@@ -15,15 +15,18 @@ distmatfilename1 = os.path.join(dirname, "distmat/distmat1.dist")
 class TestCluster(unittest.TestCase):
 
     def setUp(self):
-        self.distmat1 = np.array([[0, 5, 9, 9, 8], [5, 0, 10, 10, 9], [9, 10, 0, 8, 7], [
-                                 9, 10, 8, 0, 3], [8, 9, 7, 3, 0]], dtype=float)
-        self.upgmamat = np.array([[0, 20, 60, 100, 90], [20, 0, 50, 90, 80], [
-                                 60, 50, 0, 40, 50], [100, 90, 40, 0, 30], [90, 80, 50, 30, 0]], dtype=float)
+        self.distmat1 = np.array([[0, 5, 9, 9, 8], [5, 0, 10, 10, 9],
+                                  [9, 10, 0, 8, 7], [9, 10, 8, 0, 3],
+                                  [8, 9, 7, 3, 0]], dtype=float)
+        self.upgmamat = np.array([[0, 20, 60, 100, 90], [20, 0, 50, 90, 80],
+                                  [60, 50, 0, 40, 50], [100, 90, 40, 0, 30],
+                                  [90, 80, 50, 30, 0]], dtype=float)
         self.condmat1 = np.array(
             [[0, 7, 7, 6], [7, 0, 8, 7], [7, 8, 0, 3], [6, 7, 3, 0]])
 
         self.qmat1 = np.array([[0, -50, -38, -34, -34], [-50, 0, -38, -34, -34],
-                               [-38, -38, 0, -40, -40], [-34, -34, -40, 0, -48], [-34, -34, -40, -48, 0]])
+                               [-38, -38, 0, -40, -40], [-34, -34, -40, 0, -48],
+                               [-34, -34, -40, -48, 0]])
         self.node_names = ['a', 'b', 'c', 'd', 'e']
         self.first_smallest_ind = [0, 1]
 

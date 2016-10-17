@@ -33,7 +33,7 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
     polytomy_specie_set, row_node_corr = findMaxX(genetree, specietree)
     max_x = len(polytomy_specie_set)
     # cost cost_table to fill
-    cost_table = numpy.zeros((max_x, max_y),  dtype=float)
+    cost_table = numpy.zeros((max_x, max_y), dtype=float)
     # table to save the possible path
     path_table = numpy.ndarray((max_x, max_y), dtype='object')
 
@@ -255,7 +255,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
     species_list = [x.name for x in specietree.traverse()]
     gene_root_species = specietree.get_common_ancestor(
         [x for x in gene_tree_desc_species if(x in species_list)])
-    #leaf_list = genetree.get_children_species()
+    # leaf_list = genetree.get_children_species()
     # keep this in case a lost node is in the path
     lost_nodes = []
     # total number of node
@@ -357,7 +357,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
                         gene_matrix, node_order, s_node, node_in_tree, method=method, verbose=verbose)
                     # the two nodes to join are found
                     if(ind_to_keep and len(ind_to_keep) == 2):
-                        #node_structs= [ node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[x],ind_to_keep ) and ((node_s.is_leaf() and node_s.species == genetree.search_nodes(name=node_s.name)[0].species) or not(node_s.is_leaf())))]
+                        # node_structs= [ node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[x],ind_to_keep ) and ((node_s.is_leaf() and node_s.species == genetree.search_nodes(name=node_s.name)[0].species) or not(node_s.is_leaf())))]
                         # carefully choose the true node, not the added(in case
                         # of lost)
                         node_structs = [node_s for node_s in node_in_tree if (node_s.name in map(lambda x:node_order[
@@ -443,7 +443,7 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
                 node_structs = [x for x in node_in_tree if x.species == node]
                 node_struct_name = [x.name for x in node_structs]
                 node_structs.extend(
-                    [x for x in node_in_tree if(x.name in node_struct_name and not x in node_structs)])
+                    [x for x in node_in_tree if(x.name in node_struct_name and x not in node_structs)])
                 node_structs = [node_s for node_s in node_structs if (
                     not node_s.has_feature('lostnode') or not node_s.lostnode == 1)]
                 ind_to_keep = []
@@ -658,8 +658,8 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
                     ptree, sptree, matrice, order, method=method)
                 solution = polySolver(TreeUtils.treeHash(ptree, addinfos=str(
                     path_limit) + method), ptree, sptree, matrice, order, path_limit, cluster_method=method, verbose=verbose)
-                #solution=polySolver(ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
-                if(poly_parent == None):
+                # solution=polySolver(ptree,sptree, matrice, order,path_limit, cluster_method=method, verbose=verbose)
+                if(poly_parent is None):
                     # Here we have the root. Complete solution are here
                     next_tree_solution.extend(solution)
 
@@ -681,7 +681,7 @@ def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, 
     if(nb_polytomy < 1):
         raise ValueError("Polytomy not found in your gene tree")
 
-    #deepcopy is not working, neither is newick-copy
+    # deepcopy is not working, neither is newick-copy
     f_sol = polysolution[0:sol_limit] if sol_limit > 0 else polysolution
     return [t.copy("simplecopy") for t in f_sol]
 
@@ -690,7 +690,7 @@ def computePolytomyReconCost(genetree, specietree, verbose=False):
     """This is a copy pasta from the solvePolytomy function that return only the cost of a node
     """
     recon_cost = 0
-    #genetree = origene.copy(method="simplecopy")
+    # genetree = origene.copy(method="simplecopy")
     lcamap = TreeUtils.lcaMapping(genetree, specietree, multspeciename=False)
 
     for node in genetree.iter_internal_node(strategy="postorder", enable_root=True):

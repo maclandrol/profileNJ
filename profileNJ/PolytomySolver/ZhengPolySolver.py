@@ -1,4 +1,3 @@
-#/usr/bin/env python
 from ..TreeLib import TreeClass, TreeUtils, params
 from collections import defaultdict as ddict
 import numpy as np
@@ -15,7 +14,7 @@ def simpleConstruct(nodelist, nodemap, K, T, W, P, root):
     # Fid : Father id
     # image_nodes ==> P
     # print(nodelist)
-    #parent = [(node.name, node.parent) for node in nodemap.values() if node.has_feature("parent")]
+    # parent = [(node.name, node.parent) for node in nodemap.values() if node.has_feature("parent")]
     # print(K)
     # print(T)
     # print(W)
@@ -66,7 +65,7 @@ def simpleConstruct(nodelist, nodemap, K, T, W, P, root):
                 for j, pnode in enumerate(P[name]):
                     nodes[name][K[name] - 1 - j].replace_by(pnode)
 
-        if node.up != None:
+        if node.up is not None:
             j = 0
             while j < T[name] and j < K[name]:
                 nodes[node.parent][j].add_child(nodes[name][j])
@@ -107,7 +106,7 @@ class Solver(object):
         for node in self.genetree.traverse("postorder"):
             if (node.is_root() or node.is_internal()) and not node.is_binary():
                 for n in images_trees[node].traverse():
-                    if(n.up != None):
+                    if(n.up is not None):
                         n.add_features(parent=n.up.name)
                 W, rW = self._compute_mult(node)
                 solution = self.compute_table(images_trees[node], W, rW)
@@ -184,7 +183,7 @@ class LinPolySolver(Solver):
                 d1 = node1.depth - node.depth
                 a1, b1 = update(a1, b1, d1)
 
-                #A[node.name], B[node.name] = get_A_B(mult_node, a1, a2, b1, b2)
+                # A[node.name], B[node.name] = get_A_B(mult_node, a1, a2, b1, b2)
                 A[node.name] = mult_node + min(max(a1, a2), min(b1, b2))
                 B[node.name] = mult_node + max(max(a1, a2), min(b1, b2))
 
@@ -320,11 +319,11 @@ class DynPolySolver(Solver):
 
             ingene[node.name] = I[node.name][outgene[node.name]]
 
-        #print( 'outgene ===> ', outgene)
+        # print( 'outgene ===> ', outgene)
         # print( 'ingene ===> ', ingene_
         # print( 'I == >', I_
         # print( 'W == >', W_
-        #print( 'M == >', M)
+        # print( 'M == >', M)
 
         return self.get_solution(image_tree, W, rW, outgene, ingene)
 
@@ -374,7 +373,7 @@ class NotungSolver(Solver):
             geneT, final_event = self.Construct(specT, rW)
             i += 1
             yield geneT
-            #print( geneT.get_ascii(show_internal=True, attributes=['name']))
+            # print( geneT.get_ascii(show_internal=True, attributes=['name']))
             reset = False
 
     def Ascend(self, node, maxW, W):
@@ -517,7 +516,7 @@ class Dynamiq2(Solver):
         for node in self.genetree.traverse("postorder"):
             if (node.is_root() or node.is_internal()) and not node.is_binary():
                 for n in images_trees[node].traverse():
-                    if(n.up != None):
+                    if(n.up is not None):
                         n.add_features(parent=n.up.name)
                 W, rW = self._compute_mult(node)
                 solution = self.compute_table(images_trees[node], node, W, rW)
@@ -531,7 +530,7 @@ class Dynamiq2(Solver):
         costTable = ddict(partial(np.zeros))
         ingene = ddict(int)
         outgene = ddict(int)
-        #print( image_tree)
+        # print( image_tree)
 
         def getCost(w_u, k):
             return self.dupcost if w_u > k else self.losscost
@@ -543,7 +542,7 @@ class Dynamiq2(Solver):
             costTable[node.name] = np.zeros(child_len)
             ingene[node.name] = +np.inf
             c_u = 0
-            if(node.up != None):
+            if(node.up is not None):
                 c_u = node.depth - node.up.depth - 1
             w_bar = getWbar(c_u)
             w_u = W[node.name]

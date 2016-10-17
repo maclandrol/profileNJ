@@ -13,4 +13,3 @@ def test(verbosity=1):
     from .tests import test_suite
 
     unittest.TextTestRunner(verbosity=verbosity).run(test_suite)
-
