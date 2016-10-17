@@ -77,17 +77,17 @@ def parallelize(parallele, count):
 reroot_option = ['none', 'all', 'best']
 parser = argparse.ArgumentParser(
     description='Polytomy solver with multiple solutions.', formatter_class=SmartFormatter)
-parser.add_argument('-s', '--sFile', type=argparse.FileType('r'),  dest='specietree',
+parser.add_argument('-s', '--sFile', type=argparse.FileType('r'), dest='specietree',
                     help="Name of the file containing the species newick tree.", required=True)
 parser.add_argument('-S', '--sMap', type=argparse.FileType('r'),
                     dest='smap', help="Gene to species map. Use the standard format.")
-parser.add_argument('-g', '--gFile', type=argparse.FileType('r'),  dest='genetree',
+parser.add_argument('-g', '--gFile', type=argparse.FileType('r'), dest='genetree',
                     help="Name of the file containing the gene newick tree.", required=True)
-parser.add_argument('-d', '--dist', type=argparse.FileType('r'),  dest='distfile',
+parser.add_argument('-d', '--dist', type=argparse.FileType('r'), dest='distfile',
                     help="Name of the file containing the distances between each pair of genes (The gene set should be the same for the leaf set of the genetree).")
 parser.add_argument('-o', '--output', dest='outfile',
                     help="Name of your output files with the corrected tree. When batch is specified, each corrected genetree will be printed in the appropriate output file. The genetree is printed on stdout if omitted.")
-parser.add_argument('-gl', '--gLine', type=int,  dest='gline',
+parser.add_argument('-gl', '--gLine', type=int, dest='gline',
                     help="Index of the line in the gene tree file that corresponds to the current gene tree, starting by 1. When the flag batch is used, each line of gFile will be used as genetree", default=1)
 parser.add_argument('-r', '--reroot', choices=reroot_option, dest='reroot', default='none',
                     help='''C|Enable/Disable root mode.\n\tnone: disable reroot mode, correct the input polytomies and return the result.\n\tall: enable reroot mode, reroot the genetree at each node and return all polytomy corrected version for each rooted tree.\n\tbest: enable reroot mode, rerrot the genetree at each node and return all polytomy corrected version for the rooted tree with the smallest Dup-Lost score (First one if not unique).\n\n''')
@@ -96,35 +96,35 @@ parser.add_argument('-n', '-nf', '--nnflag', action='store_true',
 parser.add_argument('--sep', dest='gene_sep',
                     help="Gene-Specie separator for each leaf name in the genetree. PolytomySolver will guess by default in a very limited list of special character. ***';;' is not a valid separator for the newick format! IF YOUR SEPARATOR IS \";;\", DON'T USE THIS FLAG. THE PROGRAM WILL AUTOMATICALLY GUESS. ***")
 parser.add_argument('--spos', dest='spos', default="prefix", choices=("prefix", "postfix"),
-						  help="The position of the specie name according to the separator. Supported option are prefix and postfix")
+                    help="The position of the specie name according to the separator. Supported option are prefix and postfix")
 parser.add_argument('--nflagval', type=float, dest='mval', default=1e305,
                     help="Set largest value in the distance matrix. Entries on the main diagonal and negative values will be replaced by mValue.")
 parser.add_argument('-c', '--cluster', choices=['nj', 'upgma', 'rand'], default='nj',
                     help="C|Set the clustering methods.\n\tupgma: UPGMA (Unweighted Pair Group Method with Arithmetic Mean) clustering algo.\n\tnj: neighbor joining clustering method, (slower).\n\trand: A random clustering method (should be faster than upgma).\n\n")
 parser.add_argument('--slimit', type=int, dest="sol_limit", default=30,
                     help="Set the max number of solution per genetree. Possible values are -1 to return all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is computationally expensive.")
-parser.add_argument('--plimit', type=int, default=-1,  dest="path_limit",
+parser.add_argument('--plimit', type=int, default=-1, dest="path_limit",
                     help="Set the max number of solution for each polytomy in the genetree. Possible values are -1 to explore all the solution or n, n>0 for a specific number of solution. Setting this argument to -1 is also computationally expensive.")
 parser.add_argument(
-    '-v',  action='store_true', dest='verbose', help=" Output verbosity")
+    '-v', action='store_true', dest='verbose', help=" Output verbosity")
 parser.add_argument(
-    '--try_hard',  action='store_true', dest='tryhard', help="Try correcting errors due to common mistake before raising an exception")
-parser.add_argument('--batch',  action='store_true', dest='batch',
+    '--try_hard', action='store_true', dest='tryhard', help="Try correcting errors due to common mistake before raising an exception")
+parser.add_argument('--batch', action='store_true', dest='batch',
                     help=" Use this flag to enable batch mode. In batch mode, gLine value is discarded, --dist should be a file whose line link to the distance matrix of the genetree at the same line number in your genetree file")
-parser.add_argument('--seuil',  type=float,  dest="seuil",
+parser.add_argument('--seuil', type=float, dest="seuil",
                     help="Branch contraction threshold, when the tree is binary. Use only when the tree is binary.")
-parser.add_argument('--cap', dest='cap',  action='store_true',
+parser.add_argument('--cap', dest='cap', action='store_true',
                     help="Capitalize the species name of the genetree leaves to match each species. Almost all functions are case sensitive.")
 parser.add_argument('--parallelize', dest='parallele',
                     action='store_true', help="Use parallisation")
-parser.add_argument('--firstbest', dest='firstbest',  action='store_true',
+parser.add_argument('--firstbest', dest='firstbest', action='store_true',
                     help="Only output solution for the first root with the best dl score.")
 
 cost_group = parser.add_mutually_exclusive_group(required=False)
-cost_group.add_argument('--cost', type=float, nargs=2,  dest='costdl',
-                    help="D L : 2 float values, duplication and loss cost in this order")
+cost_group.add_argument('--cost', type=float, nargs=2, dest='costdl',
+                        help="D L : 2 float values, duplication and loss cost in this order")
 cost_group.add_argument('--scost', dest='sdlcost', type=argparse.FileType('r'),
-                    help="A file which contain the DL cost for each species. If a specie is not found in this list, its DL cost will be set to default value (1)")
+                        help="A file which contain the DL cost for each species. If a specie is not found in this list, its DL cost will be set to default value (1)")
 
 parser.add_argument('--internalcost', dest='idlcost', choices=['mean', 'default'], default='default',
                     help="internal Node duplication and loss cost. Set this value to mean in order to take the mean duplication and loss from the leaf; or set it to default (1) or  value obtained from `cost`.")
@@ -141,8 +141,8 @@ losscost, dupcost = {}, {}
 
 # if user prefer a 2 input cost
 if(args.costdl):
-    defdup =  args.costdl[0]
-    defloss =  args.costdl[1]
+    defdup = args.costdl[0]
+    defloss = args.costdl[1]
 
 # a dlcost file is provided
 if(args.sdlcost):
@@ -153,7 +153,8 @@ if(args.sdlcost):
             dupcost[sp] = float(spdup)
             losscost[sp] = float(sploss)
         except ValueError:
-            raise ValueError("Check your cost file. Leaf under an internal node should only be separated by ','. No space tolerance")
+            raise ValueError(
+                "Check your cost file. Leaf under an internal node should only be separated by ','. No space tolerance")
         except Exception:
             pass
 
@@ -188,7 +189,8 @@ for gtree in gtrees:
         cur_dist = True
         # bad idea but used to decrease the number of arguments
 
-    oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(gtree, args.specietree.name, cur_dist, specie_pos=args.spos, capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap), errorproof=args.tryhard)
+    oritree, specietree, distance_matrix, node_order = TreeUtils.polySolverPreprocessing(
+        gtree, args.specietree.name, cur_dist, specie_pos=args.spos, capitalize=args.cap, gene_sep=args.gene_sep, nFlag=args.nflag, smap=(args.smap.name if args.batch else args.smap), errorproof=args.tryhard)
     tree_list = [oritree]
 
     bestroot_para = parallelize(args.parallele, len(tree_list))
@@ -250,7 +252,8 @@ for gtree in gtrees:
 
         for i in range(len(results)):
 
-            polysolution = results[i].get() if isexecuted[i] else [tree_list[i]]
+            polysolution = results[i].get() if isexecuted[
+                i] else [tree_list[i]]
 
             # Copy, in order to not change the solution newick for export
             f_tree = polysolution[0].copy(method='simplecopy')
@@ -261,9 +264,10 @@ for gtree in gtrees:
                 print("Distance matrix used: \n")
                 print("  ".join(node_order))
                 for x in distance_matrix:
-                    print("["+" ".join(["%.3f"%y for y in x])+"]\n")
+                    print("[" + " ".join(["%.3f" % y for y in x]) + "]\n")
                 print("--------------------------------------\n")
-            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (i + 1,  dl_count[0], dl_count[1], sum(dl_cost)))
+            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' %
+                         (i + 1, dl_count[0], dl_count[1], sum(dl_cost)))
             for tree in polysolution:
                 outlog.write(tree.write(format=9))  # , features=["species"]))
 
@@ -291,10 +295,11 @@ for gtree in gtrees:
                 print("Distance matrix used: \n")
                 print("  ".join(node_order))
                 for x in distance_matrix:
-                    print("["+" ".join(["%.3f"%y for y in x])+"]\n")
+                    print("[" + " ".join(["%.3f" % y for y in x]) + "]\n")
                 print("--------------------------------------\n")
 
-            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' % (count, dl_count[0], dl_count[1], sum(dl_cost)))
+            outlog.write('>Tree %s; dup=%s loss=%s m_cost=%s' %
+                         (count, dl_count[0], dl_count[1], sum(dl_cost)))
             for tree in polysolution:
                 outlog.write(tree.write(format=9))  # , features=["species"]))
 
@@ -305,6 +310,7 @@ for gtree in gtrees:
     para_mode = ""
     if(args.parallele):
         para_mode = "with parallelization (CPU_COUNT=%s)" % (CPU_COUNT)
-    print("\nEND  profileNJ on file: '%s', line %s in %f s, %s"%(args.genetree.name, gtree_number, (-start_time+end_time), para_mode))
+    print("\nEND  profileNJ on file: '%s', line %s in %f s, %s" %
+          (args.genetree.name, gtree_number, (-start_time + end_time), para_mode))
 
 linecache.clearcache()

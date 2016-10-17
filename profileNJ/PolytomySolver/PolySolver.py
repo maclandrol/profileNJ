@@ -236,7 +236,7 @@ class PolytomySolver:
                     #---------------------------------------------------
                 # end if, else of special case
                 if self.debug:
-                    print ("CUP=", self.cup_values[s])
+                    print("CUP=", self.cup_values[s])
                     if self.use_dp:
                         print("DP=", dp_values[s])
 
@@ -294,7 +294,8 @@ class PolytomySolver:
                 return [trees_to_return]
 
             if self.debug:
-                print("At leaf s =", s.name, " k =", k, "v =", v, " vright =", vright)
+                print("At leaf s =", s.name, " k =",
+                      k, "v =", v, " vright =", vright)
 
             if v == 0:
                 trees_to_return = [s.name] * k

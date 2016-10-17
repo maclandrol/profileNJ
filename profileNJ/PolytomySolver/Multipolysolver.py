@@ -112,24 +112,24 @@ def polySolver(genetree, specietree, gene_matrix, node_order, limit=-1, cluster_
         solution = []
 
         if(verbose):
-            print( "Matrix M: \n")
-            print( cost_table)
+            print("Matrix M: \n")
+            print(cost_table)
             print()
-            print( "Path table for tree construction: \n")
-            print( path_table)
+            print("Path table for tree construction: \n")
+            print(path_table)
             print()
-            print( "Correspondance: \n")
+            print("Correspondance: \n")
             pprint(row_node_corr)
             print()
-            print( "Gene Tree:\n")
-            print( genetree.get_ascii(attributes=['species', 'name']))
+            print("Gene Tree:\n")
+            print(genetree.get_ascii(attributes=['species', 'name']))
             print()
-            print( "Specie Tree:\n")
-            print( specietree.get_ascii())
-            print( "\nNumber of Tree found : ", len(paths), "\n")
-            print( "List of possible path: ")
+            print("Specie Tree:\n")
+            print(specietree.get_ascii())
+            print("\nNumber of Tree found : ", len(paths), "\n")
+            print("List of possible path: ")
             for path in paths:
-                print( path)
+                print(path)
             print()
 
         i = 1
@@ -473,7 +473,8 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
     # node_in_tree list
     if(node_in_tree and len(node_in_tree) == 1):
         if(verbose):
-            print( "Total number of node = ", len(node_in_tree[0]), " root specie = ", node_in_tree[0].species, "\n\n")
+            print("Total number of node = ", len(node_in_tree[
+                  0]), " root specie = ", node_in_tree[0].species, "\n\n")
         node_in_tree[0].add_features(cost=cost)
         return node_in_tree[0]
     else:
@@ -484,7 +485,8 @@ def constructFromPath(chemin, genetree, specietree, gene_matrix, node_order, ver
             print("\n Node in Genetree\n\n")
             print(chemin)
             for node in node_in_tree:
-                print( node.get_ascii(show_internal=True, attributes=['species']))
+                print(node.get_ascii(
+                    show_internal=True, attributes=['species']))
         raise ValueError(
             "Cannot construct your tree, %i node still not used !\n" % len(node_in_tree))
 
@@ -518,7 +520,7 @@ def findSpeciationBestJoin(matrice, node_order, parent_node, node_in_tree, metho
     join_index = []
 
     if(verbose):
-        print( "Using %s as clustering method" % (method))
+        print("Using %s as clustering method" % (method))
 
     if(method == 'upgma'):
         for x_0 in child_0_list:
@@ -597,12 +599,14 @@ def _compute_mult(polytomy, lcamap):
         W[s.name] += 1
     return W
 
+
 def findMaxX(polytomy, specietree):
     """Find Number of Specie and the specie list in order to create and fill the dup/cost matrix"""
     if not polytomy.has_feature('species'):
-        lcamap = TreeUtils.lcaMapping(polytomy, specietree, multspeciename=False)
+        lcamap = TreeUtils.lcaMapping(
+            polytomy, specietree, multspeciename=False)
 
-    polytomy_specie_ancestor = (specietree&polytomy.species)
+    polytomy_specie_ancestor = (specietree & polytomy.species)
     polytomy_name_set = set(polytomy.get_children_species())
 
     for leaf in polytomy_specie_ancestor.traverse("postorder"):
@@ -620,7 +624,6 @@ def findMaxX(polytomy, specietree):
             else:
                 polytomy_name_set.add(leaf.name)
 
-
     row_node_corr = {}
     n_row = len(polytomy_name_set) - 1
 
@@ -630,6 +633,7 @@ def findMaxX(polytomy, specietree):
             n_row -= 1
 
     return polytomy_name_set, row_node_corr
+
 
 def solvePolytomy(genetree, specietree, gene_matrix, node_order, verbose=False, path_limit=-1, method='upgma', sol_limit=-1):
 
@@ -710,7 +714,8 @@ def computePolytomyReconCost(genetree, specietree, verbose=False):
             if(verbose):
                 print(node)
                 pprint(mat_table)
-                print("%s : -------------------------------------------------------\n" % (recon_cost))
+                print(
+                    "%s : -------------------------------------------------------\n" % (recon_cost))
             recon_cost += mat_table[-1, 0]
 
         else:

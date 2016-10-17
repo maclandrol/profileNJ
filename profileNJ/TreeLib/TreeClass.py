@@ -148,12 +148,11 @@ class TreeClass(TreeNode):
         """ Return True if there exist an edge between 2 node"""
         return (self.up == node or node.up == self)
 
-
     def insert_node_between(self, node, new_node):
         """ insert a new node between self and node"""
         if not self.edge_exist(node):
             return None
-        else :
+        else:
             if(self.up != node):
                 self, node = node, self
             self.detach()
@@ -170,7 +169,6 @@ class TreeClass(TreeNode):
         self.name = new_node.name
         for f in new_node.features:
             self.add_feature(f, getattr(new_node, f))
-
 
     def _correct_copy(self, copy):
         """Correct the structure of new node copied using newick method"""
@@ -199,14 +197,13 @@ class TreeClass(TreeNode):
         descendants = self.get_descendants()
         return True if len(list(filter(lambda x: x in descendants, descendant))) == len(descendant) else False
 
-
     def _euler_visit(self, node_visited=[]):
         """Perform a euler tour and return visited nodes"""
         if self:
             node_visited.append(self)
             self.add_features(euler_visit=True)
             for child in self.get_children():
-                if( not child.has_feature('euler_visit')):
+                if(not child.has_feature('euler_visit')):
                     node_visited = child._euler_visit(node_visited)
         if (self.up):
             node_visited.append(self.up)
@@ -220,7 +217,7 @@ class TreeClass(TreeNode):
 
         try:
             target_nodes = [
-                n if isinstance(n, self.__class__) else self&n for n in target_nodes]
+                n if isinstance(n, self.__class__) else self & n for n in target_nodes]
             return target_nodes
 
         except (ValueError, IndexError) as e:
@@ -295,7 +292,6 @@ class TreeClass(TreeNode):
                 else:
                     leaf.add_features(
                         species=leaf._extract_feature_name(separator=sep, order=pos, cap=capitalize))
-
 
     def set_genes(self, genesMap=None, sep="_", capitalize=False, pos="postfix", use_fn=None, **kwargs):
         """Set gene feature for each leaf in the tree.
@@ -500,29 +496,31 @@ class TreeClass(TreeNode):
 
     def edge_reroot(self, unroot=False):
         """ Reroot a tree around each of its edge"""
-        i= 0
+        i = 0
         for edge in self.iter_edges():
-            parent , child = edge
+            parent, child = edge
             c_tree = self.copy("simplecopy", nw_format_root_node=True)
             if(unroot):
                 c_tree.unroot()
-            c_child = c_tree.get_common_ancestor(child.get_leaf_name()) if child.is_internal() else c_tree&child.name
+            c_child = c_tree.get_common_ancestor(
+                child.get_leaf_name()) if child.is_internal() else c_tree & child.name
 
             c_parent = c_child.up
-            new_root =  TreeClass()
-            i +=1
+            new_root = TreeClass()
+            i += 1
             if c_parent and (unroot or c_parent is not c_tree):
                 c_child = c_child.detach()
-                path_to_root = [c_parent] if (unroot and c_parent is c_tree) else c_tree.get_path_to_ancestor(c_parent, c_tree)
-                sisters = [c_tree] if unroot else path_to_root[-2].get_sisters()
+                path_to_root = [c_parent] if (
+                    unroot and c_parent is c_tree) else c_tree.get_path_to_ancestor(c_parent, c_tree)
+                sisters = [
+                    c_tree] if unroot else path_to_root[-2].get_sisters()
 
-                if(len(path_to_root)>1):
+                if(len(path_to_root) > 1):
                     last_node = path_to_root[-1]
                     removed_children = []
                     for n in reversed(path_to_root[:-1]):
                         last_node = last_node.remove_child(n)
                         removed_children.append(last_node)
-
 
                     cur_node = removed_children.pop(-1)
                     for node in reversed(removed_children):
@@ -534,7 +532,7 @@ class TreeClass(TreeNode):
 
                 new_root.add_child(c_child)
                 new_root.add_child(c_parent)
-                #additional security to avoid single internal node
+                # additional security to avoid single internal node
                 new_root.delete_single_child_internal()
                 yield new_root
 
@@ -804,12 +802,12 @@ class TreeClass(TreeNode):
     def replace_child(self, old_child, new_child):
         """ Replace a child by another node in a tree"""
         if (self is None) or (old_child not in self.get_children()):
-            raise ValueError("Node is None or old_child is not a child of current node")
+            raise ValueError(
+                "Node is None or old_child is not a child of current node")
         else:
             self.remove_child(old_child)
             self.add_child(new_child)
             return self
-
 
     def write_seq_to_fasta(self, out='seq.fasta', comment=1):
         """Save sequence in tree into a fasta file"""

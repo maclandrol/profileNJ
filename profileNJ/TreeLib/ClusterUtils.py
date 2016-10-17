@@ -1,7 +1,8 @@
 # This file is part of profileNJ
 #
 # Date: 02/2014
-# ClusterUtils contain implementation of nj and upgma clustering algo, and required methods
+# ClusterUtils contain implementation of nj and upgma clustering algo, and
+# required methods
 
 __author__ = "Emmanuel Noutahi"
 
@@ -280,7 +281,8 @@ def distMatProcessor(distances, nFlagVal=1e305, nFlag=False, ignoreNodes=[]):
     if '<?xml' in distances_lines[0]:
         # this is an xml file
         # parse it differently
-        matrix, node_order = parseFastPhyloXml(StringIO(distances), nFlagVal, nFlag)
+        matrix, node_order = parseFastPhyloXml(
+            StringIO(distances), nFlagVal, nFlag)
     else:
         x_ind = 0
         for line in distances_lines:

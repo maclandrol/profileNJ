@@ -3,7 +3,8 @@
 __author__ = "Emmanuel Noutahi"
 
 import unittest
-import sys, os
+import sys
+import os
 
 dirname = os.path.dirname(__file__)
 

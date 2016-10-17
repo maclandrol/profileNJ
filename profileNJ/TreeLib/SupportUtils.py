@@ -1,3 +1,7 @@
+# This file is part of profileNJ
+#
+# Date: 02/2014
+
 from __future__ import print_function
 import subprocess
 import TreeUtils
@@ -8,7 +12,7 @@ import os
 import time
 import glob
 import numpy as np
-try: 
+try:
     from lxml import etree
 except ImportError:
     try:
@@ -17,9 +21,10 @@ except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-        except: pass
+        except:
+            pass
 
-try : 
+try:
     from Bio.Phylo.Applications import _Phyml
     from Bio import AlignIO
     from Bio.Alphabet import IUPAC
@@ -38,7 +43,7 @@ def timeit(func):
         result = func(*args, **kw)
         tend = time.time()
         ttime = tend - tstart
-        #print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
+        # print '%r (%r, %r) %2.2f sec' % (func.__name__, args, kw, ttime)
         return ttime, result
 
     return timed
@@ -243,7 +248,7 @@ def executeCMD(cmd, dispout=False):
     p = subprocess.Popen(
         cmd, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     out, err = p.communicate()
-    #print "STDERR\n---------\n", err
+    # print "STDERR\n---------\n", err
     if dispout:
         print("\nSTDOUT\n---------\n", out)
     return err
@@ -325,7 +330,8 @@ def runRaxmlPval(basedir, alignfile, narbres, out=None, listfile=[], sort=None):
         out = "%s/all.tree" % basedir
         with open(out, 'w') as fout:
             for f in listfile:
-                print(open(f, 'r').read().strip().replace('\s', '').replace('\n', ''), file=fout)
+                print(open(f, 'r').read().strip().replace(
+                    '\s', '').replace('\n', ''), file=fout)
 
     # cleaning for raxml
     for f in glob.glob("%s/*trees" % basedir):
@@ -350,7 +356,7 @@ def runRaxmlPval(basedir, alignfile, narbres, out=None, listfile=[], sort=None):
     return rx_time, consel_output
 
 
-def calculate_likelihood(profileNJ_file, alignfile , basedir=os.getcwd()):
+def calculate_likelihood(profileNJ_file, alignfile, basedir=os.getcwd()):
     cmd = "raxmlHPC-SSE3 -f G -z %s -s %s -m GTRGAMMA -n trees -w %s" % (
         profileNJ_file, alignfile, os.path.abspath(basedir))
     rx_time, rst = runRAxML_likelihood(cmd)
@@ -367,7 +373,7 @@ def calculate_likelihood(profileNJ_file, alignfile , basedir=os.getcwd()):
 
     consel_output['likelihood'] = likelihoods
     return rx_time, consel_output
-        
+
 
 @timeit
 def runRAxML_likelihood(cmd):
