@@ -1,6 +1,8 @@
 profileNJ
 =======================
 
+[![Build Status](https://travis-ci.org/UdeM-LBIT/profileNJ.svg?branch=master)](https://travis-ci.org/UdeM-LBIT/profileNJ)
+
 Utility package for gene tree correction and reconciliation with a species tree, written in python and based on the [ete3](http://etetoolkit.org/) toolkit.
 
 ## Installation 
