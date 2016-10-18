@@ -24,6 +24,7 @@ except ImportError:
         except:
             pass
 
+
 def timeit(func):
 
     def timed(*args, **kw):
@@ -125,6 +126,7 @@ def read_trees(file):
             if not (line.startswith('>')):
                 yield line.strip()
 
+
 def clustalo(geneSeq_file_path, treeid, alignment_out_path="", dist_matrix_out_path="", aligned=False, cmd_path="utils/clustalo-1.2.0"):
     from Bio.Align.Applications import ClustalOmegaCommandline
     # Clustal Omega (v1.2.0)
@@ -200,6 +202,7 @@ def executeCMD(cmd, dispout=False):
     if dispout:
         print("\nSTDOUT\n---------\n", out)
     return err
+
 
 def retrieveDupAndLostCost(treefile, streefile, smap, sep=None, pos='prefix'):
 
