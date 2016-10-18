@@ -6,10 +6,20 @@ profileNJ
 Utility package for gene tree correction and reconciliation with a species tree, written in python and based on the [ete3](http://etetoolkit.org/) toolkit.
 
 ## Installation 
+#### Dependencies
+profileNJ depends on the following package:
+ - ete3
+ - numpy>=1.8
+ - lxml
+ - PyQt4 (Not mandatory but required by `reconcile` to print trees)
+ 
+[PyQt4](http://pyqt.sourceforge.net/Docs/PyQt4/installation.html) can be tricky to install, I recommand using either your distribution version or install it with conda (`conda install -c anaconda pyqt=4`). 
 
+To install profileNJ, download the package on github and install with :
 
 `python setup.py install`
 
+or use pip : `pip install profileNJ`
 
 You may need sudo privileges. You can also install a local version by using the *'--user'* flag. 
 
