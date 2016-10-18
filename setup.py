@@ -26,6 +26,7 @@ setuptools.setup(
 
     description="profileNJ correct polytomies in tree, using minimum reconciliation (with specietree) cost, and Neighbor-Joining algorithm for clustering",
     url='https://github.com/UdeM-LBIT/profileNJ',
+    download_url='https://github.com/UdeM-LBIT/profileNJ/tarball/v20161018',
     author='Emmanuel Noutahi',
     author_email='emmanuel.noutahi@hotmail.ca',
     scripts=['bin/profileNJ', 'bin/reconcile', 'bin/polytomySolver'],
