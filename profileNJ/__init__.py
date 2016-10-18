@@ -3,7 +3,7 @@
 __author__ = "Emmanuel Noutahi"
 
 __project__ = 'ProfileNJ'
-__version__ = '20151027'
+__version__ = '20161018'
 
 VERSION = __project__ + '-' + __version__
 
