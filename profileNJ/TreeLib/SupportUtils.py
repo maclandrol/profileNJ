@@ -24,18 +24,6 @@ except ImportError:
         except:
             pass
 
-try:
-    from Bio.Phylo.Applications import _Phyml
-    from Bio import AlignIO
-    from Bio.Alphabet import IUPAC
-except ImportError as e:
-    print("Could not import Biopython modules")
-    raise e
-
-SEQUENCE_ALPHABET = {'dna': IUPAC.unambiguous_dna,
-                     'rna': IUPAC.unambiguous_rna, 'protein': IUPAC.protein}
-
-
 def timeit(func):
 
     def timed(*args, **kw):
@@ -59,29 +47,6 @@ def getDistMatrix(alignfile, outfile):
 def name_extractor(filename, ext="."):
     prefix, ext, suffix = filename.partition(ext)
     return prefix, suffix
-
-
-@timeit
-def phymlikelihood(sequence, align_ext, treepath, n_sol, s_model='HKY85'):
-
-    sequence = convert_to_phylip(sequence, 'fasta', 'align')
-    likelihoods = []
-    output_stats = "%s_phyml_stats.txt" % sequence
-    output_tree = "%s_phyml_tree.txt" % sequence
-    ll_keyword = ". Log-likelihood:"
-
-    for n in xrange(n_sol):
-        phyml = _Phyml.PhymlCommandline(cmd="phyml", input=sequence, input_tree="%s%s" % (
-            treepath, (n + 1)), optimize="none", bootstrap=0, model=s_model)
-        phyml()
-
-        with open(output_stats) as search:
-            for line in search:
-                if ll_keyword in line:
-                    line = line.replace(ll_keyword, "")
-                    likelihoods.append(float(line))
-
-    return likelihoods
 
 
 def selectBestTree(values):
@@ -160,23 +125,6 @@ def read_trees(file):
             if not (line.startswith('>')):
                 yield line.strip()
 
-
-def convert_to_phylip(filename, filetype, old_ext, rm=False):
-    con_file = filename.replace(old_ext, "phy")
-    with open(filename, 'rU') as infile, open(con_file, 'w') as outfile:
-        al_input = AlignIO.parse(infile, filetype)
-        AlignIO.write(al_input, outfile, 'phylip')
-    if(rm):
-        os.remove(filename)
-    return con_file
-
-
-def construct_phyml_tree(input_tree):
-    phyml = _Phyml.PhymlCommandline(
-        input=input_tree, datatype='nt', bootstrap=100, optimize='tlr')
-    phyml()
-
-
 def clustalo(geneSeq_file_path, treeid, alignment_out_path="", dist_matrix_out_path="", aligned=False, cmd_path="utils/clustalo-1.2.0"):
     from Bio.Align.Applications import ClustalOmegaCommandline
     # Clustal Omega (v1.2.0)
@@ -252,21 +200,6 @@ def executeCMD(cmd, dispout=False):
     if dispout:
         print("\nSTDOUT\n---------\n", out)
     return err
-
-
-def runConsel(basedir, sequence, trees, n_sol):
-    phyml = _Phyml.PhymlCommandline(
-        cmd="phyml", input=sequence, input_tree=trees, optimize="none", bootstrap=0, print_site_lnl=True)
-    phyml()
-    title = 'rank item    obs     au     np      bp     kh     sh    wkh    wsh'
-    if(n_sol >= 2):
-        try:
-            lkfile = (glob.glob("%s/*phyml_lk.txt" % basedir))[0]
-            return consel(lkfile, type)
-        except Exception, e:
-            pass
-    return dict(zip(title.split(), 10 * ['N/A']))
-
 
 def retrieveDupAndLostCost(treefile, streefile, smap, sep=None, pos='prefix'):
 
