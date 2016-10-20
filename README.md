@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/UdeM-LBIT/profileNJ.svg?branch=master)](https://travis-ci.org/UdeM-LBIT/profileNJ)
+[![Build Status](https://travis-ci.org/UdeM-LBIT/profileNJ.svg?branch=master)](https://travis-ci.org/UdeM-LBIT/profileNJ) [![PyPI version](https://badge.fury.io/py/profileNJ.svg)](https://badge.fury.io/py/profileNJ)
 
 profileNJ
 =======================
