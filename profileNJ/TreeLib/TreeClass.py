@@ -9,9 +9,11 @@ __author__ = "Emmanuel Noutahi"
 from ete3 import TreeNode
 from ete3.phylo import EvolEvent
 import types
-from collections import defaultdict as ddict
+from collections import defaultdict as ddict, Counter
 from itertools import izip
 import copy
+import six
+from six.moves import (map, range, zip)
 
 try:
     import cPickle as pickle
@@ -28,6 +30,7 @@ class TreeClass(TreeNode):
     LOST = -1
     SPEC = 0
     NAD = 2
+    TRANSFER = 3
     DUP = [AD, NAD]
 
     def __init__(self, newick=None, format=0, dist=None, support=None, name=None):
@@ -170,6 +173,23 @@ class TreeClass(TreeNode):
         for f in new_node.features:
             self.add_feature(f, getattr(new_node, f))
 
+    def is_rooted(self):
+        """Return True if tree is rooted"""
+        return len(self.get_tree_root().children) == 2
+    
+
+    def is_ultrametric(self, error=0.001):
+        """Return True if tree is ultrametric"""
+        if not self.is_rooted():
+            return False
+        else:
+            distlist = [l.dist for l in self]
+            d_to_root = distlist[0]
+            for d in distlist:
+                if abs(d_to_root - d) > error:
+                    return False
+            return True
+
     def _correct_copy(self, copy):
         """Correct the structure of new node copied using newick method"""
         for node in copy.traverse("postorder"):
@@ -192,7 +212,7 @@ class TreeClass(TreeNode):
         return True if len(list(filter(lambda x: x in ancestors, ancestor))) == len(ancestor) else False
 
     def has_descendant(self, descendant):
-        """Check if the nodes is `descendant` are a descendant of the current Node"""
+        """Check if the nodes `descendant` are a descendant of the current Node"""
         descendant = self.get_tree_root().translate_nodes(descendant)
         descendants = self.get_descendants()
         return True if len(list(filter(lambda x: x in descendants, descendant))) == len(descendant) else False
@@ -553,7 +573,7 @@ class TreeClass(TreeNode):
                                    set([n.name for n in node.get_child_at(1).get_leaves() if n.type != TreeClass.LOST])]
 
                 if(len(species_include[0]) > 0 and len(species_include[1]) > 0):
-                    if node.type > 0:
+                    if node.type in TreeClass.DUP:
                         e.etype = 'D'
                         e.dup_score = node.compute_dup_cons()
                         e.paralogs = species_include
@@ -620,6 +640,95 @@ class TreeClass(TreeNode):
         """
         return len(self.get_polytomies()) > 0
 
+
+    def is_incomparable(self, other):
+        """Check if two nodes are incomparable"""
+        root = self.get_tree_root()
+        path_to_anc1 = self.get_path_to_ancestor(self, root)
+        path_to_anc2 = self.get_path_to_ancestor(other, root)
+        return (self in path_to_anc2 or other in path_to_anc1) and (self.up != other.up or not nosis)
+
+
+    def get_incomparable_list(self, exclude_sis=False, timeconsistent=False, wtime=None):
+        """Get the list of incomparable node for transfer"""
+        root = self.get_tree_root()
+        comp_list = self.get_path_to_ancestor(self, root)
+        comp_list += self.get_descendants()
+        if exclude_sis:
+            comp_list += self.get_sisters()
+        incomp_list = set(root.get_descendants()) - set(comp_list)
+        
+        if timeconsistent:
+            # compute branch length to root, if not already done
+            if not self.has_feature('brlen'):
+                self.get_tree_root().compute_branches_length()
+            if not wtime:
+                wtime = self.dist
+            tlen = self.brlen - self.dist + wtime
+            incomp_list = set([x for x in incomp_list if (x.brlen >= tlen and x.up.brlen <= tlen)])
+        return incomp_list
+
+
+    def compute_branches_length(self):
+        """Compute and add branches len to each node"""
+        self.add_features(brlen=0.0)
+        for node in self.iter_descendants("preorder"):
+            branch_len = node.up.brlen + node.dist
+            node.add_features(brlen=branch_len)
+
+
+    def subdivize_into_timeframe(self, timeframes=[], eqdist=None, leaves_as_extant=True):
+        """Subdivize tree into timeframes and add label to nodes
+        timeframes can be a list of timestamp or a list of seed nodes.
+        if leaves_as_extant is set, leaves will always be in the last timeframe
+        """
+
+        if not (timeframes or eqdist):
+            raise ValueError("Both timeframes and eqdist cannot be undefined")
+
+        self.compute_branches_length()
+        desc = self.get_descendants()
+
+        if timeframes:
+            # now check if timeframes is a list of nodes instead
+            # then convert it to time
+            tf = []
+            selfinside = False
+            for v in timeframes:
+                if v==self:
+                    selfinside = True
+                    print 'loool'
+                elif isinstance(v, self.__class__) and v in desc:
+                    tf.append(v.brlen)
+                elif isinstance(v, float):
+                    tf.append(v)
+            if not selfinside:
+                tf.append(0.0)
+            timeframes = sorted(tf)
+
+        elif eqdist:
+            eqdist = int(eqdist)
+            assert eqdist!=0, "eqdist should be a positive integer"
+            furthest_from_self = self.get_farthest_leaf()
+            max_dist = furthest_from_self[1]
+            interval_t = max_dist / eqdist
+            timeframes = [i*interval_t for i in range(eqdist)] + [max_dist]
+
+        cur_time = 0
+        self.add_features(timestamp=cur_time)
+        self.add_features(time=timeframes[cur_time])
+        sorted_desc = sorted(desc, key=lambda x : x.brlen)
+        for node in sorted_desc:
+            while cur_time <len(timeframes) and node.brlen > timeframes[cur_time]:
+                cur_time += 1
+            cur_time = min(len(timeframes)-1, cur_time)
+            node.add_features(timestamp=cur_time)
+            node.add_features(time=timeframes[cur_time])
+            if node.is_leaf() and leaves_as_extant:
+                node.timestamp = len(timeframes)-1
+                node.time = timeframes[len(timeframes)-1]
+
+
     def get_children_species(self):
         """ Return the species list of the children under this particular node
         """
@@ -670,10 +779,14 @@ class TreeClass(TreeNode):
     def get_leaf_name(self, is_leaf_fn=None):
         return self.get_leaf_names(is_leaf_fn)
 
-    def delete_single_child_internal(self):
+    def delete_single_child_internal(self, enable_root=False):
         for node in self.traverse("postorder"):
             if(node.is_internal() and len(node.get_children()) < 2):
                 node.delete()
+        # single 
+        if enable_root:
+            if len(self.get_children()) == 1:
+                self.replace_by(self.get_child_at(0))                
 
     def has_single_child_internal(self):
         for node in self.traverse("postorder"):
@@ -728,7 +841,7 @@ class TreeClass(TreeNode):
         this function will raise an error if the node is a polytomy or a speciation node
         """
         assert(not self.is_leaf() and self.is_binary() and (
-            self.type > 0 or self.has_feature('dup', True)))  # self should be a duplication node
+            self.type in TreeClass.DUP or self.has_feature('dup', True)))  # self should be a duplication node
         r_child_spec_set = self.get_child_at(0).get_leaf_species()
         l_child_spec_set = self.get_child_at(1).get_leaf_species()
         inter_set = r_child_spec_set.intersection(l_child_spec_set)
@@ -824,6 +937,57 @@ class TreeClass(TreeNode):
                         id = id + "\n"
                         outfile.write(id)
                         outfile.write(seq)
+
+    
+    def has_same_topo(self, t2, attr_t1="name", attr_t2="name",
+                        unrooted_trees=False):
+  
+        t1 = self
+        if not unrooted_trees and (len(t1.children) > 2 or len(t2.children) > 2):
+            raise ValueError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
+
+        attrs_t1 = set([getattr(n, attr_t1) for n in t1.iter_leaves() if hasattr(n, attr_t1)])
+        attrs_t2 = set([getattr(n, attr_t2) for n in t2.iter_leaves() if hasattr(n, attr_t2)])
+        common_attrs = attrs_t1 & attrs_t2
+        # release mem
+        attrs_t1, attrs_t2 = None, None
+
+        min_comparison = None
+        t1_content = t1.get_cached_content()
+        t2_content = t2.get_cached_content()
+        t1_leaves = t1_content[t1]
+        t2_leaves = t2_content[t2]
+
+        if unrooted_trees:
+            edges1 = Counter([
+                    tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)])),
+                                  tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) ]))]))
+                    for content in six.itervalues(t1_content)])
+
+            edges2 = Counter([
+                    tuple(sorted([
+                                tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)])),
+                                tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2)]))]))
+                    for content in six.itervalues(t2_content)])
+            
+            del edges1[((),())]
+            del edges2[((),())]
+
+        else:
+            edges1 = Counter([
+                    tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)]))
+                    for content in six.itervalues(t1_content)])
+            edges2 = Counter([
+                    tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) ]))
+                    for content in six.itervalues(t2_content)])
+            del edges1[()]
+            del edges2[()]
+
+        #print edges1
+        #print edges2
+        # find symetric difference
+        rf = sum(((edges1-edges2) + (edges2-edges1)).values())
+        return rf==0
 
     @staticmethod
     def _capitalize(line):

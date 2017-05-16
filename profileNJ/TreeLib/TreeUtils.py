@@ -15,15 +15,108 @@ import string
 import sys
 import urllib2
 import numpy as np
+import random
 from TreeClass import TreeClass
 from collections import defaultdict as ddict
-from ete3 import Phyloxml
+from ete3 import Phyloxml, Tree
 from ete3 import orthoxml
 from ete3.parser.newick import NewickError
+import itertools
 
 
 # TreeUtils:
 
+class MatrixRep():
+    def __init__(self, genetree, speciestree, defval=0):
+        self.gtree = genetree
+        self.stree = speciestree
+        # keeping tree as key (in case the name was not set for internal nodes)
+        self.gmap = dict((gn, i) for i, gn in enumerate(genetree.traverse("postorder")))
+        self.smap = dict((sn, i) for i, sn in enumerate(speciestree.traverse("postorder")))
+        self.matrix = np.empty((len(self.gmap), len(self.smap)))
+        self.matrix.fill(defval)
+        self.shape = self.matrix.shape
+        self.inlist = self.smap.keys() + self.gmap.keys()
+    
+    def __len__(self):
+        """Return the len of the longuest axis"""
+        return max(self.shape)
+    
+    def __contains__(self, item):
+        return item in self.inlist
+    
+    def __iter__(self):
+        for (g,i_g) in self.gmap.items():
+            for (s,i_s) in self.smap.items():
+                yield (g,s, self.matrix[i_g, i_s])
+    
+    def _reformat_slice(self, slice, map):
+        return id if isinstance(id, int) else map.get(id, None)
+
+    def _get_new_index(self, index, map):
+        start =  index.start
+        stop =  index.stop
+        step = index.step
+        start = self._reformat_slice(start, map)
+        stop = self._reformat_slice(stop, map)
+        step = step if isinstance(step, int) else None
+        return slice(start, stop, step)
+        
+    def __getitem__(self, index):
+        """Indexing with int, string or slice"""
+        # the following will return a whole row
+        if isinstance(index, Tree):
+            return self.matrix[self.gmap[index]]
+        elif isinstance(index, int):
+            return self.matrix[index]
+        # in th folowing, we are returning a slice
+        elif isinstance(index, slice):
+            index = self._get_new_index(index, self.gmap)
+            return self.matrix[index] 
+        # we are accepting two slices here, no more
+        elif len(index) != 2:
+            raise TypeError("Invalid index type.")
+        # Handle double indexing
+        row_index, col_index = index
+        if isinstance(row_index, Tree):
+            row_index = self.gmap.get(row_index, None)
+        if isinstance(col_index, Tree):
+            col_index = self.smap.get(col_index, None)        
+        elif isinstance(row_index, slice):
+            row_index =  self._get_new_index(row_index, self.gmap)
+        elif isinstance(col_index, slice):
+            col_index =  self._get_new_index(col_index, self.smap)
+        # let numpy manage the exceptions
+        return self.matrix[row_index, col_index]
+    
+    def __setitem__(self, index, val):
+        """Indexing with int, string or slice"""
+        # the following will return a whole row
+        if isinstance(index, Tree):
+            self.matrix[self.gmap[index]]  =  val
+        elif isinstance(index, int):
+            self.matrix[index] = val
+        # in th folowing, we are returning a slice
+        elif isinstance(index, slice):
+            index = self._get_new_index(index, self.gmap)
+            self.matrix[index] = val
+        # we are accepting two slices here, no more
+        elif len(index) != 2:
+            raise TypeError("Invalid index type.")
+        # Handle double indexing
+        row_index, col_index = index
+        if isinstance(row_index, Tree):
+            row_index = self.gmap.get(row_index, None)
+        if isinstance(col_index, Tree):
+            col_index = self.smap.get(col_index, None)        
+        elif isinstance(row_index, slice):
+            row_index =  self._get_new_index(row_index, self.gmap)
+        elif isinstance(col_index, slice):
+            col_index =  self._get_new_index(col_index, self.smap)
+        # let numpy manage the exceptions
+        self.matrix[row_index, col_index] = val
+
+    
 def fetch_ensembl_genetree_by_id(treeID=None, aligned=0, sequence="none", output="nh", nh_format="full"):
     """Fetch genetree from ensembl tree ID
     :argument treeID: the ensembl tree ID, this is mandatory
@@ -56,6 +149,112 @@ def fetch_ensembl_genetree_by_id(treeID=None, aligned=0, sequence="none", output
         else:
             return getTreeFromPhyloxml(content)
 
+
+def _calc_KTB_rate(starting_rate, duration, roeotroe):
+    """
+    Returns a simulated rate for the head node of a tree when:
+        * the tail node has rate ``starting_rate``
+        * the time duration of the edge is ``duration``
+        * the rate of evolution of the rate of evolution is ``roeotroe`` (this is
+            the parameter nu in Kishino, Thorne, and Bruno 2001)
+    ``rng`` is a random number generator.
+    The model used to generate the rate is the one described by Kishino, Thorne,
+    and Bruno 2001.  The descendant rates or lognormally distributed.
+    The mean rate returned will have an expectation of ``starting_rate``
+    The variance of the normal distribution for the logarithm of the ending rate
+        is the product of ``duration`` and ``roeotroe``
+    THIS FUNCTION AND ITS DESCRIPTION ARE FROM THE DENDROPY PROJECT
+    """
+    if starting_rate <= 0.0:
+        raise ValueError("starting_rate must be positive in the KTB model")
+    rate_var = duration*roeotroe
+    if rate_var > 0.0:
+        # Kishino, Thorne and Bruno corrected the tendency for the rate to
+        #   increase seen in teh TKP, 1998 model
+        mu = np.log(starting_rate) - (rate_var/2.0)
+        return random.lognormvariate(mu, np.sqrt(rate_var))
+    return starting_rate
+
+def _calc_KTB_rates_crop(node, **kwargs):
+    """Returns a descendant rate and mean rate according to the Kishino, Thorne,
+    Bruno model.  Assumes that the min_rate <= starting_rate <= max_rate if a max
+    and min are provided.
+    rate is kept within in the [min_rate, max_rate] range by cropping at these
+    values and acting is if the cropping occurred at an appropriate point
+    in the duration of the branch (based on a linear change in rate from the
+    beginning of the random_variate drawn for the end of the branch).
+    THIS FUNCTION AND ITS DESCRIPTION ARE FROM THE DENDROPY PROJECT
+    """
+    duration = node.dist
+    if node.up != None and node.up.has_feature('rate'):
+        starting_rate = node.up.rate
+    else:
+        starting_rate = kwargs.get('starting_rate', None)
+    roeotroe = kwargs.get('roeotroe', None)
+    min_rate = kwargs.get('min_rate', None)
+    max_rate = kwargs.get('max_rate', None)
+    
+    if starting_rate is None or roeotroe is None:
+        raise ValueError("starting_rate and roeotroe should not be None")
+    if roeotroe*duration <= 0.0:
+        if (min_rate and starting_rate < min_rate) or (max_rate and starting_rate > max_rate):
+            raise ValueError("Parent rate is out of bounds, but no rate change is possible")
+    
+    r = _calc_KTB_rate(starting_rate, duration, roeotroe)
+    mr = (starting_rate + r)/2.0
+    if max_rate and r > max_rate:
+        assert(starting_rate <= max_rate)
+        p_changing =  (max_rate - starting_rate)/(r - starting_rate)
+        mean_changing = (starting_rate + max_rate)/2.0
+        mr = p_changing*mean_changing + (1.0 - p_changing)*max_rate
+        r = max_rate
+    elif min_rate and r < min_rate:
+        assert(starting_rate >= min_rate)
+        p_changing = (starting_rate - min_rate)/(starting_rate - r)
+        mean_changing = (starting_rate + min_rate)/2.0
+        mr = p_changing*mean_changing + (1.0 - p_changing)*min_rate
+    node.add_features(rate=r)
+    node.add_features(length=node.dist)
+    return mr
+
+
+def relax_molecular_clock(tree, rate_fn=_calc_KTB_rates_crop, **kwargs):
+    """Relax molecular clock, using rate_fn as the function (be it autocorrelated)
+    or uncorrelated. Default is Kishino Thorne Bruno"""
+    for t in tree.traverse():
+        t.dist = rate_fn(t, **kwargs)
+    return tree
+
+def make_clock_like(tree):
+    """Transform a tree into a one that follow 
+    the molecular clock (ultrametric)
+    """
+
+    height = 0.0
+    cs = tree.get_children()
+    if len(cs) == 0:
+        return 0
+    child_height = []
+    for i, child in enumerate(cs):
+        child_val = make_node_clock_like(child) + child.dist
+        child_height.append(child_val)
+        height += child_val
+
+    height /= len(cs)
+    for i, child in enumerate(cs):
+        scale_subtree_branches(child, height/child_height[i])
+    
+    return height
+
+def scale_subtree_branches(node, factor):
+    """Scale the branches lenght to its parent of a node 
+    by factor
+    """
+    old_dist = node.dist
+    node.dist = old_dist*factor
+    for child in node.get_children():
+        scale_subtree_branches(child, factor)
+    
 
 def fetch_ensembl_genetree_by_member(memberID=None, species=None, id_type=None, output="nh", nh_format="full"):
     """Fetch genetree from a member ID
@@ -339,6 +538,112 @@ def computeDLScore(genetree, lcaMap=None, dupcost=None, losscost=None):
         raise Exception("LcaMapping not provided !!")
     return dup_score, loss_score
 
+
+def computeDTLScore(genetree, speciestree, Dc=1, Tc=1, Lc=1, flag=True):
+    if not speciestree.has_feature('lcaprocess', True):
+        speciestree.label_internal_node()
+        lcaPreprocess(speciestree)
+    leafMap = {}
+    for leaf in genetree:
+        if not leaf.has_feature('species'):
+            raise ValueError("You should set species before calling")
+        leafMap[leaf] = speciestree&leaf.species
+    
+    cost_table = MatrixRep(genetree, speciestree, np.inf)
+    spec_table = MatrixRep(genetree, speciestree, np.inf)
+    dup_table = MatrixRep(genetree, speciestree, np.inf)
+    trf_table = MatrixRep(genetree, speciestree, np.inf)
+    in_table = MatrixRep(genetree, speciestree, np.inf)
+    inAlt_table = MatrixRep(genetree, speciestree, np.inf)
+    out_table = MatrixRep(genetree, speciestree, np.inf)
+    
+    for gleaf in genetree:
+        glsmap = leafMap[gleaf]
+        cost_table[gleaf, glsmap] = 0
+        comp_spec = glsmap
+        while comp_spec is not None:
+            inAlt_table[gleaf, comp_spec] = 0
+            in_table[gleaf, comp_spec] = Lc*(-comp_spec.depth + glsmap.depth)
+            comp_spec =  comp_spec.up
+    for gnode in genetree.iter_internal_node(strategy="postorder", enable_root=True):
+        for snode in speciestree.traverse("postorder"):
+            gchild1, gchild2 = gnode.get_children()
+            if snode.is_leaf():
+                spec_table[gnode, snode] = np.inf
+                dup_table[gnode, snode] = Dc + cost_table[gchild1, snode] + cost_table[gchild2, snode]
+                # because we can't have transfer at root
+                if not snode.is_root():
+                    # one child is incomprable and the second
+                    # is a descendant    
+                    trf_table[gnode, snode] = Tc + min(in_table[gchild1, snode]+out_table[gchild2, snode], in_table[gchild2, snode] + out_table[gchild1, snode])
+                
+                cost_table[gnode, snode] = min(
+                    spec_table[gnode, snode], 
+                    dup_table[gnode,snode], 
+                    trf_table[gnode, snode]
+                    )
+                
+                in_table[gnode, snode] = cost_table[gnode, snode]
+                inAlt_table[gnode, snode] = cost_table[gnode, snode]
+
+            else:
+                schild1, schild2 = snode.get_children()
+                spec_table[gnode, snode] =  min(
+                    in_table[gchild1, schild1] + in_table[gchild2, schild2], 
+                    in_table[gchild1, schild2] + in_table[gchild2, schild1]
+                    )
+                dcost_g_s = 0
+                if flag :
+                    dcost_g_s = min(
+                        cost_table[gchild1, snode] + in_table[gchild2, schild1] + Lc, # loss in one child
+                        cost_table[gchild1, snode] + in_table[gchild2, schild2] + Lc,
+                        cost_table[gchild2, snode] + in_table[gchild1, schild1] + Lc,
+                        cost_table[gchild2, snode] + in_table[gchild1, schild2] + Lc,
+                        cost_table[gchild2, snode] + cost_table[gchild1, snode], #both map to snode
+                        in_table[gchild1, schild1] + in_table[gchild2, schild1] + 2*Lc, #both map to descendant of snode
+                        in_table[gchild1, schild1] + in_table[gchild2, schild2] + 2*Lc, #both map to descendant of snode
+                        in_table[gchild1, schild2] + in_table[gchild2, schild2] + 2*Lc, #both map to descendant of snode
+                        in_table[gchild1, schild2] + in_table[gchild2, schild1] + 2*Lc, #both map to descendant of snode
+
+                    )
+                    
+                else: 
+                    dcost_g_s = in_table[gchild1, snode] + in_table[gchild2, snode]
+                dup_table[gnode, snode] = Dc + dcost_g_s
+                if not snode.is_root():
+                    trf_table[gnode, snode] = Tc + min(
+                        in_table[gchild1, snode]+out_table[gchild2, snode], 
+                        in_table[gchild2, snode] + out_table[gchild1, snode]
+                        )
+
+                cost_table[gnode, snode] = min(
+                    spec_table[gnode, snode],
+                    dup_table[gnode, snode],
+                    trf_table[gnode, snode]
+                )
+                in_table[gnode, snode] = min(
+                    cost_table[gnode, snode],
+                    in_table[gnode, schild1] + Lc,
+                    in_table[gnode, schild2] + Lc
+                )
+                inAlt_table[gnode, snode] = min(
+                        cost_table[gnode, snode],
+                        inAlt_table[gnode, schild1],
+                        inAlt_table[gnode, schild2]
+                )
+
+        for snode in speciestree.iter_internal_node("preorder",True):
+            schild1, schild2 = snode.get_children()
+            out_table[gnode, schild1] = min(
+                out_table[gnode,snode],
+                inAlt_table[gnode, schild2]
+            )
+            out_table[gnode, schild2] = min(
+                out_table[gnode,snode],
+                inAlt_table[gnode, schild1]
+            )
+    #print cost_table.matrix
+    return np.min(cost_table[genetree])
 
 def computeDL(genetree, lcaMap=None):
     """
@@ -819,9 +1124,9 @@ def exportToOrthoXML(t, database='customdb', handle=sys.stdout):
                             "\n\nUnknown evolutionary event. %s" % ch.get_ascii())
 
                     if(ch.type == TreeClass.SPEC):
-                        parent_event.add_paralogGroup(node2event[ch])
-                    elif ch.type > 0:
                         parent_event.add_orthologGroup(node2event[ch])
+                    elif ch.type in TreeClass.DUP:
+                        parent_event.add_paralogGroup(node2event[ch])
                     else:
                         raise AttributeError(
                             "\n\Internals nodes labeled by losses are not expected in the orthoXML format")
