@@ -1,0 +1,4 @@
+[hH]s[0-9]+     Homo_sapiens
+^Homo_.*        Homo_sapiens
+*[gG]orilla*    Gorilla_gorilla
+^Pt[0-9]+       Pan_troglo
