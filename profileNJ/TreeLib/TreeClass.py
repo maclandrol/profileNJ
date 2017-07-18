@@ -176,14 +176,13 @@ class TreeClass(TreeNode):
     def is_rooted(self):
         """Return True if tree is rooted"""
         return len(self.get_tree_root().children) == 2
-    
 
-    def is_ultrametric(self, error=0.001):
+    def is_ultrametric(self, error=0.001, attr="dist"):
         """Return True if tree is ultrametric"""
         if not self.is_rooted():
             return False
         else:
-            distlist = [l.dist for l in self]
+            distlist = [l.get_feature(attr) for l in self]
             d_to_root = distlist[0]
             for d in distlist:
                 if abs(d_to_root - d) > error:
@@ -479,6 +478,10 @@ class TreeClass(TreeNode):
         """Return weither or not this node has feature in its list of features"""
         return (feature in self.features and (name in [None, self.__getattribute__(feature)]))
 
+    def get_feature(self, feature):
+        """Return the value of a feature for this node"""
+        return getattr(self, feature)
+
     def reroot(self, root_node=True):
         """reroot tree at each node"""
         # self.label_internal_node()
@@ -640,14 +643,12 @@ class TreeClass(TreeNode):
         """
         return len(self.get_polytomies()) > 0
 
-
     def is_incomparable(self, other):
         """Check if two nodes are incomparable"""
         root = self.get_tree_root()
         path_to_anc1 = self.get_path_to_ancestor(self, root)
         path_to_anc2 = self.get_path_to_ancestor(other, root)
         return (self in path_to_anc2 or other in path_to_anc1) and (self.up != other.up or not nosis)
-
 
     def get_incomparable_list(self, exclude_sis=False, timeconsistent=False, wtime=None):
         """Get the list of incomparable node for transfer"""
@@ -657,7 +658,7 @@ class TreeClass(TreeNode):
         if exclude_sis:
             comp_list += self.get_sisters()
         incomp_list = set(root.get_descendants()) - set(comp_list)
-        
+
         if timeconsistent:
             # compute branch length to root, if not already done
             if not self.has_feature('brlen'):
@@ -665,69 +666,19 @@ class TreeClass(TreeNode):
             if not wtime:
                 wtime = self.dist
             tlen = self.brlen - self.dist + wtime
-            incomp_list = set([x for x in incomp_list if (x.brlen >= tlen and x.up.brlen <= tlen)])
+            incomp_list = set([x for x in incomp_list if (
+                x.brlen >= tlen and x.up.brlen <= tlen)])
         return incomp_list
 
-
-    def compute_branches_length(self):
+    def compute_branches_length(self, precision=6):
         """Compute and add branches len to each node"""
         self.add_features(brlen=0.0)
         for node in self.iter_descendants("preorder"):
             branch_len = node.up.brlen + node.dist
             node.add_features(brlen=branch_len)
-
-
-    def subdivize_into_timeframe(self, timeframes=[], eqdist=None, leaves_as_extant=True):
-        """Subdivize tree into timeframes and add label to nodes
-        timeframes can be a list of timestamp or a list of seed nodes.
-        if leaves_as_extant is set, leaves will always be in the last timeframe
-        """
-
-        if not (timeframes or eqdist):
-            raise ValueError("Both timeframes and eqdist cannot be undefined")
-
-        self.compute_branches_length()
-        desc = self.get_descendants()
-
-        if timeframes:
-            # now check if timeframes is a list of nodes instead
-            # then convert it to time
-            tf = []
-            selfinside = False
-            for v in timeframes:
-                if v==self:
-                    selfinside = True
-                    print 'loool'
-                elif isinstance(v, self.__class__) and v in desc:
-                    tf.append(v.brlen)
-                elif isinstance(v, float):
-                    tf.append(v)
-            if not selfinside:
-                tf.append(0.0)
-            timeframes = sorted(tf)
-
-        elif eqdist:
-            eqdist = int(eqdist)
-            assert eqdist!=0, "eqdist should be a positive integer"
-            furthest_from_self = self.get_farthest_leaf()
-            max_dist = furthest_from_self[1]
-            interval_t = max_dist / eqdist
-            timeframes = [i*interval_t for i in range(eqdist)] + [max_dist]
-
-        cur_time = 0
-        self.add_features(timestamp=cur_time)
-        self.add_features(time=timeframes[cur_time])
-        sorted_desc = sorted(desc, key=lambda x : x.brlen)
-        for node in sorted_desc:
-            while cur_time <len(timeframes) and node.brlen > timeframes[cur_time]:
-                cur_time += 1
-            cur_time = min(len(timeframes)-1, cur_time)
-            node.add_features(timestamp=cur_time)
-            node.add_features(time=timeframes[cur_time])
-            if node.is_leaf() and leaves_as_extant:
-                node.timestamp = len(timeframes)-1
-                node.time = timeframes[len(timeframes)-1]
-
+        if precision:
+            for node in self.iter_descendants():
+                node.brlen = round(node.brlen, precision)
 
     def get_children_species(self):
         """ Return the species list of the children under this particular node
@@ -783,10 +734,10 @@ class TreeClass(TreeNode):
         for node in self.traverse("postorder"):
             if(node.is_internal() and len(node.get_children()) < 2):
                 node.delete()
-        # single 
+        # single
         if enable_root:
             if len(self.get_children()) == 1:
-                self.replace_by(self.get_child_at(0))                
+                self.replace_by(self.get_child_at(0))
 
     def has_single_child_internal(self):
         for node in self.traverse("postorder"):
@@ -938,16 +889,18 @@ class TreeClass(TreeNode):
                         outfile.write(id)
                         outfile.write(seq)
 
-    
     def has_same_topo(self, t2, attr_t1="name", attr_t2="name",
-                        unrooted_trees=False):
-  
+                      unrooted_trees=False):
+
         t1 = self
         if not unrooted_trees and (len(t1.children) > 2 or len(t2.children) > 2):
-            raise ValueError("Unrooted tree found! You may want to activate the unrooted_trees flag.")
+            raise ValueError(
+                "Unrooted tree found! You may want to activate the unrooted_trees flag.")
 
-        attrs_t1 = set([getattr(n, attr_t1) for n in t1.iter_leaves() if hasattr(n, attr_t1)])
-        attrs_t2 = set([getattr(n, attr_t2) for n in t2.iter_leaves() if hasattr(n, attr_t2)])
+        attrs_t1 = set([getattr(n, attr_t1)
+                        for n in t1.iter_leaves() if hasattr(n, attr_t1)])
+        attrs_t2 = set([getattr(n, attr_t2)
+                        for n in t2.iter_leaves() if hasattr(n, attr_t2)])
         common_attrs = attrs_t1 & attrs_t2
         # release mem
         attrs_t1, attrs_t2 = None, None
@@ -960,34 +913,37 @@ class TreeClass(TreeNode):
 
         if unrooted_trees:
             edges1 = Counter([
-                    tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)])),
-                                  tuple(sorted([getattr(n, attr_t1) for n in t1_leaves-content if hasattr(n, attr_t1) ]))]))
-                    for content in six.itervalues(t1_content)])
+                tuple(sorted([tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)])),
+                              tuple(sorted([getattr(n, attr_t1) for n in t1_leaves - content if hasattr(n, attr_t1)]))]))
+                for content in six.itervalues(t1_content)])
 
             edges2 = Counter([
-                    tuple(sorted([
-                                tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2)])),
-                                tuple(sorted([getattr(n, attr_t2) for n in t2_leaves-content if hasattr(n, attr_t2)]))]))
-                    for content in six.itervalues(t2_content)])
-            
-            del edges1[((),())]
-            del edges2[((),())]
+                tuple(sorted([
+                    tuple(sorted([getattr(n, attr_t2)
+                                  for n in content if hasattr(n, attr_t2)])),
+                    tuple(sorted([getattr(n, attr_t2) for n in t2_leaves - content if hasattr(n, attr_t2)]))]))
+                for content in six.itervalues(t2_content)])
+
+            del edges1[((), ())]
+            del edges2[((), ())]
 
         else:
             edges1 = Counter([
-                    tuple(sorted([getattr(n, attr_t1) for n in content if hasattr(n, attr_t1)]))
-                    for content in six.itervalues(t1_content)])
+                tuple(sorted([getattr(n, attr_t1)
+                              for n in content if hasattr(n, attr_t1)]))
+                for content in six.itervalues(t1_content)])
             edges2 = Counter([
-                    tuple(sorted([getattr(n, attr_t2) for n in content if hasattr(n, attr_t2) ]))
-                    for content in six.itervalues(t2_content)])
+                tuple(sorted([getattr(n, attr_t2)
+                              for n in content if hasattr(n, attr_t2)]))
+                for content in six.itervalues(t2_content)])
             del edges1[()]
             del edges2[()]
 
-        #print edges1
-        #print edges2
+        # print edges1
+        # print edges2
         # find symetric difference
-        rf = sum(((edges1-edges2) + (edges2-edges1)).values())
-        return rf==0
+        rf = sum(((edges1 - edges2) + (edges2 - edges1)).values())
+        return rf == 0
 
     @staticmethod
     def _capitalize(line):

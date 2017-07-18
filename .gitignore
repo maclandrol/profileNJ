@@ -10,7 +10,8 @@ reconcile.py
 polySolver.py
 # data folder
 data/*
-
+example/*
+scripts/*
 
 # Distribution and packaging
 .Python

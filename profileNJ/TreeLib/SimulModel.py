@@ -1,8 +1,12 @@
-# Tree simulation
-# part of this source code was inspirer from the dendropy project 
+# This file is part of profileNJ
+#
+# Date: 06/2017
+# This file contains tree simulation tools
+# Part of this source code was inspirer from the dendropy project
 # the two concerned method are  the pure_birth and birth_death function
 # with heavy modification on the birth_death function
-#
+
+__author__ = "Emmanuel Noutahi"
 
 from TreeClass import TreeClass
 import random
@@ -11,15 +15,18 @@ import logging
 
 INF = float('Inf')
 
+
 def stop_with_tree_size(tree, **kwargs):
     nsize = kwargs['nsize']
     cur_size = kwargs['cur_size']
     return nsize == cur_size
 
+
 def stop_with_max_time(tree, **kwargs):
     ctime = kwargs['cur_time']
     mtime = kwargs['max_time']
     return mtime <= ctime
+
 
 def stop_with_size_range(tree, **kwargs):
     size_range = kwargs.get('size_range', None)
@@ -29,20 +36,20 @@ def stop_with_size_range(tree, **kwargs):
             return size_range[0] <= cur_size and cur_size <= size_range[1]
     except:
         return False
-    
 
 
 class TotalExtinction(Exception):
     """Exception to be raised when branching process results in all lineages going extinct."""
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
 
 class MissingParameterError(Exception):
     """Exception to be raised when parameters are missing."""
+
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
-
 
 
 class FunctionSlot(object):
@@ -61,7 +68,8 @@ class FunctionSlot(object):
         :param func: the function object
         """
         if not callable(func):
-            Util.raiseException("The function must be a method or function", TypeError)
+            Util.raiseException(
+                "The function must be a method or function", TypeError)
 
     def __iadd__(self, func):
         """ To add more functions using the += operator
@@ -149,7 +157,8 @@ class FunctionSlot(object):
 
     def __repr__(self):
         """ String representation of FunctionSlot """
-        strRet = "Slot [%s] (Count: %d)\n" % (self.slotName, len(self.funcList))
+        strRet = "Slot [%s] (Count: %d)\n" % (
+            self.slotName, len(self.funcList))
 
         if len(self.funcList) <= 0:
             strRet += "\t\tNo function\n"
@@ -157,24 +166,25 @@ class FunctionSlot(object):
 
         for f in self.funcList:
             fname = "-"
-            try: 
+            try:
                 fname = f.func_name
             except AttributeError:
-                fname =  f.func.func_name
+                fname = f.func.func_name
             strRet += "\t\tName: %s\n" % (fname)
 
         return strRet
 
 
 class SimulModel(object):
+
     def __init__(self, stopcrit=None, seed=None, debug=False):
         self.debug = debug
         if stopcrit is None:
             stopcrit = FunctionSlot("Stopping Crit")
         self.stopcrit = stopcrit
-        random.seed(seed)   
-        logging.basicConfig(level=logging.DEBUG)#, format='%(relativeCreated)6d %(threadName)s %(message)s')
-
+        random.seed(seed)
+        # , format='%(relativeCreated)6d %(threadName)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG)
 
     def add_stopping_crit(self, func):
         self.stopcrit.add(func)
@@ -188,7 +198,6 @@ class SimulModel(object):
     def debug_msg(self, msg):
         if self.debug:
             logging.debug(msg)
-
 
     def pure_birth_tree(self, birth=1.0, **kwargs):
         """Generates a uniform-rate pure-birth process tree.
@@ -215,16 +224,16 @@ class SimulModel(object):
         if max_time:
             pb_stop.add(stop_with_max_time)
         if pb_stop.isEmpty() and self.stopcrit.isEmpty():
-            raise MissingParameterError("Either specify a names_library, nsize, max_time or a stopping criterion")
-        
+            raise MissingParameterError(
+                "Either specify a names_library, nsize, max_time or a stopping criterion")
+
         extra_param = {}
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             if k not in ['nsize', 'max_time', 'removeloss']:
                 extra_param[k] = v
 
-        extra_param['nsize'] =  nsize
-        extra_param['max_time'] =  max_time
-
+        extra_param['nsize'] = nsize
+        extra_param['max_time'] = max_time
 
         # fill namespace to desired size
         total_time = 0
@@ -232,7 +241,7 @@ class SimulModel(object):
             # time before new node
             # given the probability of birth
             leaf_nodes = tree.get_leaves()
-            wtime = random.expovariate(len(leaf_nodes)/birth)
+            wtime = random.expovariate(len(leaf_nodes) / birth)
             total_time += wtime
             for leaf in leaf_nodes:
                 leaf.dist += wtime
@@ -262,10 +271,9 @@ class SimulModel(object):
             if ind < len(tname):
                 node.name = tname[ind]
             else:
-                node.name = "T%d"%leaf_compteur
+                node.name = "T%d" % leaf_compteur
                 leaf_compteur += 1
         return tree
-
 
     def birth_death_tree(self, birth, death, **kwargs):
         """
@@ -305,16 +313,17 @@ class SimulModel(object):
         if max_time:
             pb_stop.add(stop_with_max_time)
         if pb_stop.isEmpty() and self.stopcrit.isEmpty():
-            raise MissingParameterError("Either specify a names_library, nsize, max_time or a stopping criterion")
-        
+            raise MissingParameterError(
+                "Either specify a names_library, nsize, max_time or a stopping criterion")
+
         extra_param = {}
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             if k not in ['nsize', 'max_time', 'removeloss']:
                 extra_param[k] = v
 
-        extra_param['nsize'] =  nsize
-        extra_param['max_time'] =  max_time
-        
+        extra_param['nsize'] = nsize
+        extra_param['max_time'] = max_time
+
         # initialize tree
         tree = TreeClass()
         tree.dist = 0.0
@@ -322,11 +331,11 @@ class SimulModel(object):
         #_LOG.debug("Will generate a tree with no more than %s leaves to get a tree of %s leaves" % (str(gsa_ntax), str(nsize)))
         leaf_nodes = tree.get_leaves()
         curr_num_leaves = len(leaf_nodes)
-          
+
         total_time = 0
 
         died = set([])
-        event_rate = float(birth + death)  
+        event_rate = float(birth + death)
 
         while True:
             # waiting time based on event_rate
@@ -350,12 +359,13 @@ class SimulModel(object):
             # if event occurs within time constraints
             if max_time is None or total_time <= max_time:
 
-                # select node at random, then find chance it died or give birth (speciation)
+                # select node at random, then find chance it died or give birth
+                # (speciation)
                 node = random.choice(leaf_nodes)
                 eprob = random.random()
                 leaf_nodes.remove(node)
                 curr_num_leaves -= 1
-                if eprob < birth/event_rate:
+                if eprob < birth / event_rate:
                     #_LOG.debug("Speciation")
                     c1 = TreeClass()
                     c2 = TreeClass()
@@ -375,14 +385,16 @@ class SimulModel(object):
                         node.add_features(type=TreeClass.LOST)
                     else:
                         if not repeat_until_success:
-                            raise TotalExtinction("All lineage went extinct, please retry")
-                        # Restart the simulation because the tree has gone extinct
+                            raise TotalExtinction(
+                                "All lineage went extinct, please retry")
+                        # Restart the simulation because the tree has gone
+                        # extinct
                         tree = TreeClass()
                         leaf_nodes = tree.get_leaves()
                         curr_num_leaves = 1
                         died = set([])
                         total_time = 0
-                
+
                 # this will always hold true
                 assert curr_num_leaves == len(leaf_nodes)
 
@@ -402,14 +414,12 @@ class SimulModel(object):
                     node.name = names_library[nlc]
                     nlc += 1
                 else:
-                    node.name = "T%d"%leaf_compteur
+                    node.name = "T%d" % leaf_compteur
                     leaf_compteur += 1
         return tree
 
-
     def dual_gtree_sptree(self):
         pass
-
 
     def dlt_tree_from_sptree(self, sptree, birth, death, transfer=0.0, **kwargs):
         """Simulate a gene tree within a species tree with birth death and transfer rates
@@ -437,8 +447,10 @@ class SimulModel(object):
         while True:
             extra_param = {}
             try:
-                gtree, recon, events, ecounter, transfers = self.sample_from_tree(sptree, birth, death, transfer, **kwargs)
-                cur_size = len(gtree.get_leaves(is_leaf_fn=lambda x: x.is_leaf() and not x.has_feature('type', TreeClass.LOST)))
+                gtree, recon, events, ecounter, transfers = self.sample_from_tree(
+                    sptree, birth, death, transfer, **kwargs)
+                cur_size = len(gtree.get_leaves(is_leaf_fn=lambda x: x.is_leaf(
+                ) and not x.has_feature('type', TreeClass.LOST)))
                 if nsize and cur_size == nsize:
                     done = True
                 # all leaves are extincts
@@ -463,7 +475,7 @@ class SimulModel(object):
 
         if last_was_extinct:
             raise TotalExtinction("All lineage went extinct during simulation")
-        
+
         event_logger = {}
         event_logger['recon'] = recon
         event_logger['count'] = ecounter
@@ -472,13 +484,12 @@ class SimulModel(object):
 
         return gtree, event_logger
 
-
     def sample_from_tree(self, sptree, birth, death, gain, **kwargs):
         """Sample a tree within another tree using the rate specified 
             Note that a tree with all leaves being extinct can be returned by this function
             Use dlt_tree_from_sptree if you want to prevent this.
         """
-        
+
         # initialize gene tree
         sptree.compute_branches_length()
         sptree.label_internal_node()
@@ -491,20 +502,22 @@ class SimulModel(object):
         events = {gtree: "spec"}
         losses = set()
         transfers = {}
-        true_event_counter=ddict(int)
+        true_event_counter = ddict(int)
         snode_counter = ddict(int)
         if not leave_names:
             leave_names = lambda sp, x: sp + "_" + str(x)
         name_counter = 0
+
         def create_history(snode, gnode):
             if snode.is_leaf():
                 if isinstance(leave_names, list):
-                    n_encounter = name_counter/len(leave_names)
-                    gnode.name = leave_names[name_counter%len(leaves_name)]
-                    gnode.name += ("_"+gnode.name)*n_encounter
+                    n_encounter = name_counter / len(leave_names)
+                    gnode.name = leave_names[name_counter % len(leaves_name)]
+                    gnode.name += ("_" + gnode.name) * n_encounter
                 else:
                     snode_counter[snode.name] += 1
-                    gnode.name = leave_names(snode.name, snode_counter[snode.name])
+                    gnode.name = leave_names(
+                        snode.name, snode_counter[snode.name])
                 events[gnode] = "leaf"
                 gnode.add_features(type=TreeClass.SPEC)
             else:
@@ -512,7 +525,7 @@ class SimulModel(object):
                     # get branches event for branch (snode, schild)
                     # during time = schild.dist
                     recnode, died, transfered, smap = self.sample_event_on_branches(schild.dist,
-                        schild, birth, death, gain, keeplosses=(not removeloss), ign_suc_trn=disallow_suc_trn, ecounter=true_event_counter)
+                                                                                    schild, birth, death, gain, keeplosses=(not removeloss), ign_suc_trn=disallow_suc_trn, ecounter=true_event_counter)
                     gnode.add_child(recnode)
                     # update ist of losses
                     losses.update(died)
@@ -520,8 +533,8 @@ class SimulModel(object):
                     recon.update(smap)
                     next_cand = []
                     # then record reconciliation that happened
-                    #print recnode.get_ascii(attributes=[], show_internal=True)
-                    #print schild
+                    # print recnode.get_ascii(attributes=[], show_internal=True)
+                    # print schild
                     for node in recnode.traverse():
                         node.add_features(species=recon[node].name)
                         if node.type == TreeClass.LOST:
@@ -536,16 +549,16 @@ class SimulModel(object):
                             events[node] = "dup"
                         else:
                             events[node] = "transfer"
-                    
+
                     for new_node in next_cand:
                         create_history(recon[new_node], new_node)
-                
+
                 # if no child for node then it is a loss
                 if gnode.is_leaf():
 
                     losses.add(gnode)
         create_history(sptree, gtree)
-        
+
         gtree.delete_single_child_internal(enable_root=True)
         if removeloss:
             for node in gtree.traverse():
@@ -559,14 +572,13 @@ class SimulModel(object):
                     del events[node]
 
         if len(gtree) <= 1:
-            raise TotalExtinction("All taxa are extinct.")        
+            raise TotalExtinction("All taxa are extinct.")
         return gtree, recon, events, true_event_counter, transfers
-
 
     def sample_event_on_branches(self, time, spnode, birth, death, transfer, gnode=None, keeplosses=False, ign_suc_trn=False, ecounter={}):
         """Simulate a reconstructed birth death tree"""
-        
-        # we are going with a poisson process 
+
+        # we are going with a poisson process
         # so the rate of having an event is
         # just the sum of rate
         event_rate = float(birth + death + transfer)
@@ -584,17 +596,17 @@ class SimulModel(object):
                 next_t = INF
             else:
                 next_t = random.expovariate(event_rate)
-            
+
             if next_t > time:
                 # no event on branch
                 # we can stop
                 node.dist = time
                 node.add_features(type=INF)
-            
+
             else:
                 eprob = random.random()
                 node.dist = next_t
-                if eprob < birth*1.0 / event_rate:
+                if eprob < birth * 1.0 / event_rate:
                     # birth ==> duplication event
                     cnode = TreeClass()
                     node.add_child(cnode)
@@ -607,8 +619,8 @@ class SimulModel(object):
                     event_in_time(time - next_t, cnode, spnode)
                     node.add_features(type=TreeClass.AD)
                     ecounter['dup'] += 1
-                
-                elif eprob < (birth+death)*1.0/event_rate:
+
+                elif eprob < (birth + death) * 1.0 / event_rate:
                     # death happen ==> loss
                     node.add_features(type=TreeClass.LOST)
                     map_to_spec[node] = spnode
@@ -616,17 +628,18 @@ class SimulModel(object):
                     died.add(node)
                 else:
                     # give gene to another species ==> transfer
-                    contemp_transfer_nodes =  list(spnode.get_incomparable_list(timeconsistent=True, wtime=next_t))
+                    contemp_transfer_nodes = list(
+                        spnode.get_incomparable_list(timeconsistent=True, wtime=next_t))
                     if contemp_transfer_nodes and not(ign_suc_trn and node.up and node.up.has_feature('type', name=TreeClass.TRANSFER)):
                         cand_receiver = random.choice(contemp_transfer_nodes)
-                       
+
                         node.add_features(type=TreeClass.TRANSFER)
                         ecounter['transfer'] += 1
                         cnode = TreeClass()
                         node.add_child(cnode)
                         map_to_spec[cnode] = spnode
                         event_in_time(time - next_t, cnode, spnode)
-                        
+
                         cnode = TreeClass()
                         node.add_child(cnode)
                         cnode.add_features(transfered=True)
@@ -646,7 +659,7 @@ class SimulModel(object):
 
         if not keeplosses:
             leaves = set(gnode.get_leaves()) - died
-      
+
             if len(leaves) == 0:
                 gnode.add_features(type=TreeClass.LOST)
                 died.add(gnode)
@@ -654,19 +667,19 @@ class SimulModel(object):
                 gnode.prune(leaves)
             gnode.delete_single_child_internal()
 
-        
         return gnode, died, transfered, map_to_spec
 
 
 if __name__ == '__main__':
     # this are for test
     model = SimulModel(stopcrit=None, debug=True)
-    #def pure_birth_tree(self, nsize, birth=1.0, leave_names=[]):
+    # def pure_birth_tree(self, nsize, birth=1.0, leave_names=[]):
 
     sptree = model.pure_birth_tree(birth=0.5, nsize=5, names_library="abcdef")
     model.add_stopping_crit(stop_with_size_range)
     #sptree = model.birth_death_tree(birth=0.5, death=0.2, nsize=6, removeloss=False, names_library="abcdef", repeat_until_success=False)
-    l = model.dlt_tree_from_sptree(sptree, 0.3, 0.4, removeloss=True, size_range=(7, 10), disallow_suc_trn=True, repeat_until_success=True)
+    l = model.dlt_tree_from_sptree(sptree, 0.3, 0.4, removeloss=True, size_range=(
+        7, 10), disallow_suc_trn=True, repeat_until_success=True)
     sptree.compute_branches_length()
 
     print sptree.get_ascii(show_internal=True, attributes=['name', 'dist'])

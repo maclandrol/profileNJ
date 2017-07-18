@@ -40,6 +40,11 @@ class PolytomySolver:
         self.dp_values = {}
         self.special_species_dupcost = {}
         self.special_species_losscost = {}
+        self.reverseMap = {}
+        for g, s in lcaMapping.items():
+            glist = self.reverseMap.get(s.name, [])
+            glist.append(g.name)
+            self.reverseMap[s.name] = glist
 
     def setDupLossCosts(self, dupcost, losscost):
         self.dupcost = dupcost
@@ -298,7 +303,8 @@ class PolytomySolver:
                       k, "v =", v, " vright =", vright)
 
             if v == 0:
-                trees_to_return = [s.name] * k
+                trees_to_return = [(self.reverseMap[s.name].pop() if not s.name.startswith(
+                    '[') else s.name) for i in xrange(k)]  # this here is were to change
             # get k + 1 guys, merge 2
             # TODO : we just take one way of doing this
             elif v == vright + s_dupcost:
@@ -448,7 +454,7 @@ class GeneTreeSolver:
         cpt = 1
         for t in tree.traverse("postorder"):
 
-            if t.name == "" or t.name == "NoName":
+            if not t.name or t.name == "NoName":
                 t.name = "[" + str(cpt) + "]"
                 cpt += 1
 
@@ -572,7 +578,6 @@ class GeneTreeSolver:
                                 pos = sol.find(s.name)
 
                                 rchild = self.solutions_per_gene[gchild]
-
                                 for sol_child in rchild:
 
                                     # sol2 = sol[:pos] + "(" + sol_child + ")" + sol[pos + len(s.name):]
