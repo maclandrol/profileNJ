@@ -22,7 +22,7 @@ def time_slice(tree, timeframes, leaves_as_extant=True, single_nodes=True):
     `timeframes` can be a list of timestamp or a list of seed nodes.
     if `leaves_as_extant` is True, leaves will always be in the last timeframe.
     (always be the case for ultrametric trees).
-    if `single_nodes` is True, nodes with only one child will be added as anchor 
+    if `single_nodes` is True, nodes with only one child will be added as anchor
     for the slices
     """
     desc = tree.get_descendants()
@@ -143,7 +143,7 @@ def _calc_KTB_rates_crop(node, **kwargs):
     THIS FUNCTION AND ITS DESCRIPTION ARE FROM THE DENDROPY PROJECT
     """
     duration = node.dist
-    if node.up != None and node.up.has_feature('rate'):
+    if node.up is not None and node.up.has_feature('rate'):
         starting_rate = node.up.rate
     else:
         starting_rate = kwargs.get('starting_rate', None)
@@ -205,7 +205,7 @@ def make_clock_like(tree):
 
 
 def scale_subtree_branches(node, factor):
-    """Scale the branches lenght to its parent of a node 
+    """Scale the branches lenght to its parent of a node
     by factor
     """
     old_dist = node.dist
@@ -215,7 +215,7 @@ def scale_subtree_branches(node, factor):
 
 
 def set_height_on_tree(tree):
-    """Set height on a tree according to 
+    """Set height on a tree according to
     http://www.pnas.org/content/suppl/2012/10/04/1202997109.DCSupplemental/sapp.pdf
     """
     N = len(tree)
@@ -231,12 +231,12 @@ def scale_tree_height(tree, scaledist=True):
     h = tree.time
     for node in tree.traverse("postorder"):
         node.time /= h
-        if node.up != None and scaledist:
+        if node.up is not None and scaledist:
             node.dist /= h
 
 
 def validate_speciation(tree):
-    """Check if there are speciation occuring 
+    """Check if there are speciation occuring
     at the same time and slightly change the speciation time.
     This should be perfomed before time slicing.
     """

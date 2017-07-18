@@ -4,4 +4,5 @@ import ClusterUtils
 import SimulModel
 from memorize import memorize
 import params
-__all__= ["TreeUtils", "ClusterUtils", "TreeClass", "memorize", "params", 'SimulModel']
+__all__ = ["TreeUtils", "ClusterUtils",
+           "TreeClass", "memorize", "params", 'SimulModel']

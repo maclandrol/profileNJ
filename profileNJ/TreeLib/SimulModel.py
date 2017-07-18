@@ -206,9 +206,9 @@ class SimulModel(object):
             - ``names_library`` : list of names for the leaves
             - ``max_time`` : maximum time for simulation
             - if nsize if not provided, the length of names_library will be used
-            - if nsize is larger than ``names_library``, leaves name will be completed with 
+            - if nsize is larger than ``names_library``, leaves name will be completed with
             random names in the following format : "T%d" (T1, T2, etc)
-        and 
+        and
         """
         tree = TreeClass()
         tree.dist = 0.0
@@ -249,7 +249,7 @@ class SimulModel(object):
                 for val in pb_stop.applyFunctions(tree, cur_time=total_time, cur_size=len(leaf_nodes), **extra_param):
                     done = done or val
             if not self.stopcrit.isEmpty():
-                for val in self.stopcrit.applyFunctions(tree,  cur_time=total_time, cur_size=len(leaf_nodes), **extra_param):
+                for val in self.stopcrit.applyFunctions(tree, cur_time=total_time, cur_size=len(leaf_nodes), **extra_param):
                     done = done or val
             if done:
                 break
@@ -286,7 +286,7 @@ class SimulModel(object):
         - ``names_library`` : list of names for the leaves
         - ``max_time`` : maximum time for simulation
         - if nsize if not provided, the length of names_library will be used
-        - if nsize is larger than ``names_library``, leaves name will be completed with 
+        - if nsize is larger than ``names_library``, leaves name will be completed with
         random names in the following format : "T%d" (T1, T2, etc)
         - If `max_time` is given as a keyword argument, tree is grown for
         a maximum of ``max_time``.
@@ -328,7 +328,7 @@ class SimulModel(object):
         tree = TreeClass()
         tree.dist = 0.0
 
-        #_LOG.debug("Will generate a tree with no more than %s leaves to get a tree of %s leaves" % (str(gsa_ntax), str(nsize)))
+        # LOG.debug("Will generate a tree with no more than %s leaves to get a tree of %s leaves" % (str(gsa_ntax), str(nsize)))
         leaf_nodes = tree.get_leaves()
         curr_num_leaves = len(leaf_nodes)
 
@@ -340,7 +340,7 @@ class SimulModel(object):
         while True:
             # waiting time based on event_rate
             wtime = random.expovariate(event_rate)
-            #_LOG.debug("Drew waiting time of %f from hazard parameter of %f" % (wtime, all_rates))
+            # _LOG.debug("Drew waiting time of %f from hazard parameter of %f" % (wtime, all_rates))
 
             total_time += wtime
             for leaf in leaf_nodes:
@@ -352,7 +352,7 @@ class SimulModel(object):
                 for val in pb_stop.applyFunctions(tree, cur_time=total_time, cur_size=curr_num_leaves, **extra_param):
                     done = done or val
             if not self.stopcrit.isEmpty():
-                for val in self.stopcrit.applyFunctions(tree,  cur_time=total_time, cur_size=curr_num_leaves, **extra_param):
+                for val in self.stopcrit.applyFunctions(tree, cur_time=total_time, cur_size=curr_num_leaves, **extra_param):
                     done = done or val
             if done:
                 break
@@ -366,7 +366,7 @@ class SimulModel(object):
                 leaf_nodes.remove(node)
                 curr_num_leaves -= 1
                 if eprob < birth / event_rate:
-                    #_LOG.debug("Speciation")
+                    # LOG.debug("Speciation")
                     c1 = TreeClass()
                     c2 = TreeClass()
                     c1.dist = 0
@@ -378,9 +378,9 @@ class SimulModel(object):
                     leaf_nodes.append(c2)
                     curr_num_leaves += 2
                 else:
-                    #_LOG.debug("Extinction")
+                    # LOG.debug("Extinction")
                     if curr_num_leaves > 0:
-                        #_LOG.debug("Will delete " + str(id(nd)) + " with parent = " + str(id(nd.parent_node)))
+                        # LOG.debug("Will delete " + str(id(nd)) + " with parent = " + str(id(nd.parent_node)))
                         died.add(node)
                         node.add_features(type=TreeClass.LOST)
                     else:
@@ -404,12 +404,12 @@ class SimulModel(object):
             tree.delete_single_child_internal(enable_root=True)
 
         leaf_nodes = tree.get_leaves()
-        #wtime = random.expovariate(event_rate)
+        # wtime = random.expovariate(event_rate)
         leaf_compteur = 1
         nlc = 0
         for ind, node in enumerate(leaf_nodes):
             if not node.has_feature('type', name=TreeClass.LOST):
-                #node.dist += wtime
+                # node.dist += wtime
                 if nlc < len(names_library):
                     node.name = names_library[nlc]
                     nlc += 1
@@ -426,7 +426,7 @@ class SimulModel(object):
             - ``removeloss`` set to True to remove losses from the simulated tree (default: True)
             - ``disallow_suc_trn`` set to True to disable successive transfer. If a node parent has a transfer event,
             the node can't have a transfer event too. This prevent circular event
-            - ``names_library`` : list of gene label at the leaves. If there is not enough names, they will be 
+            - ``names_library`` : list of gene label at the leaves. If there is not enough names, they will be
             duplicated (ex : for 5 leaves and [a, b], leaves name will be [a, b, aa, bb, aaa]
             - `nsize``: number of non-extinct leaves wished (almost useless if repeat_until_success is false)
             - ``repeat_until_success`` : repeat simulation until `nsize` leaves are obtained or stopping criterion is attained
@@ -485,7 +485,7 @@ class SimulModel(object):
         return gtree, event_logger
 
     def sample_from_tree(self, sptree, birth, death, gain, **kwargs):
-        """Sample a tree within another tree using the rate specified 
+        """Sample a tree within another tree using the rate specified
             Note that a tree with all leaves being extinct can be returned by this function
             Use dlt_tree_from_sptree if you want to prevent this.
         """
@@ -677,7 +677,7 @@ if __name__ == '__main__':
 
     sptree = model.pure_birth_tree(birth=0.5, nsize=5, names_library="abcdef")
     model.add_stopping_crit(stop_with_size_range)
-    #sptree = model.birth_death_tree(birth=0.5, death=0.2, nsize=6, removeloss=False, names_library="abcdef", repeat_until_success=False)
+    # sptree = model.birth_death_tree(birth=0.5, death=0.2, nsize=6, removeloss=False, names_library="abcdef", repeat_until_success=False)
     l = model.dlt_tree_from_sptree(sptree, 0.3, 0.4, removeloss=True, size_range=(
         7, 10), disallow_suc_trn=True, repeat_until_success=True)
     sptree.compute_branches_length()
