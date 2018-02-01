@@ -25,17 +25,18 @@ import itertools
 
 
 # TreeUtils:
-
 class MatrixRep(object):
 
-    def __init__(self, genetree, speciestree, defval=0):
+    def __init__(self, genetree, speciestree, defval=0, is_tree=True):
+
         self.gtree = genetree
         self.stree = speciestree
+        if is_tree:
+            self.gtree = list(genetree.traverse("postorder"))
+            self.stree = list(speciestree.traverse("postorder"))
         # keeping tree as key (in case the name was not set for internal nodes)
-        self.gmap = dict((gn, i)
-                         for i, gn in enumerate(genetree.traverse("postorder")))
-        self.smap = dict((sn, i) for i, sn in enumerate(
-            speciestree.traverse("postorder")))
+        self.gmap = dict((gn, i) for i, gn in enumerate(self.gtree))
+        self.smap = dict((sn, i) for i, sn in enumerate(self.stree))
         self.matrix = np.empty((len(self.gmap), len(self.smap)))
         self.matrix.fill(defval)
         self.shape = self.matrix.shape
@@ -53,15 +54,15 @@ class MatrixRep(object):
             for (s, i_s) in self.smap.items():
                 yield (g, s, self.matrix[i_g, i_s])
 
-    def _reformat_slice(self, slice, map):
-        return id if isinstance(id, int) else map.get(id, None)
+    def _reformat_slice(self, pos, mapping):
+        return pos if isinstance(pos, int) else mapping.get(pos, None)
 
-    def _get_new_index(self, index, map):
+    def _get_new_index(self, index, mapping):
         start = index.start
         stop = index.stop
         step = index.step
-        start = self._reformat_slice(start, map)
-        stop = self._reformat_slice(stop, map)
+        start = self._reformat_slice(start, mapping)
+        stop = self._reformat_slice(stop, mapping)
         step = step if isinstance(step, int) else None
         return slice(start, stop, step)
 
@@ -72,7 +73,7 @@ class MatrixRep(object):
             return self.matrix[self.gmap[index]]
         elif isinstance(index, int):
             return self.matrix[index]
-        # in th folowing, we are returning a slice
+        # in the folowing, we are returning a slice
         elif isinstance(index, slice):
             index = self._get_new_index(index, self.gmap)
             return self.matrix[index]
