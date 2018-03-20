@@ -303,8 +303,17 @@ class PolytomySolver:
                       k, "v =", v, " vright =", vright)
 
             if v == 0:
-                trees_to_return = [(self.reverseMap[s.name].pop() if not s.name.startswith(
-                    '[') else s.name) for i in xrange(k)]  # this here is were to change
+                trees_to_return = []
+                rMap = self.reverseMap[s.name][:] if not s.name.startswith(
+                    '[') else s.name
+
+                for i in xrange(k):
+                    if isinstance(rMap, list):
+                        val = rMap.pop()
+                    else:
+                        val = s.name
+
+                    trees_to_return.append(val)# = [ for i in xrange(k)] # this here is where to change
             # get k + 1 guys, merge 2
             # TODO : we just take one way of doing this
             elif v == vright + s_dupcost:
@@ -545,7 +554,7 @@ class GeneTreeSolver:
                 ps.computeCostsTable()
 
                 if self.debug:
-                    print "COST=", ps.getTableValue(self.speciestree, 1)
+                    print "COST=", ps.getTableValue(stree.get_tree_root(), 1)
 
                 # print remainingLimit
 
